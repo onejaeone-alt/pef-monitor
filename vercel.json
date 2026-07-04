@@ -1,8 +1,1 @@
-{
-  "regions": ["icn1"],
-  "functions": {
-    "api/dart.js": {
-      "maxDuration": 60
-    }
-  }
-}
+{ "regions": ["icn1"], "functions": { "api/dart.js": { "maxDuration": 60 } } }
