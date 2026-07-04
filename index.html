@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PEF·VC 공시 모니터</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F3A5F'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23FFE86B' font-family='sans-serif' font-weight='bold'>공</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#F3F5F7; --card:#FFFFFF; --ink:#17212B; --muted:#6C7885;
+    --line:#E2E7EC; --navy:#1F3A5F; --teal:#0E7C66; --hl:#FFE86B;
+    --today:#FFD84D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+  header{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{font-size:17px;font-weight:800;letter-spacing:-.3px}
+  header h1 span{color:var(--hl)}
+  .range-toggle{display:flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden}
+  .range-toggle button{background:transparent;border:0;color:rgba(255,255,255,.75);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .range-toggle button.on{background:var(--hl);color:var(--ink)}
+  .spacer{flex:1}
+  .hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .hbtn:hover{background:rgba(255,255,255,.22)}
+  .hbtn.spin::before{content:"⟳ ";display:inline-block;animation:rot 1s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  label.auto{font-size:12.5px;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.85);cursor:pointer;user-select:none}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+  .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;font-variant-numeric:tabular-nums;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input.search{border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-family:inherit;background:var(--card);width:280px;max-width:100%}
+  input.search:focus{outline:2px solid var(--navy);outline-offset:-1px}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+
+  .col-head{display:flex;align-items:baseline;gap:10px;padding:2px 2px 10px;position:sticky;top:58px;background:var(--bg);z-index:5}
+  .col-head h2{font-size:15px;font-weight:800;letter-spacing:-.2px}
+  .col-head.pef h2{color:var(--navy)}
+  .col-head.vc h2{color:var(--teal)}
+  .col-head .cnt{font-size:12.5px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .col-head .bar{flex:1;height:3px;border-radius:2px}
+  .col-head.pef .bar{background:var(--navy)}
+  .col-head.vc .bar{background:var(--teal)}
+
+  .dayhead{font-size:12.5px;font-weight:800;color:var(--muted);padding:10px 2px 6px}
+  a.item{display:block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:7px;text-decoration:none;color:inherit;position:relative;transition:border-color .12s}
+  a.item:hover{border-color:var(--navy)}
+  a.item.today::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--today)}
+  .row1{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:2px}
+  .badge{font-size:10px;font-weight:800;border-radius:5px;padding:2px 6px;letter-spacing:.3px}
+  .b-mkt{background:#EEF1F4;color:var(--muted);font-weight:700}
+  .b-house{background:var(--hl);color:var(--ink)}
+  .corp{font-weight:800;font-size:14px;letter-spacing:-.2px}
+  .report{font-size:13.5px;color:#2A3542;margin-bottom:3px;word-break:keep-all}
+  mark{background:var(--hl);padding:0 2px;border-radius:3px;font-weight:700}
+  .row3{font-size:11.5px;color:var(--muted);display:flex;gap:10px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+  .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:13.5px;background:var(--card);border:1px dashed var(--line);border-radius:10px}
+  .err{background:#FDECEC;border:1px solid #F3C4C4;color:#8E2B2B;border-radius:10px;padding:14px;font-size:13.5px}
+  @media(max-width:560px){header{padding:12px 14px}.wrap{padding:14px 10px 50px}.col-head{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>PEF·VC <span>공시</span> 모니터</h1>
+  <div class="range-toggle" id="rangeToggle">
+    <button data-d="3">3일</button>
+    <button data-d="5">5일</button>
+    <button data-d="7" class="on">7일</button>
+  </div>
+  <div class="spacer"></div>
+  <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
+  <button class="hbtn" id="refresh">새로고침</button>
+</header>
+
+<div class="wrap">
+  <div class="meta">
+    <span id="metaText">불러오는 중…</span>
+    <span style="flex:1"></span>
+    <input class="search" id="q" placeholder="목록 내 검색 (선택)">
+  </div>
+
+  <div class="cols">
+    <div>
+      <div class="col-head pef"><h2>PEF · 사모</h2><span class="cnt" id="cntPEF"></span><span class="bar"></span></div>
+      <div id="listPEF"></div>
+    </div>
+    <div>
+      <div class="col-head vc"><h2>VC · 창투 · 신기사</h2><span class="cnt" id="cntVC"></span><span class="bar"></span></div>
+      <div id="listVC"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/dart";
+let DATA = [], days = 7, q = "", timer = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function highlight(text, hits){
+  let out = esc(text);
+  const uniq = [...new Set(hits)].sort((a,b)=>b.length-a.length);
+  for(const k of uniq) out = out.split(esc(k)).join(`<mark>${esc(k)}</mark>`);
+  return out;
+}
+function fmtDate(d){ return `${d.slice(0,4)}.${d.slice(4,6)}.${d.slice(6,8)}`; }
+function weekday(d){
+  const w = ["일","월","화","수","목","금","토"];
+  return w[new Date(`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`).getDay()];
+}
+function todayKST(){
+  return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10).replace(/-/g,"");
+}
+const CLS = {Y:"유가",K:"코스닥",N:"코넥스",E:"기타법인"};
+
+function sectionHTML(items){
+  if(!items.length) return `<div class="empty">해당 공시가 없습니다.</div>`;
+  const today = todayKST();
+  const groups = {};
+  for(const it of items) (groups[it.rcept_dt] ||= []).push(it);
+  const dates = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  return dates.map(d=>`
+    <div class="dayhead">${fmtDate(d)} (${weekday(d)}) · ${groups[d].length}건</div>
+    ${groups[d].map(it=>`
+      <a class="item ${d===today?"today":""}" href="${it.url}" target="_blank" rel="noopener">
+        <div class="row1">
+          ${CLS[it.corp_cls]?`<span class="badge b-mkt">${CLS[it.corp_cls]}</span>`:""}
+          ${it.pef_entity?`<span class="badge b-house">하우스</span>`:""}
+          <span class="corp">${highlight(it.corp_name, it.hits)}</span>
+        </div>
+        <div class="report">${highlight(it.report_nm, it.hits)}</div>
+        <div class="row3">
+          <span>제출: ${esc(it.flr_nm)}</span>
+          ${it.rm?`<span>${esc(it.rm)}</span>`:""}
+        </div>
+      </a>`).join("")}
+  `).join("");
+}
+
+function render(){
+  const kw = q.trim();
+  const filtered = kw
+    ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm}`.includes(kw))
+    : DATA;
+  const pef = filtered.filter(it=>it.category==="PEF");
+  const vc  = filtered.filter(it=>it.category==="VC");
+  $("#listPEF").innerHTML = sectionHTML(pef);
+  $("#listVC").innerHTML  = sectionHTML(vc);
+  $("#cntPEF").textContent = `${pef.length}건`;
+  $("#cntVC").textContent  = `${vc.length}건`;
+}
+
+async function load(){
+  const btn = $("#refresh");
+  btn.classList.add("spin"); btn.textContent = "갱신 중";
+  try{
+    const r = await fetch(`${API}?days=${days}`);
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || "불러오기 실패");
+    DATA = j.items;
+    const t = new Date(j.fetched_at);
+    $("#metaText").textContent =
+      `${fmtDate(j.range.bgn)} ~ ${fmtDate(j.range.end)} · 전체 ${(j.total_count??j.scanned).toLocaleString()}건 스캔 · ` +
+      `갱신 ${t.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}`;
+    render();
+  }catch(e){
+    $("#listPEF").innerHTML = `<div class="err">공시를 불러오지 못했습니다: ${esc(e.message)}<br>잠시 후 새로고침을 다시 눌러보세요.</div>`;
+    $("#listVC").innerHTML = "";
+    $("#metaText").textContent = ""; $("#cntPEF").textContent=""; $("#cntVC").textContent="";
+  }finally{
+    btn.classList.remove("spin"); btn.textContent = "새로고침";
+  }
+}
+
+$("#refresh").onclick = load;
+$("#q").addEventListener("input", e=>{ q = e.target.value; render(); });
+document.querySelectorAll("#rangeToggle button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#rangeToggle button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); days = +b.dataset.d; load();
+});
+function setAuto(on){ clearInterval(timer); if(on) timer = setInterval(load, 5*60*1000); }
+$("#auto").onchange = e=>setAuto(e.target.checked);
+setAuto(true);
+load();
+</script>
+</body>
+</html>
