@@ -1,93 +1,238 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PEF·VC 공시 모니터</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F3A5F'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23FFE86B' font-family='sans-serif' font-weight='bold'>공</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23FFA6D5'/><stop offset='.5' stop-color='%23FF2D8A'/><stop offset='1' stop-color='%23FFD84D'/></linearGradient></defs><path d='M50 4 L61 36 L95 38 L68 59 L78 93 L50 73 L22 93 L32 59 L5 38 L39 36 Z' fill='url(%23g)' stroke='%237A1B4E' stroke-width='4' stroke-linejoin='round'/></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F3F5F7; --card:#FFFFFF; --ink:#17212B; --muted:#6C7885;
-    --line:#E2E7EC; --navy:#1F3A5F; --teal:#0E7C66; --hl:#FFE86B;
-    --today:#FFD84D;
+    --bg:#FFCFE3;          /* 진한 버블검 핑크 (참고 이미지 톤) */
+    --dot:#FFB9D6;
+    --card:#FFFFFF;
+    --ink:#3D0A29;
+    --outline:#B04A6E;     /* 테두리 장식 라인 (다크 로즈) */
+    --muted:#A65C86;
+    --pink:#FF2D8A;
+    --violet:#8A4DFF;
+    --hl:#FFF15C;
+    --shadow:#F59BC6;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
-  header{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  header h1{font-size:17px;font-weight:800;letter-spacing:-.3px}
-  header h1 span{color:var(--hl)}
-  .range-toggle{display:flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden}
-  .range-toggle button{background:transparent;border:0;color:rgba(255,255,255,.75);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-  .range-toggle button.on{background:var(--hl);color:var(--ink)}
-  .spacer{flex:1}
-  .hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-  .hbtn:hover{background:rgba(255,255,255,.22)}
+  body{
+    font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+    background:var(--bg);
+    background-image:radial-gradient(var(--dot) 2px, transparent 2px);
+    background-size:26px 26px;
+    color:var(--ink);font-size:15px;line-height:1.5;
+  }
+
+  /* ===== 테두리 장식 (고정, 클릭 통과) ===== */
+  .deco{position:fixed;pointer-events:none;z-index:0}
+  .crest{top:6px;left:50%;transform:translateX(-50%);width:min(380px,80vw)}
+  .bow-tl{top:74px;left:10px;width:64px}
+  .bow-tr{top:74px;right:10px;width:64px;transform:scaleX(-1)}
+  .ribbon-l{top:140px;bottom:150px;left:12px;width:40px}
+  .ribbon-r{top:140px;bottom:150px;right:12px;width:40px;transform:scaleX(-1)}
+  .ribbon-l svg,.ribbon-r svg{width:100%;height:100%}
+  .star-l{top:46%;left:14px;width:26px}
+  .star-r{top:46%;right:14px;width:26px}
+  .wings{bottom:0;left:50%;transform:translateX(-50%);width:min(460px,92vw);opacity:.95}
+  @media(max-width:1340px){
+    .ribbon-l,.ribbon-r,.star-l,.star-r,.bow-tl,.bow-tr{display:none}
+  }
+
+  /* ===== 헤더 ===== */
+  header{position:relative;z-index:1;padding:64px 16px 10px;text-align:center}
+  header h1{
+    font-family:Jua,"Pretendard Variable",sans-serif;font-weight:400;
+    font-size:clamp(26px,4.5vw,38px);letter-spacing:1px;display:inline-block;
+    background:linear-gradient(90deg,#FF7BBF 0%,#C89BFF 30%,#8FD0FF 55%,#FFE07A 80%,#FF9ECF 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    -webkit-text-stroke:1px rgba(122,27,78,.35);
+    filter:drop-shadow(2px 2px 0 rgba(255,255,255,.9));
+  }
+  .controls{
+    position:relative;z-index:1;display:flex;justify-content:center;align-items:center;
+    gap:12px;flex-wrap:wrap;padding:8px 16px 4px;
+  }
+  .range-toggle{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:#fff;box-shadow:2px 2px 0 var(--shadow)}
+  .range-toggle button{background:transparent;border:0;color:var(--muted);padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  .range-toggle button.on{background:var(--pink);color:#fff}
+  .hbtn{
+    background:#fff;border:2px solid var(--ink);color:var(--pink);
+    border-radius:99px;padding:6px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+    box-shadow:2px 2px 0 var(--ink);transition:transform .08s, box-shadow .08s;
+  }
+  .hbtn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+  .hbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
   .hbtn.spin::before{content:"⟳ ";display:inline-block;animation:rot 1s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
-  label.auto{font-size:12.5px;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.85);cursor:pointer;user-select:none}
+  label.auto{font-size:12.5px;display:flex;align-items:center;gap:6px;color:var(--ink);cursor:pointer;user-select:none;font-weight:700;accent-color:var(--pink)}
 
-  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
-  .meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;font-variant-numeric:tabular-nums;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  input.search{border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-family:inherit;background:var(--card);width:280px;max-width:100%}
-  input.search:focus{outline:2px solid var(--navy);outline-offset:-1px}
+  /* ===== 본문 ===== */
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:14px 60px 170px}
+  @media(max-width:1340px){.wrap{padding-left:16px;padding-right:16px}}
+  .meta{
+    font-size:12.5px;color:var(--muted);margin-bottom:16px;font-variant-numeric:tabular-nums;
+    display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  }
+  input.search{
+    border:2px solid var(--ink);border-radius:99px;padding:8px 15px;font-size:13px;font-family:inherit;
+    background:var(--card);width:280px;max-width:100%;box-shadow:2px 2px 0 var(--shadow);
+  }
+  input.search::placeholder{color:#C98BAC}
+  input.search:focus{outline:none;box-shadow:2px 2px 0 var(--pink)}
 
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
   @media(max-width:900px){.cols{grid-template-columns:1fr}}
 
-  .col-head{display:flex;align-items:baseline;gap:10px;padding:2px 2px 10px;position:sticky;top:58px;background:var(--bg);z-index:5}
-  .col-head h2{font-size:15px;font-weight:800;letter-spacing:-.2px}
-  .col-head.pef h2{color:var(--navy)}
-  .col-head.vc h2{color:var(--teal)}
-  .col-head .cnt{font-size:12.5px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
-  .col-head .bar{flex:1;height:3px;border-radius:2px}
-  .col-head.pef .bar{background:var(--navy)}
-  .col-head.vc .bar{background:var(--teal)}
+  .col-head{
+    display:flex;align-items:center;gap:10px;padding:8px 14px;margin-bottom:12px;
+    border:2.5px solid var(--ink);border-radius:14px;color:#fff;
+    box-shadow:3px 3px 0 var(--ink);position:sticky;top:8px;z-index:5;
+  }
+  .col-head.pef{background:var(--pink)}
+  .col-head.vc{background:var(--violet)}
+  .col-head h2{font-family:Jua,sans-serif;font-size:16px;font-weight:400;letter-spacing:.4px}
+  .col-head .cnt{font-size:12px;font-weight:800;background:#fff;border-radius:99px;padding:2px 10px;font-variant-numeric:tabular-nums}
+  .col-head.pef .cnt{color:var(--pink)}
+  .col-head.vc .cnt{color:var(--violet)}
+  .col-head .spark{margin-left:auto;font-size:14px}
 
-  .dayhead{font-size:12.5px;font-weight:800;color:var(--muted);padding:10px 2px 6px}
-  a.item{display:block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:7px;text-decoration:none;color:inherit;position:relative;transition:border-color .12s}
-  a.item:hover{border-color:var(--navy)}
-  a.item.today::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--today)}
+  .dayhead{font-family:Jua,sans-serif;font-size:13px;color:var(--ink);padding:12px 4px 7px;letter-spacing:.3px}
+  .dayhead::before{content:"✦ ";color:var(--pink)}
+
+  a.item{
+    display:block;background:var(--card);
+    border:2px solid var(--ink);border-radius:14px;
+    padding:11px 14px;margin-bottom:10px;text-decoration:none;color:inherit;position:relative;
+    box-shadow:3px 3px 0 var(--shadow);
+    transition:transform .1s, box-shadow .1s;
+  }
+  a.item:hover{transform:translate(-2px,-2px) rotate(-.3deg);box-shadow:5px 5px 0 var(--pink)}
+  a.item.today::after{
+    content:"✦ today";position:absolute;top:-10px;right:12px;color:var(--pink);
+    font-size:10px;font-weight:800;background:var(--hl);padding:1px 8px;border:2px solid var(--ink);border-radius:99px;
+  }
   .row1{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:2px}
-  .badge{font-size:10px;font-weight:800;border-radius:5px;padding:2px 6px;letter-spacing:.3px}
-  .b-mkt{background:#EEF1F4;color:var(--muted);font-weight:700}
+  .badge{font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;letter-spacing:.3px;border:1.5px solid var(--ink)}
+  .b-mkt{background:#FFE9F3;color:var(--muted)}
   .b-house{background:var(--hl);color:var(--ink)}
   .corp{font-weight:800;font-size:14px;letter-spacing:-.2px}
-  .report{font-size:13.5px;color:#2A3542;margin-bottom:3px;word-break:keep-all}
-  mark{background:var(--hl);padding:0 2px;border-radius:3px;font-weight:700}
+  .report{font-size:13.5px;color:#5C2143;margin-bottom:3px;word-break:keep-all}
+  mark{background:var(--hl);padding:0 3px;border-radius:4px;font-weight:700}
   .row3{font-size:11.5px;color:var(--muted);display:flex;gap:10px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
-  .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:13.5px;background:var(--card);border:1px dashed var(--line);border-radius:10px}
-  .err{background:#FDECEC;border:1px solid #F3C4C4;color:#8E2B2B;border-radius:10px;padding:14px;font-size:13.5px}
-  @media(max-width:560px){header{padding:12px 14px}.wrap{padding:14px 10px 50px}.col-head{position:static}}
+  .empty{
+    text-align:center;color:var(--muted);padding:44px 0;font-size:13.5px;
+    background:rgba(255,255,255,.65);border:2px dashed var(--pink);border-radius:14px;
+  }
+  .empty::before{content:"🎀";display:block;font-size:22px;margin-bottom:6px}
+  .err{background:#fff;border:2px solid #E0245E;color:#B01648;border-radius:14px;padding:14px;font-size:13.5px;box-shadow:3px 3px 0 #F8B8CC}
 </style>
 </head>
 <body>
+
+<!-- ===== 테두리 장식 ===== -->
+<!-- 상단 골드 문장(紋章) -->
+<svg class="deco crest" viewBox="0 0 380 64" fill="none">
+  <path d="M190 10 C160 -2 120 2 108 18 C96 34 118 44 138 38 C120 52 88 48 70 36" stroke="#C9962B" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M190 10 C220 -2 260 2 272 18 C284 34 262 44 242 38 C260 52 292 48 310 36" stroke="#C9962B" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M190 10 C160 -2 120 2 108 18 C96 34 118 44 138 38 C120 52 88 48 70 36" stroke="#F7E27A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M190 10 C220 -2 260 2 272 18 C284 34 262 44 242 38 C260 52 292 48 310 36" stroke="#F7E27A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M190 6 C182 16 176 22 176 32 C176 42 183 48 190 54 C197 48 204 42 204 32 C204 22 198 16 190 6 Z" fill="#FFFDF2" stroke="#B04A6E" stroke-width="2.5"/>
+  <path d="M190 16 L190 44" stroke="#B04A6E" stroke-width="2"/>
+  <path d="M190 46 L184 56 L190 62 L196 56 Z" fill="#F7E27A" stroke="#C9962B" stroke-width="2"/>
+  <circle cx="120" cy="46" r="3.5" fill="#F7E27A" stroke="#C9962B" stroke-width="1.5"/>
+  <circle cx="260" cy="46" r="3.5" fill="#F7E27A" stroke="#C9962B" stroke-width="1.5"/>
+</svg>
+
+<!-- 좌우 상단 리본 매듭 -->
+<svg class="deco bow-tl" viewBox="0 0 64 44" fill="none">
+  <path d="M30 22 C18 8 6 6 4 14 C2 22 14 30 28 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M34 22 C46 8 58 6 60 14 C62 22 50 30 36 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M26 26 L20 42 L28 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M38 26 L44 42 L36 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="32" cy="23" r="6" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2.5"/>
+</svg>
+<svg class="deco bow-tr" viewBox="0 0 64 44" fill="none">
+  <path d="M30 22 C18 8 6 6 4 14 C2 22 14 30 28 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M34 22 C46 8 58 6 60 14 C62 22 50 30 36 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M26 26 L20 42 L28 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M38 26 L44 42 L36 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="32" cy="23" r="6" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2.5"/>
+</svg>
+
+<!-- 좌우 흘러내리는 삼색 리본 -->
+<div class="deco ribbon-l"><svg viewBox="0 0 40 800" preserveAspectRatio="none" fill="none">
+  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#B04A6E" stroke-width="13" stroke-linecap="round"/>
+  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#FFFAE8" stroke-width="9" stroke-linecap="round"/>
+  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
+  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#AEDCFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
+  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#F7E27A" stroke-width="7" stroke-linecap="round"/>
+</svg></div>
+<div class="deco ribbon-r"><svg viewBox="0 0 40 800" preserveAspectRatio="none" fill="none">
+  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#B04A6E" stroke-width="13" stroke-linecap="round"/>
+  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#FFFAE8" stroke-width="9" stroke-linecap="round"/>
+  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
+  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#AEDCFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
+  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#F7E27A" stroke-width="7" stroke-linecap="round"/>
+</svg></div>
+
+<!-- 좌우 중간 별 -->
+<svg class="deco star-l" viewBox="0 0 26 26"><path d="M13 1 L16 9 L25 10 L18 15 L21 24 L13 19 L5 24 L8 15 L1 10 L10 9 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="1.8" stroke-linejoin="round"/></svg>
+<svg class="deco star-r" viewBox="0 0 26 26"><path d="M13 1 L16 9 L25 10 L18 15 L21 24 L13 19 L5 24 L8 15 L1 10 L10 9 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="1.8" stroke-linejoin="round"/></svg>
+
+<!-- 하단 날개 + 골드 스타 -->
+<svg class="deco wings" viewBox="0 0 460 120" fill="none">
+  <g stroke="#C4527E" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M212 108 C170 118 96 116 48 88 C20 72 10 52 16 44 C40 56 66 58 88 54 C60 46 40 32 36 20 C64 30 96 32 120 30 C100 20 88 8 86 2 C130 10 178 34 200 60 C212 74 216 94 212 108 Z" fill="#FFB3D2"/>
+    <path d="M212 108 C186 112 140 108 112 92 C132 92 154 86 168 76 C148 76 130 70 122 62 C144 62 168 54 182 44 C196 58 210 84 212 108 Z" fill="#FFD9E9"/>
+    <path d="M212 108 C200 108 184 104 176 98 C190 96 202 88 208 78 C212 88 214 100 212 108 Z" fill="#FFF3F8"/>
+  </g>
+  <g stroke="#C4527E" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M248 108 C290 118 364 116 412 88 C440 72 450 52 444 44 C420 56 394 58 372 54 C400 46 420 32 424 20 C396 30 364 32 340 30 C360 20 372 8 374 2 C330 10 282 34 260 60 C248 74 244 94 248 108 Z" fill="#FFB3D2"/>
+    <path d="M248 108 C274 112 320 108 348 92 C328 92 306 86 292 76 C312 76 330 70 338 62 C316 62 292 54 278 44 C264 58 250 84 248 108 Z" fill="#FFD9E9"/>
+    <path d="M248 108 C260 108 276 104 284 98 C270 96 258 88 252 78 C248 88 246 100 248 108 Z" fill="#FFF3F8"/>
+  </g>
+  <path d="M230 28 L238 62 L262 70 L238 78 L230 112 L222 78 L198 70 L222 62 Z" fill="#FFC93C" stroke="#C9962B" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M230 46 L234 66 L248 70 L234 74 L230 94 L226 74 L212 70 L226 66 Z" fill="#FFF3B8"/>
+</svg>
+
+<!-- ===== 헤더 ===== -->
 <header>
-  <h1>PEF·VC <span>공시</span> 모니터</h1>
+  <h1>PEF·VC 공시 모니터</h1>
+</header>
+<div class="controls">
   <div class="range-toggle" id="rangeToggle">
     <button data-d="3">3일</button>
     <button data-d="5">5일</button>
     <button data-d="7" class="on">7일</button>
   </div>
-  <div class="spacer"></div>
   <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
   <button class="hbtn" id="refresh">새로고침</button>
-</header>
+</div>
 
 <div class="wrap">
   <div class="meta">
     <span id="metaText">불러오는 중…</span>
     <span style="flex:1"></span>
-    <input class="search" id="q" placeholder="목록 내 검색 (선택)">
+    <input class="search" id="q" placeholder="🔍 목록 내 검색 (선택)">
   </div>
 
   <div class="cols">
     <div>
-      <div class="col-head pef"><h2>PEF · 사모</h2><span class="cnt" id="cntPEF"></span><span class="bar"></span></div>
+      <div class="col-head pef"><h2>PEF · 사모</h2><span class="cnt" id="cntPEF"></span><span class="spark">✦</span></div>
       <div id="listPEF"></div>
     </div>
     <div>
-      <div class="col-head vc"><h2>VC · 창투 · 신기사</h2><span class="cnt" id="cntVC"></span><span class="bar"></span></div>
+      <div class="col-head vc"><h2>VC · 창투 · 신기사</h2><span class="cnt" id="cntVC"></span><span class="spark">✦</span></div>
       <div id="listVC"></div>
     </div>
   </div>
