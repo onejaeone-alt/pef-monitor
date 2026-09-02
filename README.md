@@ -9,12 +9,22 @@ cd pef-monitor
 vercel --prod
 ```
 
-또는 GitHub 리포에 푸시 → Vercel 대시보드에서 Import. 별도 환경변수 설정 없음 (키는 `api/dart.js`에 내장, 서버 측에서만 사용되므로 브라우저에 노출되지 않음).
+또는 GitHub 리포에 푸시 → Vercel 대시보드에서 Import.
+
+### 필수 환경변수
+
+Vercel 프로젝트의 Settings → Environment Variables에 아래 값을 등록한다.
+
+```text
+DART_API_KEY=OpenDART에서 발급받은 40자리 인증키
+```
+
+인증키는 공개 저장소 코드에 직접 넣지 않는다. 기존에 코드에 노출된 키는 OpenDART에서 폐기하고 새로 발급받아야 한다.
 
 ## 구조
 
 - `index.html` — 프론트. 기간 토글(3/5/7일), PEF/VC 필터 칩, 검색, 5분 자동갱신
-- `api/dart.js` — DART list API를 페이지네이션(병렬 10개씩)으로 전량 수집 후 키워드 필터링
+- `api/dart.js` — DART list API를 페이지네이션(병렬 10개씩)으로 전량 수집 후 키워드·중요도 필터링
 - `vercel.json` — 함수 타임아웃 60초 (7일 조회 시 페이지 수가 많아 필요)
 
 ## 키워드 조정

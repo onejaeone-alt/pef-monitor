@@ -63,6 +63,9 @@
   .range-toggle{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:#fff;box-shadow:2px 2px 0 var(--shadow)}
   .range-toggle button{background:transparent;border:0;color:var(--muted);padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
   .range-toggle button.on{background:var(--pink);color:#fff}
+  .priority-toggle{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:#fff;box-shadow:2px 2px 0 var(--shadow)}
+  .priority-toggle button{background:transparent;border:0;color:var(--muted);padding:6px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+  .priority-toggle button.on{background:var(--ink);color:#fff}
   .hbtn{
     background:#fff;border:2px solid var(--ink);color:var(--pink);
     border-radius:99px;padding:6px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
@@ -123,6 +126,9 @@
   .badge{font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;letter-spacing:.3px;border:1.5px solid var(--ink)}
   .b-mkt{background:#FFE9F3;color:var(--muted)}
   .b-house{background:var(--hl);color:var(--ink)}
+  .b-priority-a{background:#FF4D6D;color:#fff}
+  .b-priority-b{background:#FFCF5C;color:var(--ink)}
+  .b-priority-c{background:#F3EAF0;color:var(--muted)}
   .corp{font-weight:800;font-size:14px;letter-spacing:-.2px}
   .report{font-size:13.5px;color:#5C2143;margin-bottom:3px;word-break:keep-all}
   mark{background:var(--hl);padding:0 3px;border-radius:4px;font-weight:700}
@@ -215,6 +221,11 @@
     <button data-d="5">5일</button>
     <button data-d="7" class="on">7일</button>
   </div>
+  <div class="priority-toggle" id="priorityToggle" aria-label="중요도 필터">
+    <button data-p="ALL" class="on">전체</button>
+    <button data-p="A">긴급 A</button>
+    <button data-p="B">검토 B</button>
+  </div>
   <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
   <button class="hbtn" id="refresh">새로고침</button>
 </div>
@@ -240,7 +251,7 @@
 
 <script>
 const API = "/api/dart";
-let DATA = [], days = 7, q = "", timer = null;
+let DATA = [], days = 7, q = "", priority = "ALL", timer = null;
 
 const $ = s => document.querySelector(s);
 const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -274,6 +285,7 @@ function sectionHTML(items){
         <div class="row1">
           ${CLS[it.corp_cls]?`<span class="badge b-mkt">${CLS[it.corp_cls]}</span>`:""}
           ${it.pef_entity?`<span class="badge b-house">하우스</span>`:""}
+          <span class="badge b-priority-${(it.priority||"C").toLowerCase()}">${it.priority||"C"}</span>
           <span class="corp">${highlight(it.corp_name, it.hits)}</span>
         </div>
         <div class="report">${highlight(it.report_nm, it.hits)}</div>
@@ -287,9 +299,11 @@ function sectionHTML(items){
 
 function render(){
   const kw = q.trim();
-  const filtered = kw
-    ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm}`.includes(kw))
-    : DATA;
+  const filtered = DATA.filter(it => {
+    const keywordMatch = !kw || `${it.corp_name} ${it.report_nm} ${it.flr_nm}`.includes(kw);
+    const priorityMatch = priority === "ALL" || it.priority === priority;
+    return keywordMatch && priorityMatch;
+  });
   const pef = filtered.filter(it=>it.category==="PEF");
   const vc  = filtered.filter(it=>it.category==="VC");
   $("#listPEF").innerHTML = sectionHTML(pef);
@@ -325,6 +339,10 @@ $("#q").addEventListener("input", e=>{ q = e.target.value; render(); });
 document.querySelectorAll("#rangeToggle button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#rangeToggle button").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); days = +b.dataset.d; load();
+});
+document.querySelectorAll("#priorityToggle button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#priorityToggle button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); priority = b.dataset.p; render();
 });
 function setAuto(on){ clearInterval(timer); if(on) timer = setInterval(load, 5*60*1000); }
 $("#auto").onchange = e=>setAuto(e.target.checked);

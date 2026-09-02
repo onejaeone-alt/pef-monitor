@@ -1,5 +1,5 @@
 // DART OpenAPI 프록시 — 최근 N일 공시 전체를 훑어 PEF 관련 건만 추려서 반환
-const DART_KEY = "214069cf8c415506e21625495fad9eed172b41d4";
+const DART_KEY = process.env.DART_API_KEY;
 const LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 
 // 매칭 키워드 (법인명 또는 보고서명, 단순 포함 매칭)
@@ -11,12 +11,12 @@ const PEF_KEYWORDS = [
   "프라이빗에쿼티",
   "프라이빗 에쿼티",
   "경영참여형",
-  "에쿼티",          // ○○에쿼티파트너스 등
+  "에쿼티파트너스",  // '에쿼티' 단독은 해외 펀드명 등 오탐이 큼
   "투자목적",        // 인수 SPC (○○투자목적회사)
   "바이아웃",
 ];
 const VC_KEYWORDS = [
-  "인베스트",        // ○○인베스트먼트, ○○인베스트 모두 커버
+  "인베스트먼트",
   "벤처스",          // 소프트뱅크벤처스, 스톤브릿지벤처스 등
   "벤처캐피탈",
   "벤처캐피",
@@ -29,7 +29,7 @@ const VC_KEYWORDS = [
   "기술투자",        // 포스코기술투자 등
   "투자조합",        // ○○투자조합 관련 공시
   "투자파트너스",
-  "파트너스",        // ○○파트너스 (PE·VC 공용 명칭)
+  "파트너스",        // 아래 오탐 컷과 함께 사용
   "액셀러레이터",
   "엑셀러레이터",
   "씨브이씨",
@@ -50,8 +50,42 @@ const PEF_ABBR = ["PE"];
 
 // 노이즈 컷: '사모'가 걸려도 PEF와 무관한 보고서명 (원하면 여기서 조절)
 const EXCLUDE_REPORT = [
-  // "사모사채",  // 일반 회사 사모사채 발행도 보고 싶으면 주석 유지
+  "효력발생안내",
+  "투자설명서(집합투자증권)",
+  "일괄신고서(집합투자증권",
 ];
+
+// 법인명에 아래 표현만 걸린 경우 하우스로 보지 않는다.
+const EXCLUDE_ENTITY = [
+  "자산운용",
+  "에쿼티시캐브",
+  "인베스트먼트신탁",
+];
+
+const PRIORITY_RULES = {
+  A: [
+    "최대주주변경", "공개매수", "주식등의대량보유상황보고서", "합병", "분할",
+    "영업양수도", "타법인주식및출자증권취득결정", "타법인주식및출자증권처분결정",
+    "유상증자결정", "전환사채권발행결정", "신주인수권부사채권발행결정",
+    "회생절차", "부도발생", "해산사유발생",
+  ],
+  B: [
+    "특수관계인", "자금차입", "주식의취득", "주식의처분", "감자결정",
+    "담보제공", "채무보증", "대표이사변경", "임원ㆍ주요주주특정증권등소유상황보고서",
+    "주요사항보고서", "유형자산취득결정", "유형자산양도결정",
+  ],
+};
+
+function getPriority(reportName = "") {
+  if (PRIORITY_RULES.A.some((k) => reportName.includes(k))) return "A";
+  if (PRIORITY_RULES.B.some((k) => reportName.includes(k))) return "B";
+  return "C";
+}
+
+function isLikelyHouse(corpName = "") {
+  if (EXCLUDE_ENTITY.some((k) => corpName.includes(k))) return false;
+  return findHits(corpName).length > 0;
+}
 
 function kstDate(offsetDays = 0) {
   const d = new Date(Date.now() + 9 * 3600 * 1000);
@@ -78,6 +112,7 @@ function matchKeywords(item) {
 }
 
 async function fetchPage(bgn, end, pageNo) {
+  if (!DART_KEY) throw new Error("DART_API_KEY 환경변수가 설정되지 않았습니다");
   const params = new URLSearchParams({
     crtfc_key: DART_KEY,
     bgn_de: bgn,
@@ -178,7 +213,8 @@ module.exports = async (req, res) => {
         category: hits.some((k) => PEF_KEYWORDS.includes(k) || PEF_ABBR.includes(k))
           ? "PEF" : "VC",
         // 법인명 자체가 하우스(PEF·VC 법인)이면 entity 공시
-        pef_entity: findHits(it.corp_name || "").length > 0,
+        pef_entity: isLikelyHouse(it.corp_name || ""),
+        priority: getPriority(it.report_nm || ""),
         url: `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${it.rcept_no}`,
       });
     }
