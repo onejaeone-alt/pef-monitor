@@ -20,7 +20,7 @@ cd pef-monitor
 vercel --prod
 ```
 
-또는 GitHub 리포에 푸시 → Vercel 대시보드에서 Import. 별도 환경변수 설정 없음 (키는 `api/dart.js`에 내장, 서버 측에서만 사용되므로 브라우저에 노출되지 않음).
+또는 GitHub 리포에 푸시 → Vercel 대시보드에서 Import. 기본 목록은 기존 API로 작동하며, 회사별 1년 이력 기능에는 아래 `DART_API_KEY` 환경변수가 필요하다.
 
 ## 구조
 
