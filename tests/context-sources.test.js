@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   buildSearchQueries,
   dedupe,
+  isPressReleaseItem,
   matchesContext,
   parseGdeltArticles,
   parseGoogleNewsRss,
@@ -54,4 +55,19 @@ test("회사명이나 제출자가 실제로 언급된 자료만 남긴다", () 
   const context = { corpName: "가비아", filerName: "디씨케이인베스트먼트" };
   assert.equal(matchesContext({ title: "가비아 공개매수 추진", snippet: "" }, context), true);
   assert.equal(matchesContext({ title: "다른 회사 신제품 출시", snippet: "" }, context), false);
+});
+
+test("일반 언론 기사는 보도자료로 분류하지 않는다", () => {
+  assert.equal(isPressReleaseItem({
+    provider: "google_news_rss",
+    category: "press_release",
+    source_name: "한국경제",
+    title: "지에프아이, 공급 계약 체결",
+  }), false);
+  assert.equal(isPressReleaseItem({
+    provider: "google_news_rss",
+    category: "press_release",
+    source_name: "대한민국 정책브리핑",
+    title: "금융위원회 보도자료",
+  }), true);
 });
