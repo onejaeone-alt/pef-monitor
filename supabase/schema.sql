@@ -218,3 +218,64 @@ alter table public.entity_relations enable row level security;
 alter table public.source_documents enable row level security;
 alter table public.fact_claims enable row level security;
 alter table public.related_sources enable row level security;
+
+-- 공시·뉴스·보도자료·출자공고를 같은 형식으로 쌓는 취재단서 수집함.
+create table if not exists public.reporting_leads (
+  signal_id text primary key,
+  collected_at timestamptz not null default now(),
+  occurred_at timestamptz,
+  source_type text not null,
+  source_name text,
+  title text not null,
+  source_url text not null,
+  target_id text,
+  target_name text,
+  target_category text,
+  event_type text not null default 'general',
+  key_numbers jsonb not null default '[]'::jsonb,
+  key_dates jsonb not null default '[]'::jsonb,
+  interpretation text,
+  checkpoints jsonb not null default '[]'::jsonb,
+  story_score smallint not null default 0 check (story_score between 0 and 100),
+  alert_grade text not null default 'P4' check (alert_grade in ('P1', 'P2', 'P3', 'P4')),
+  verification_status text not null default 'unverified',
+  story_candidate text not null default 'hold',
+  workflow_status text not null default 'new',
+  related_company_ids jsonb not null default '[]'::jsonb,
+  related_person_ids jsonb not null default '[]'::jsonb,
+  related_fund_ids jsonb not null default '[]'::jsonb,
+  related_deal_ids jsonb not null default '[]'::jsonb,
+  dedupe_key text not null,
+  raw_data jsonb not null default '{}'::jsonb,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now()
+);
+
+create index if not exists reporting_leads_priority_idx
+on public.reporting_leads (alert_grade, story_score desc, occurred_at desc);
+
+create index if not exists reporting_leads_target_idx
+on public.reporting_leads (target_id, occurred_at desc);
+
+create index if not exists reporting_leads_event_idx
+on public.reporting_leads (event_type, occurred_at desc);
+
+create unique index if not exists reporting_leads_dedupe_uidx
+on public.reporting_leads (dedupe_key);
+
+-- 매일·매주 브리핑 결과를 보관할 자리. 자동 생성 API는 다음 단계에서 이 표를 사용한다.
+create table if not exists public.briefings (
+  id uuid primary key default gen_random_uuid(),
+  briefing_type text not null check (briefing_type in ('daily', 'weekly')),
+  period_start date not null,
+  period_end date not null,
+  title text not null,
+  summary text,
+  lead_ids jsonb not null default '[]'::jsonb,
+  content jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  unique (briefing_type, period_start, period_end)
+);
+
+alter table public.reporting_leads enable row level security;
+alter table public.briefings enable row level security;

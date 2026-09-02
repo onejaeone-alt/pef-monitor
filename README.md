@@ -2,12 +2,15 @@
 
 DART 공시를 많이 보여주는 대신, IB 기자가 오늘 확인할 기사 후보를 고르는 모니터입니다.
 
+이제 공시 밖의 **VC·AC 뉴스와 공식 LP 출자공고**도 `취재단서 수집함`에 함께 표시합니다. 모든 단서는 같은 0~100점 기준과 P1~P4 알림등급으로 정리됩니다.
+
 ## 화면
 
 - **오늘 기사 후보**: 기사감 75점 이상 가운데 상위 5건
 - **취재 필요**: 기사감 55~74점과 5건을 넘은 후순위 후보
 - **참고·보관**: 정기보고서와 단서가 약한 공시
 - **내 감시목록**: 지정한 회사·운용사가 포착되면 화면 점수에 15점 가산
+- **취재단서 수집함**: A등급 핵심 감시대상 46개 가운데 VC·AC 뉴스, 한국성장금융·한국벤처투자·벤처캐피탈협회 출자공고
 
 공시마다 다음 정보를 표시합니다.
 
@@ -43,8 +46,11 @@ DART 공시를 많이 보여주는 대신, IB 기자가 오늘 확인할 기사 
 - `lib/story-engine.js` — 사건 분류, 잡음 제거, 기사감 점수, 취재 질문
 - `api/enriched.js` — DART 수집, Supabase 누적 이력, 회사별 1년 이력, 원문 추출
 - `api/context.js` — 공시별 국내뉴스·외신·보도자료 조회
+- `api/signals.js` — VC·AC 뉴스와 공식 출자공고를 통합 수집·점수화
 - `api/dart.js` — 상세 API 장애 시 사용하는 가벼운 폴백
 - `lib/context-sources.js` — 뉴스 피드·GDELT·네이버 결과 표준화와 중복 제거
+- `lib/reporting-signals.js` — 출자공고 파싱, 사건 분류, P1~P4 점수와 확인항목 생성
+- `lib/watch-config.js` — A등급 핵심 감시대상 46개와 공식 수집원
 - `lib/supabase.js` — 공시와 기사 후보 저장, 과거 공시 조회
 - `supabase/schema.sql` — 공시·기사 후보·기업·거래·관계·근거 사실 스키마
 - `tests/story-engine.test.js` — 핵심 분류 규칙 회귀 테스트
@@ -74,6 +80,8 @@ Supabase Dashboard의 SQL Editor에서 `supabase/schema.sql`을 실행합니다.
 - `entity_relations`: 매도자·매수자·GP·LP·주선사 관계
 - `source_documents`, `fact_claims`: 출처와 검증 가능한 사실
 - `related_sources`: 공시별 국내뉴스·외신·보도자료 제목·출처·링크
+- `reporting_leads`: 공시·뉴스·보도자료·출자공고를 같은 형식으로 누적하는 취재단서 수집함
+- `briefings`: 매일 아침·매주 브리핑을 저장할 표
 
 확장 스키마를 아직 실행하지 않아도 화면과 기존 `disclosures` 누적 저장은 작동합니다. 확장 테이블이 확인되면 API가 `article_candidates` 저장을 자동으로 시작합니다.
 
