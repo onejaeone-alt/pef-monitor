@@ -261,6 +261,7 @@
     <button data-d="5">5일</button>
     <button data-d="7" class="on">7일</button>
   </div>
+  <label class="auto"><input type="checkbox" id="hideReference" checked> 참고 공시 숨김</label>
   <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
   <button class="hbtn" id="refresh">새로고침</button>
 </div>
@@ -287,7 +288,7 @@
 <script>
 const API = "/api/enriched";
 const FALLBACK_API = "/api/dart";
-let DATA = [], days = 7, q = "", timer = null;
+let DATA = [], days = 7, q = "", timer = null, hideReference = true;
 const COMPANY_CACHE = new Map();
 
 const $ = s => document.querySelector(s);
@@ -311,6 +312,10 @@ const CLS = {Y:"유가",K:"코스닥",N:"코넥스",E:"기타법인"};
 const LEVEL_CLASS = {"핵심":"core","주시":"watch","참고":"note"};
 const CLIENT_RULES = [
   ["control_change","경영권·최대주주 변동","핵심",/최대주주.*변경|경영권|주식양수도|공개매수/,"경영권 이전이나 매각 절차와 연결될 수 있습니다. 거래 주체와 지분율, 종결 조건을 우선 확인할 공시입니다.",["M&A","지배구조"]],
+  ["related_party_funding","계열 내 자금 이동","핵심",/특수관계인.*자금차입|특수관계인.*자금대여|특수관계인.*채권매수|특수관계인.*채권매도/,"특수관계인 사이의 자금 이동입니다. 상대방과 금액, 금리, 만기를 보면 계열 내부의 자금 지원 방향과 재무 부담을 파악할 수 있습니다.",["내부거래","자금지원"]],
+  ["related_party_equity","계열사 지분 거래","핵심",/특수관계인.*주식.*취득|특수관계인.*주식.*매도|특수관계인.*주식.*처분/,"특수관계인 사이의 지분 이동입니다. 거래 상대방과 가격, 거래 뒤 지배구조 변화를 확인해야 합니다.",["내부거래","지분이동"]],
+  ["capital_reduction","감자·자본구조 변경","핵심",/감자결정|자본감소|무상감자|유상감자/,"자본금을 줄이는 결정입니다. 유상감자는 투자금 회수, 무상감자는 결손 정리 가능성이 있어 감자 방식과 대주주 수혜 여부를 확인해야 합니다.",["자본구조","회수가능성"]],
+  ["bond_retirement","메자닌 상환·소각","주시",/전환사채.*소각|신주인수권부사채.*소각|교환사채.*소각|자기사채.*소각|사채.*상환/,"기존 사채를 상환하거나 소각하는 공시입니다. 잠재 주식 물량과 투자자 회수, 차환 여부를 확인할 필요가 있습니다.",["메자닌","상환·소각"]],
   ["equity_acquisition","지분 취득·투자","핵심",/타법인.*주식.*취득|출자증권.*취득|주식.*취득결정|신주인수/,"신규 투자나 인수, 추가 지분 확보 신호일 수 있습니다. 취득 목적과 인수 후 지분율을 확인할 필요가 있습니다.",["투자","인수"]],
   ["equity_disposal","지분 매각·회수","핵심",/타법인.*주식.*처분|출자증권.*처분|주식.*처분결정/,"보유 지분 매각이나 투자금 회수와 연결될 수 있습니다. 처분 상대방과 잔여 지분을 확인할 공시입니다.",["매각","엑시트"]],
   ["merger_restructuring","합병·분할·사업재편","핵심",/합병|분할|영업양수|영업양도|주식교환|주식이전|회생절차|워크아웃/,"기업 구조나 자산 소유관계가 바뀌는 신호입니다. 거래 구조와 존속법인을 함께 살펴볼 필요가 있습니다.",["구조개편","M&A"]],
@@ -320,6 +325,7 @@ const CLIENT_RULES = [
   ["ownership_report","대량보유·주주 변동","주시",/대량보유|주식등의대량|임원.*주요주주|특정증권등소유|소유상황보고/,"PEF·VC의 신규 진입, 추가 매수 또는 회수 움직임을 찾을 수 있습니다. 직전 보고 대비 증감이 핵심입니다.",["지분변동","주주동향"]],
   ["performance_risk","실적·재무 위험","주시",/손상차손|매출액.*손익.*변동|자본잠식|감사의견|부도|횡령|배임/,"기업가치와 투자 회수 가능성에 영향을 줄 수 있습니다. 발생 규모와 현금흐름 영향을 확인할 필요가 있습니다.",["재무위험","밸류에이션"]],
   ["periodic","정기·기초 공시","참고",/사업보고서|반기보고서|분기보고서|감사보고서/,"재무상태와 주주·관계회사 정보를 갱신할 수 있는 기초 공시입니다. 누적 변화 확인에 유용합니다.",["기초자료"]],
+  ["group_disclosure","계열사·내부거래 현황","참고",/대규모기업집단현황공시|기업집단현황공시/,"계열 편입과 내부거래를 확인하는 정기 공시입니다. 신규 계열사, 출자·대여·채무보증, 임원 겸직 변화를 비교할 때 사용합니다.",["계열관계","내부거래"]],
 ];
 
 function clientAnalyze(item){
@@ -500,9 +506,10 @@ async function openCompanyDetail(button){
 
 function render(){
   const kw = q.trim();
-  const filtered = kw
+  let filtered = kw
     ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm} ${it.analysis?.event_label||""} ${(it.analysis?.signals||[]).join(" ")}`.includes(kw))
     : DATA;
+  if(hideReference) filtered = filtered.filter(it=>it.analysis?.importance!=="참고");
   const pef = filtered.filter(it=>it.category==="PEF");
   const vc  = filtered.filter(it=>it.category==="VC");
   $("#listPEF").innerHTML = sectionHTML(pef);
@@ -541,6 +548,7 @@ async function load(){
 
 $("#refresh").onclick = load;
 $("#q").addEventListener("input", e=>{ q = e.target.value; render(); });
+$("#hideReference").onchange = e=>{ hideReference=e.target.checked; render(); };
 document.addEventListener("click", e=>{
   const button = e.target.closest(".detail-btn");
   if(button && !button.disabled) openCompanyDetail(button);
