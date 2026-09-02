@@ -35,9 +35,15 @@ vercel --prod
 
 ```text
 DART_API_KEY=새로 발급한 OpenDART 인증키
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
 ```
 
-환경변수가 없으면 기존 `/api/dart`로 자동 전환된다. 이 경우 공시 의미와 현재 조회기간 내 연결회사 후보는 브라우저에서 분석하지만, 회사별 1년 이력 버튼은 비활성화된다.
+`SUPABASE_SECRET_KEY`는 Vercel 서버 함수에서만 읽으며 브라우저와 API 응답에 노출하지 않는다. 새 `sb_secret_` 키는 Supabase REST 요청의 `apikey` 헤더로만 전송한다.
+
+Supabase 초기 테이블은 `supabase/schema.sql`을 SQL Editor에서 실행해 만든다. `/api/enriched`가 공시를 가져올 때 `rcept_no`를 기준으로 `disclosures`에 upsert하므로 같은 공시는 중복되지 않고 분석 결과만 갱신된다. 수집 결과는 `monitor_runs`에 기록한다. Supabase 저장에 실패하더라도 기존 공시 화면은 계속 동작하며 API 응답의 `storage` 필드에서 저장 상태를 확인할 수 있다.
+
+`DART_API_KEY`가 없으면 기존 `/api/dart`로 자동 전환된다. 이 경우 공시 의미와 현재 조회기간 내 연결회사 후보는 브라우저에서 분석하지만, 회사별 1년 이력 버튼은 비활성화된다.
 
 공개 저장소의 과거 커밋에 포함된 기존 인증키는 폐기하고 새 인증키를 발급하는 것이 안전하다.
 
