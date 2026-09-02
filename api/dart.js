@@ -1,5 +1,5 @@
 // DART OpenAPI 프록시 — 최근 N일 공시 전체를 훑어 PEF 관련 건만 추려서 반환
-const DART_KEY = "214069cf8c415506e21625495fad9eed172b41d4";
+const DART_KEY = process.env.DART_API_KEY || "";
 const LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 
 // 매칭 키워드 (법인명 또는 보고서명, 단순 포함 매칭)
