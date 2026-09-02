@@ -1,0 +1,9 @@
+{
+  "name": "pef-monitor",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check api/dart.js && node --check api/enriched.js && node --check lib/story-engine.js && node --check lib/supabase.js"
+  }
+}

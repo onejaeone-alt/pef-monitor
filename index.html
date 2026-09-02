@@ -1,566 +1,183 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PEF·VC 공시 모니터</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23FFA6D5'/><stop offset='.5' stop-color='%23FF2D8A'/><stop offset='1' stop-color='%23FFD84D'/></linearGradient></defs><path d='M50 4 L61 36 L95 38 L68 59 L78 93 L50 73 L22 93 L32 59 L5 38 L39 36 Z' fill='url(%23g)' stroke='%237A1B4E' stroke-width='4' stroke-linejoin='round'/></svg>">
+<title>IB 취재 레이더</title>
+<link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#FFCFE3;          /* 진한 버블검 핑크 (참고 이미지 톤) */
-    --dot:#FFB9D6;
-    --card:#FFFFFF;
-    --ink:#3D0A29;
-    --outline:#B04A6E;     /* 테두리 장식 라인 (다크 로즈) */
-    --muted:#A65C86;
-    --pink:#FF2D8A;
-    --violet:#8A4DFF;
-    --hl:#FFF15C;
-    --shadow:#F59BC6;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
-    background:var(--bg);
-    background-image:radial-gradient(var(--dot) 2px, transparent 2px);
-    background-size:26px 26px;
-    color:var(--ink);font-size:15px;line-height:1.5;
-  }
-
-  /* ===== 테두리 장식 (고정, 클릭 통과) ===== */
-  .deco{position:fixed;pointer-events:none;z-index:0}
-  .crest{top:6px;left:50%;transform:translateX(-50%);width:min(380px,80vw)}
-  .bow-tl{top:74px;left:10px;width:64px}
-  .bow-tr{top:74px;right:10px;width:64px;transform:scaleX(-1)}
-  .ribbon-l{top:140px;bottom:150px;left:12px;width:40px}
-  .ribbon-r{top:140px;bottom:150px;right:12px;width:40px;transform:scaleX(-1)}
-  .ribbon-l svg,.ribbon-r svg{width:100%;height:100%}
-  .star-l{top:46%;left:14px;width:26px}
-  .star-r{top:46%;right:14px;width:26px}
-  .wings{bottom:0;left:50%;transform:translateX(-50%);width:min(460px,92vw);opacity:.95}
-  @media(max-width:1340px){
-    .ribbon-l,.ribbon-r,.star-l,.star-r,.bow-tl,.bow-tr{display:none}
-  }
-
-  /* ===== 헤더 ===== */
-  header{position:relative;z-index:1;padding:64px 16px 10px;text-align:center}
-  header h1{
-    font-family:Jua,"Pretendard Variable",sans-serif;font-weight:400;
-    font-size:clamp(26px,4.5vw,38px);letter-spacing:1px;display:inline-block;
-    background:linear-gradient(90deg,#FF7BBF 0%,#C89BFF 30%,#8FD0FF 55%,#FFE07A 80%,#FF9ECF 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    -webkit-text-stroke:1px rgba(122,27,78,.35);
-    filter:drop-shadow(2px 2px 0 rgba(255,255,255,.9));
-  }
-  .controls{
-    position:relative;z-index:1;display:flex;justify-content:center;align-items:center;
-    gap:12px;flex-wrap:wrap;padding:8px 16px 4px;
-  }
-  .range-toggle{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:#fff;box-shadow:2px 2px 0 var(--shadow)}
-  .range-toggle button{background:transparent;border:0;color:var(--muted);padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-  .range-toggle button.on{background:var(--pink);color:#fff}
-  .hbtn{
-    background:#fff;border:2px solid var(--ink);color:var(--pink);
-    border-radius:99px;padding:6px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
-    box-shadow:2px 2px 0 var(--ink);transition:transform .08s, box-shadow .08s;
-  }
-  .hbtn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
-  .hbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
-  .hbtn.spin::before{content:"⟳ ";display:inline-block;animation:rot 1s linear infinite}
-  @keyframes rot{to{transform:rotate(360deg)}}
-  label.auto{font-size:12.5px;display:flex;align-items:center;gap:6px;color:var(--ink);cursor:pointer;user-select:none;font-weight:700;accent-color:var(--pink)}
-
-  /* ===== 본문 ===== */
-  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:14px 60px 170px}
-  @media(max-width:1340px){.wrap{padding-left:16px;padding-right:16px}}
-  .meta{
-    font-size:12.5px;color:var(--muted);margin-bottom:16px;font-variant-numeric:tabular-nums;
-    display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  }
-  input.search{
-    border:2px solid var(--ink);border-radius:99px;padding:8px 15px;font-size:13px;font-family:inherit;
-    background:var(--card);width:280px;max-width:100%;box-shadow:2px 2px 0 var(--shadow);
-  }
-  input.search::placeholder{color:#C98BAC}
-  input.search:focus{outline:none;box-shadow:2px 2px 0 var(--pink)}
-
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
-  @media(max-width:900px){.cols{grid-template-columns:1fr}}
-
-  .col-head{
-    display:flex;align-items:center;gap:10px;padding:8px 14px;margin-bottom:12px;
-    border:2.5px solid var(--ink);border-radius:14px;color:#fff;
-    box-shadow:3px 3px 0 var(--ink);position:sticky;top:8px;z-index:5;
-  }
-  .col-head.pef{background:var(--pink)}
-  .col-head.vc{background:var(--violet)}
-  .col-head h2{font-family:Jua,sans-serif;font-size:16px;font-weight:400;letter-spacing:.4px}
-  .col-head .cnt{font-size:12px;font-weight:800;background:#fff;border-radius:99px;padding:2px 10px;font-variant-numeric:tabular-nums}
-  .col-head.pef .cnt{color:var(--pink)}
-  .col-head.vc .cnt{color:var(--violet)}
-  .col-head .spark{margin-left:auto;font-size:14px}
-
-  .dayhead{font-family:Jua,sans-serif;font-size:13px;color:var(--ink);padding:12px 4px 7px;letter-spacing:.3px}
-  .dayhead::before{content:"✦ ";color:var(--pink)}
-
-  .item{
-    display:block;background:var(--card);
-    border:2px solid var(--ink);border-radius:14px;
-    padding:12px 14px;margin-bottom:12px;color:inherit;position:relative;
-    box-shadow:3px 3px 0 var(--shadow);
-    transition:transform .1s, box-shadow .1s;
-  }
-  .item:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--pink)}
-  .item.today::after{
-    content:"✦ today";position:absolute;top:-10px;right:12px;color:var(--pink);
-    font-size:10px;font-weight:800;background:var(--hl);padding:1px 8px;border:2px solid var(--ink);border-radius:99px;
-  }
-  .row1{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:2px}
-  .badge{font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;letter-spacing:.3px;border:1.5px solid var(--ink)}
-  .b-mkt{background:#FFE9F3;color:var(--muted)}
-  .b-house{background:var(--hl);color:var(--ink)}
-  .corp{font-weight:800;font-size:14px;letter-spacing:-.2px}
-  .report{font-size:13.5px;color:#5C2143;margin-bottom:3px;word-break:keep-all}
-  mark{background:var(--hl);padding:0 3px;border-radius:4px;font-weight:700}
-  .row3{font-size:11.5px;color:var(--muted);display:flex;gap:10px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
-  .insight{
-    background:#FFF8FC;border:1.5px solid #E8A7C7;border-radius:11px;
-    margin-top:9px;padding:9px 10px;
-  }
-  .insight-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
-  .importance{font-size:10px;font-weight:900;border-radius:99px;padding:2px 7px;border:1.5px solid var(--ink)}
-  .importance.core{background:#FF477E;color:#fff}
-  .importance.watch{background:#FFE56D;color:var(--ink)}
-  .importance.note{background:#EFE8FF;color:#6840A8}
-  .event-label{font-size:12px;font-weight:900;color:var(--ink)}
-  .stage{font-size:10px;font-weight:800;color:var(--muted);margin-left:auto}
-  .why{font-size:12px;color:#5C2143;line-height:1.55;word-break:keep-all}
-  .signal-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
-  .signal{font-size:10px;font-weight:750;color:#7D3159;background:#FFEAF4;border-radius:99px;padding:2px 7px}
-  .connection-preview{margin-top:8px;padding-top:7px;border-top:1px dashed #E3A4C2;font-size:11px;color:#7D3159}
-  .connection-preview strong{color:var(--ink)}
-  .item-actions{display:flex;gap:7px;align-items:center;margin-top:9px;flex-wrap:wrap}
-  .detail-btn,.dart-link{
-    border:1.5px solid var(--ink);border-radius:99px;padding:5px 10px;font-size:11px;
-    font-weight:850;font-family:inherit;cursor:pointer;text-decoration:none;
-  }
-  .detail-btn{background:var(--ink);color:#fff}
-  .detail-btn[disabled]{opacity:.45;cursor:not-allowed}
-  .dart-link{background:#fff;color:var(--pink)}
-  .detail-panel{
-    margin-top:10px;border-top:2px solid var(--ink);padding-top:11px;
-    animation:openPanel .15s ease-out;
-  }
-  @keyframes openPanel{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-  .detail-title{font-family:Jua,sans-serif;font-size:14px;font-weight:400;margin:8px 0 7px;color:var(--ink)}
-  .profile-box{background:#FFF7D8;border:1.5px solid #C99A2E;border-radius:10px;padding:8px 10px;font-size:11px;color:#633F15}
-  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
-  @media(max-width:560px){.profile-grid{grid-template-columns:1fr}}
-  .relation-list{display:flex;gap:6px;flex-wrap:wrap}
-  .relation-chip{background:#F3ECFF;border:1px solid #B69BE3;border-radius:9px;padding:6px 8px;font-size:10.5px;color:#5B3A84}
-  .relation-chip b{display:block;color:#3D0A29;font-size:11px}
-  .confidence{font-size:9px;border-radius:99px;background:#fff;padding:1px 5px;margin-left:3px}
-  .timeline{border-left:2px solid #E5A0C2;margin-left:6px;padding-left:13px}
-  .timeline-item{position:relative;margin-bottom:9px;padding:6px 8px;background:#fff;border:1px solid #E8C4D6;border-radius:8px}
-  .timeline-item::before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--pink);left:-18px;top:11px;border:2px solid #fff}
-  .timeline-item.same{border-color:var(--pink);background:#FFF5FA}
-  .timeline-date{font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-  .timeline-name{display:block;color:#4E1636;text-decoration:none;font-size:11px;font-weight:750;line-height:1.4;margin-top:1px}
-  .same-tag{font-size:9px;background:var(--pink);color:#fff;border-radius:99px;padding:1px 5px;margin-left:4px}
-  .detail-note{font-size:10px;color:var(--muted);margin-top:7px}
-  .loading{padding:14px;text-align:center;font-size:11px;color:var(--muted)}
-  .empty{
-    text-align:center;color:var(--muted);padding:44px 0;font-size:13.5px;
-    background:rgba(255,255,255,.65);border:2px dashed var(--pink);border-radius:14px;
-  }
-  .empty::before{content:"🎀";display:block;font-size:22px;margin-bottom:6px}
-  .err{background:#fff;border:2px solid #E0245E;color:#B01648;border-radius:14px;padding:14px;font-size:13.5px;box-shadow:3px 3px 0 #F8B8CC}
+:root{
+  --bg:#fff8fb;--paper:#fff;--ink:#211826;--muted:#776b76;--line:#eadde5;
+  --pink:#e84691;--pink-soft:#fff0f7;--yellow:#ffe36e;--purple:#7654d8;
+  --green:#168d69;--orange:#d87820;--red:#cf3f55;--shadow:0 12px 34px rgba(76,31,58,.08);
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;font-size:15px;line-height:1.55}
+button,input{font:inherit}button{cursor:pointer}.shell{max-width:1180px;margin:0 auto;padding:28px 22px 90px}
+.masthead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}
+.brand{display:flex;gap:13px;align-items:center}.brand-star{width:46px;height:46px;display:grid;place-items:center;background:var(--yellow);border:2px solid var(--ink);border-radius:15px;box-shadow:3px 3px 0 var(--ink);font-size:24px}
+h1{font-size:27px;letter-spacing:-.8px;margin:0}.subtitle{font-size:13px;color:var(--muted);margin-top:3px}
+.refresh{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:12px;padding:10px 15px;font-weight:800}.refresh.spin::before{content:"↻ ";display:inline-block;animation:spin .9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.toolbar{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px}
+.range{display:flex;padding:3px;border:1px solid var(--line);border-radius:11px;background:#faf7f9}.range button,.filter button{border:0;background:transparent;color:var(--muted);border-radius:8px;padding:7px 11px;font-size:12px;font-weight:800}.range button.on,.filter button.on{background:var(--ink);color:#fff}
+.filter{display:flex;gap:3px}.search{margin-left:auto;width:270px;max-width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 12px}.search:focus{outline:2px solid #f5b8d4;border-color:var(--pink)}
+.auto{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);font-weight:700;accent-color:var(--pink)}
+.meta{font-size:12px;color:var(--muted);margin:8px 2px 18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:17px}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px 16px}.stat strong{font-size:25px;display:block;line-height:1.15}.stat span{font-size:12px;color:var(--muted)}.stat.hot{background:var(--ink);color:#fff}.stat.hot span{color:#ded4dc}
+.watchbox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-bottom:26px}.watch-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}.watch-head b{font-size:13px}.watch-head span{font-size:11px;color:var(--muted)}
+.watch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.watch-chip{border:1px solid #e7bfd2;background:var(--pink-soft);color:#7d2851;border-radius:99px;padding:4px 8px;font-size:11px;font-weight:750}.watch-chip button{border:0;background:none;color:#aa6d89;padding:0 0 0 4px}.watch-input{border:1px dashed #d5bdc9;border-radius:99px;padding:5px 10px;width:150px;font-size:11px}.watch-add{border:0;background:var(--pink);color:#fff;border-radius:99px;padding:5px 10px;font-size:11px;font-weight:800}
+.section{margin-top:30px}.section-head{display:flex;align-items:end;gap:10px;margin-bottom:12px}.section-head h2{font-size:20px;letter-spacing:-.5px;margin:0}.section-head p{margin:0;font-size:12px;color:var(--muted)}.count{margin-left:auto;font-weight:850;font-size:12px;background:#f2edf0;border-radius:99px;padding:4px 10px}
+.cards{display:grid;gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}.card.story{border:2px solid var(--ink)}.card.story::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--pink)}
+.card-top{display:flex;align-items:flex-start;gap:12px}.card-main{min-width:0;flex:1}.eyebrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.badge{font-size:10px;font-weight:850;border-radius:99px;padding:3px 7px;background:#f2edf0;color:#5f5360}.badge.pef{background:#ffe5f1;color:#a52762}.badge.vc{background:#eee8ff;color:#5d3fb0}.badge.ib{background:#e7f5f0;color:#14775a}.badge.stage{background:#fff5cf;color:#755d00}.watch-hit{font-size:10px;color:#a52762;font-weight:800}
+.headline{font-size:18px;line-height:1.35;letter-spacing:-.35px;margin:0 0 4px}.source-title{font-size:12px;color:var(--muted);word-break:keep-all}.score{flex:0 0 58px;width:58px;height:58px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:var(--yellow);font-size:18px;font-weight:900;line-height:1}.score small{display:block;font-size:8px;text-align:center;margin-top:2px;font-weight:750}
+.fact-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.fact{background:#faf7f9;border:1px solid #f0e6eb;border-radius:12px;padding:10px 11px}.fact b{display:block;font-size:10px;color:#8b7482;margin-bottom:3px}.fact span{font-size:12px;line-height:1.45;word-break:keep-all}.fact.change{background:#fff9de;border-color:#eee0a0}.fact.why{background:#fff2f8;border-color:#f3ccde}
+.numbers,.signals{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}.number{background:#e9f6f2;color:#156c55;border-radius:7px;padding:3px 7px;font-size:11px;font-weight:800}.signal{background:#f3eff2;color:#6c5d67;border-radius:7px;padding:3px 7px;font-size:10px;font-weight:750}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.btn,.dart-link{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:7px 10px;font-size:11px;font-weight:800;text-decoration:none}.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.deep{background:var(--pink-soft);color:#9d285d;border-color:#efbfd5}.btn[disabled]{opacity:.45;cursor:not-allowed}
+.memo{margin-top:12px;border:1px solid var(--line);border-radius:13px;background:#fcfafb}.memo summary{padding:10px 12px;font-size:11px;font-weight:850;cursor:pointer}.memo-body{border-top:1px solid var(--line);padding:13px;display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:14px}.memo h4,.detail h4{font-size:11px;margin:0 0 6px;color:#816f7a}.memo ul,.memo ol{margin:0;padding-left:18px;font-size:11px}.memo li{margin:3px 0}.breakdown{display:flex;gap:5px;flex-wrap:wrap}.breakdown span{font-size:9px;background:#eee8ec;border-radius:6px;padding:3px 5px}
+.detail{margin-top:10px;padding:13px;border-radius:13px;background:#f8f4f6;border:1px solid var(--line);font-size:11px}.detail[hidden]{display:none}.profile{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}.profile div{background:#fff;border:1px solid var(--line);padding:6px;border-radius:7px}.timeline{display:grid;gap:5px}.timeline a{display:block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px;color:var(--ink);text-decoration:none}.timeline small{color:var(--muted)}.relation{display:inline-block;background:#eee8ff;color:#5c459a;padding:4px 7px;border-radius:7px;margin:0 4px 4px 0}.excerpt{background:#fff;border-left:3px solid var(--pink);padding:8px 10px;margin:6px 0;border-radius:0 8px 8px 0;word-break:keep-all}.notice{font-size:10px;color:var(--muted);margin-top:8px}
+.compact{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);font-size:11px}.compact:last-child{border-bottom:0}.compact b{font-size:12px}.compact a{color:var(--pink);font-weight:800;text-decoration:none}.archive-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:0 15px}.archive-box>summary{cursor:pointer;padding:14px 0;font-weight:850;font-size:13px}.empty{background:#fff;border:1px dashed #d7c4cf;border-radius:16px;padding:35px;text-align:center;color:var(--muted);font-size:12px}.error{background:#fff0f2;border:1px solid #f0b9c1;color:#9b2940;border-radius:14px;padding:16px}.loading{color:var(--muted);padding:10px 0}.footer{margin-top:40px;text-align:center;color:var(--muted);font-size:10px}
+@media(max-width:800px){.shell{padding:20px 13px 70px}.masthead{align-items:center}h1{font-size:22px}.subtitle{display:none}.toolbar{align-items:stretch}.search{order:5;margin-left:0;width:100%}.stats{grid-template-columns:1fr 1fr}.fact-grid{grid-template-columns:1fr}.memo-body{grid-template-columns:1fr}.profile{grid-template-columns:1fr}.compact{grid-template-columns:60px 1fr}.compact a{grid-column:2}.score{width:50px;height:50px;flex-basis:50px}.headline{font-size:16px}}
 </style>
 </head>
 <body>
+<main class="shell">
+  <header class="masthead">
+    <div class="brand"><div class="brand-star">✦</div><div><h1>IB 취재 레이더</h1><div class="subtitle">공시를 나열하지 않고 오늘 확인할 기사 후보를 고릅니다.</div></div></div>
+    <button class="refresh" id="refresh">새로고침</button>
+  </header>
 
-<!-- ===== 테두리 장식 ===== -->
-<!-- 상단 골드 문장(紋章) -->
-<svg class="deco crest" viewBox="0 0 380 64" fill="none">
-  <path d="M190 10 C160 -2 120 2 108 18 C96 34 118 44 138 38 C120 52 88 48 70 36" stroke="#C9962B" stroke-width="5" stroke-linecap="round" fill="none"/>
-  <path d="M190 10 C220 -2 260 2 272 18 C284 34 262 44 242 38 C260 52 292 48 310 36" stroke="#C9962B" stroke-width="5" stroke-linecap="round" fill="none"/>
-  <path d="M190 10 C160 -2 120 2 108 18 C96 34 118 44 138 38 C120 52 88 48 70 36" stroke="#F7E27A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <path d="M190 10 C220 -2 260 2 272 18 C284 34 262 44 242 38 C260 52 292 48 310 36" stroke="#F7E27A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <path d="M190 6 C182 16 176 22 176 32 C176 42 183 48 190 54 C197 48 204 42 204 32 C204 22 198 16 190 6 Z" fill="#FFFDF2" stroke="#B04A6E" stroke-width="2.5"/>
-  <path d="M190 16 L190 44" stroke="#B04A6E" stroke-width="2"/>
-  <path d="M190 46 L184 56 L190 62 L196 56 Z" fill="#F7E27A" stroke="#C9962B" stroke-width="2"/>
-  <circle cx="120" cy="46" r="3.5" fill="#F7E27A" stroke="#C9962B" stroke-width="1.5"/>
-  <circle cx="260" cy="46" r="3.5" fill="#F7E27A" stroke="#C9962B" stroke-width="1.5"/>
-</svg>
-
-<!-- 좌우 상단 리본 매듭 -->
-<svg class="deco bow-tl" viewBox="0 0 64 44" fill="none">
-  <path d="M30 22 C18 8 6 6 4 14 C2 22 14 30 28 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M34 22 C46 8 58 6 60 14 C62 22 50 30 36 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M26 26 L20 42 L28 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M38 26 L44 42 L36 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="32" cy="23" r="6" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2.5"/>
-</svg>
-<svg class="deco bow-tr" viewBox="0 0 64 44" fill="none">
-  <path d="M30 22 C18 8 6 6 4 14 C2 22 14 30 28 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M34 22 C46 8 58 6 60 14 C62 22 50 30 36 26 Z" fill="#FF8FC0" stroke="#B04A6E" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M26 26 L20 42 L28 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M38 26 L44 42 L36 38 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="32" cy="23" r="6" fill="#FF6FAE" stroke="#B04A6E" stroke-width="2.5"/>
-</svg>
-
-<!-- 좌우 흘러내리는 삼색 리본 -->
-<div class="deco ribbon-l"><svg viewBox="0 0 40 800" preserveAspectRatio="none" fill="none">
-  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#B04A6E" stroke-width="13" stroke-linecap="round"/>
-  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#FFFAE8" stroke-width="9" stroke-linecap="round"/>
-  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#AEDCFF" stroke-width="7" stroke-linecap="round"/>
-  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#F7E27A" stroke-width="7" stroke-linecap="round"/>
-</svg></div>
-<div class="deco ribbon-r"><svg viewBox="0 0 40 800" preserveAspectRatio="none" fill="none">
-  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#B04A6E" stroke-width="13" stroke-linecap="round"/>
-  <path d="M14 0 C30 90 2 170 18 260 C34 350 4 430 20 520 C36 610 6 700 20 800" stroke="#FFFAE8" stroke-width="9" stroke-linecap="round"/>
-  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-  <path d="M24 40 C10 130 34 210 16 300 C0 390 30 470 14 560 C0 650 28 730 16 800" stroke="#AEDCFF" stroke-width="7" stroke-linecap="round"/>
-  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#B04A6E" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-  <path d="M8 120 C26 210 4 290 22 380 C38 470 8 550 24 640 C36 710 12 760 22 800" stroke="#F7E27A" stroke-width="7" stroke-linecap="round"/>
-</svg></div>
-
-<!-- 좌우 중간 별 -->
-<svg class="deco star-l" viewBox="0 0 26 26"><path d="M13 1 L16 9 L25 10 L18 15 L21 24 L13 19 L5 24 L8 15 L1 10 L10 9 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="1.8" stroke-linejoin="round"/></svg>
-<svg class="deco star-r" viewBox="0 0 26 26"><path d="M13 1 L16 9 L25 10 L18 15 L21 24 L13 19 L5 24 L8 15 L1 10 L10 9 Z" fill="#FF6FAE" stroke="#B04A6E" stroke-width="1.8" stroke-linejoin="round"/></svg>
-
-<!-- 하단 날개 + 골드 스타 -->
-<svg class="deco wings" viewBox="0 0 460 120" fill="none">
-  <g stroke="#C4527E" stroke-width="2.5" stroke-linejoin="round">
-    <path d="M212 108 C170 118 96 116 48 88 C20 72 10 52 16 44 C40 56 66 58 88 54 C60 46 40 32 36 20 C64 30 96 32 120 30 C100 20 88 8 86 2 C130 10 178 34 200 60 C212 74 216 94 212 108 Z" fill="#FFB3D2"/>
-    <path d="M212 108 C186 112 140 108 112 92 C132 92 154 86 168 76 C148 76 130 70 122 62 C144 62 168 54 182 44 C196 58 210 84 212 108 Z" fill="#FFD9E9"/>
-    <path d="M212 108 C200 108 184 104 176 98 C190 96 202 88 208 78 C212 88 214 100 212 108 Z" fill="#FFF3F8"/>
-  </g>
-  <g stroke="#C4527E" stroke-width="2.5" stroke-linejoin="round">
-    <path d="M248 108 C290 118 364 116 412 88 C440 72 450 52 444 44 C420 56 394 58 372 54 C400 46 420 32 424 20 C396 30 364 32 340 30 C360 20 372 8 374 2 C330 10 282 34 260 60 C248 74 244 94 248 108 Z" fill="#FFB3D2"/>
-    <path d="M248 108 C274 112 320 108 348 92 C328 92 306 86 292 76 C312 76 330 70 338 62 C316 62 292 54 278 44 C264 58 250 84 248 108 Z" fill="#FFD9E9"/>
-    <path d="M248 108 C260 108 276 104 284 98 C270 96 258 88 252 78 C248 88 246 100 248 108 Z" fill="#FFF3F8"/>
-  </g>
-  <path d="M230 28 L238 62 L262 70 L238 78 L230 112 L222 78 L198 70 L222 62 Z" fill="#FFC93C" stroke="#C9962B" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M230 46 L234 66 L248 70 L234 74 L230 94 L226 74 L212 70 L226 66 Z" fill="#FFF3B8"/>
-</svg>
-
-<!-- ===== 헤더 ===== -->
-<header>
-  <h1>PEF·VC 공시 모니터</h1>
-</header>
-<div class="controls">
-  <div class="range-toggle" id="rangeToggle">
-    <button data-d="3">3일</button>
-    <button data-d="5">5일</button>
-    <button data-d="7" class="on">7일</button>
+  <div class="toolbar">
+    <div class="range" id="range"><button data-days="1">오늘</button><button data-days="3">3일</button><button data-days="7" class="on">7일</button></div>
+    <div class="filter" id="category"><button data-category="ALL" class="on">전체</button><button data-category="PEF">PEF</button><button data-category="VC">VC</button><button data-category="IB">기타 IB</button></div>
+    <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
+    <input class="search" id="search" placeholder="회사·운용사·사건 검색">
   </div>
-  <label class="auto"><input type="checkbox" id="hideReference" checked> 참고 공시 숨김</label>
-  <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
-  <button class="hbtn" id="refresh">새로고침</button>
-</div>
+  <div class="meta" id="meta">공시를 불러오는 중입니다.</div>
 
-<div class="wrap">
-  <div class="meta">
-    <span id="metaText">불러오는 중…</span>
-    <span style="flex:1"></span>
-    <input class="search" id="q" placeholder="🔍 목록 내 검색 (선택)">
-  </div>
+  <section class="stats">
+    <div class="stat hot"><strong id="statStory">-</strong><span>오늘 기사 후보</span></div>
+    <div class="stat"><strong id="statVerify">-</strong><span>취재 필요</span></div>
+    <div class="stat"><strong id="statArchive">-</strong><span>참고·보관</span></div>
+    <div class="stat"><strong id="statScanned">-</strong><span>DART 스캔</span></div>
+  </section>
 
-  <div class="cols">
-    <div>
-      <div class="col-head pef"><h2>PEF · 사모</h2><span class="cnt" id="cntPEF"></span><span class="spark">✦</span></div>
-      <div id="listPEF"></div>
-    </div>
-    <div>
-      <div class="col-head vc"><h2>VC · 창투 · 신기사</h2><span class="cnt" id="cntVC"></span><span class="spark">✦</span></div>
-      <div id="listVC"></div>
-    </div>
-  </div>
-</div>
+  <section class="watchbox">
+    <div class="watch-head"><b>내 감시목록</b><span>이름이 잡히면 기사감 점수에 15점을 더합니다.</span></div>
+    <div class="watch-row" id="watchRow"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>오늘 기사 후보</h2><p>바로 원문을 열고 취재 전화를 시작할 만한 상위 5건</p></div><span class="count" id="storyCount"></span></div>
+    <div class="cards" id="storyList"><div class="loading">분석 중…</div></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>취재 필요</h2><p>신호는 있지만 숫자·상대방·일정을 더 확인해야 하는 건</p></div><span class="count" id="verifyCount"></span></div>
+    <div class="cards" id="verifyList"><div class="loading">분석 중…</div></div>
+  </section>
+
+  <section class="section">
+    <details class="archive-box"><summary>참고·보관 <span id="archiveCount"></span></summary><div id="archiveList"></div></details>
+  </section>
+  <div class="footer">기사감 점수는 취재 우선순위를 정하는 보조지표입니다. 금액과 조건은 DART 원문 및 당사자 확인을 거쳐야 합니다.</div>
+</main>
 
 <script>
-const API = "/api/enriched";
-const FALLBACK_API = "/api/dart";
-let DATA = [], days = 7, q = "", timer = null, hideReference = true;
-const COMPANY_CACHE = new Map();
+const API="/api/enriched", FALLBACK_API="/api/dart";
+const WATCH_KEY="pef_monitor_watchlist_v1", LEGACY_WATCH_KEY="pef_monitor_favorites_v2";
+const DEFAULT_WATCH=["MBK","한앤컴퍼니","IMM","VIG","스틱","글랜우드","JKL","어피니티","센트로이드","얼라인파트너스"];
+const COMPANY_CACHE=new Map(), DOCUMENT_CACHE=new Map();
+let DATA=[], days=7, query="", category="ALL", timer=null, scanned=0, watchlist=loadWatchlist();
+const $=selector=>document.querySelector(selector);
+const esc=value=>String(value??"").replace(/[&<>\"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[char]));
+const fmtDate=value=>/^\d{8}$/.test(String(value||""))?`${value.slice(0,4)}.${value.slice(4,6)}.${value.slice(6,8)}`:String(value||"");
+const bucketFor=score=>score>=75?"story":score>=55?"verify":"archive";
 
-const $ = s => document.querySelector(s);
-const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-function highlight(text, hits){
-  let out = esc(text);
-  const uniq = [...new Set(hits)].sort((a,b)=>b.length-a.length);
-  for(const k of uniq) out = out.split(esc(k)).join(`<mark>${esc(k)}</mark>`);
-  return out;
-}
-function fmtDate(d){ return `${d.slice(0,4)}.${d.slice(4,6)}.${d.slice(6,8)}`; }
-function weekday(d){
-  const w = ["일","월","화","수","목","금","토"];
-  return w[new Date(`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`).getDay()];
-}
-function todayKST(){
-  return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10).replace(/-/g,"");
-}
-const CLS = {Y:"유가",K:"코스닥",N:"코넥스",E:"기타법인"};
-const LEVEL_CLASS = {"핵심":"core","주시":"watch","참고":"note"};
-const CLIENT_RULES = [
-  ["control_change","경영권·최대주주 변동","핵심",/최대주주.*변경|경영권|주식양수도|공개매수/,"경영권 이전이나 매각 절차와 연결될 수 있습니다. 거래 주체와 지분율, 종결 조건을 우선 확인할 공시입니다.",["M&A","지배구조"]],
-  ["related_party_funding","계열 내 자금 이동","핵심",/특수관계인.*자금차입|특수관계인.*자금대여|특수관계인.*채권매수|특수관계인.*채권매도/,"특수관계인 사이의 자금 이동입니다. 상대방과 금액, 금리, 만기를 보면 계열 내부의 자금 지원 방향과 재무 부담을 파악할 수 있습니다.",["내부거래","자금지원"]],
-  ["related_party_equity","계열사 지분 거래","핵심",/특수관계인.*주식.*취득|특수관계인.*주식.*매도|특수관계인.*주식.*처분/,"특수관계인 사이의 지분 이동입니다. 거래 상대방과 가격, 거래 뒤 지배구조 변화를 확인해야 합니다.",["내부거래","지분이동"]],
-  ["capital_reduction","감자·자본구조 변경","핵심",/감자결정|자본감소|무상감자|유상감자/,"자본금을 줄이는 결정입니다. 유상감자는 투자금 회수, 무상감자는 결손 정리 가능성이 있어 감자 방식과 대주주 수혜 여부를 확인해야 합니다.",["자본구조","회수가능성"]],
-  ["bond_retirement","메자닌 상환·소각","주시",/전환사채.*소각|신주인수권부사채.*소각|교환사채.*소각|자기사채.*소각|사채.*상환/,"기존 사채를 상환하거나 소각하는 공시입니다. 잠재 주식 물량과 투자자 회수, 차환 여부를 확인할 필요가 있습니다.",["메자닌","상환·소각"]],
-  ["equity_acquisition","지분 취득·투자","핵심",/타법인.*주식.*취득|출자증권.*취득|주식.*취득결정|신주인수/,"신규 투자나 인수, 추가 지분 확보 신호일 수 있습니다. 취득 목적과 인수 후 지분율을 확인할 필요가 있습니다.",["투자","인수"]],
-  ["equity_disposal","지분 매각·회수","핵심",/타법인.*주식.*처분|출자증권.*처분|주식.*처분결정/,"보유 지분 매각이나 투자금 회수와 연결될 수 있습니다. 처분 상대방과 잔여 지분을 확인할 공시입니다.",["매각","엑시트"]],
-  ["merger_restructuring","합병·분할·사업재편","핵심",/합병|분할|영업양수|영업양도|주식교환|주식이전|회생절차|워크아웃/,"기업 구조나 자산 소유관계가 바뀌는 신호입니다. 거래 구조와 존속법인을 함께 살펴볼 필요가 있습니다.",["구조개편","M&A"]],
-  ["capital_raise","유상증자·자본 확충","주시",/유상증자|제3자배정|신주발행|증자결정/,"자금 유입과 주주 구성 변화가 동시에 발생할 수 있습니다. 배정 대상과 자금 사용처가 핵심입니다.",["자금조달","지분희석"]],
-  ["mezzanine","메자닌·사채 조달","주시",/전환사채|신주인수권부사채|교환사채|사모사채|사채권.*발행/,"메자닌 또는 사채를 통한 자금조달 신호입니다. 투자자와 전환 조건, 자금 사용처를 확인할 공시입니다.",["자금조달","메자닌"]],
-  ["financing_support","담보·보증·차입","주시",/담보제공|채무보증|금전대여|차입결정|채무인수/,"인수금융이나 계열사 지원, 재무 부담 변화와 연결될 수 있습니다. 수혜자와 자금 목적을 확인해야 합니다.",["인수금융","재무부담"]],
-  ["ownership_report","대량보유·주주 변동","주시",/대량보유|주식등의대량|임원.*주요주주|특정증권등소유|소유상황보고/,"PEF·VC의 신규 진입, 추가 매수 또는 회수 움직임을 찾을 수 있습니다. 직전 보고 대비 증감이 핵심입니다.",["지분변동","주주동향"]],
-  ["performance_risk","실적·재무 위험","주시",/손상차손|매출액.*손익.*변동|자본잠식|감사의견|부도|횡령|배임/,"기업가치와 투자 회수 가능성에 영향을 줄 수 있습니다. 발생 규모와 현금흐름 영향을 확인할 필요가 있습니다.",["재무위험","밸류에이션"]],
-  ["periodic","정기·기초 공시","참고",/사업보고서|반기보고서|분기보고서|감사보고서/,"재무상태와 주주·관계회사 정보를 갱신할 수 있는 기초 공시입니다. 누적 변화 확인에 유용합니다.",["기초자료"]],
-  ["group_disclosure","계열사·내부거래 현황","참고",/대규모기업집단현황공시|기업집단현황공시/,"계열 편입과 내부거래를 확인하는 정기 공시입니다. 신규 계열사, 출자·대여·채무보증, 임원 겸직 변화를 비교할 때 사용합니다.",["계열관계","내부거래"]],
-];
-
-function clientAnalyze(item){
-  const title=item.report_nm||"";
-  const rule=CLIENT_RULES.find(x=>x[3].test(title)) || ["general","PEF·VC 관련 공시","참고",null,"PEF·VC 관련 명칭이 포착됐습니다. 실제 거래 연관성은 원문과 제출자를 함께 확인해야 합니다.",["원문확인"]];
-  const correction=/정정/.test(title);
-  let stage="공시";
-  if(correction) stage="조건·내용 변경";
-  else if(/완료|결과|종료|해제|철회/.test(title)) stage="완료·결과";
-  else if(/계약|약정/.test(title)) stage="계약·약정";
-  else if(/결정|승인/.test(title)) stage="의사결정";
-  return {event_id:rule[0],event_label:rule[1],importance:rule[2],why:(correction?"앞선 공시의 변경 전후 내용을 비교해야 합니다. ":"")+rule[4],signals:[...rule[5],...(correction?["정정공시"]:[])],stage};
-}
-
-function clientExternalFiler(item){
-  const clean=s=>(s||"").replace(/주식회사|유한회사|유한책임회사|\(주\)|㈜|\s+/g,"").toLowerCase();
-  const filer=clean(item.flr_nm),corp=clean(item.corp_name);
-  return filer&&corp&&filer.length>1&&filer!==corp&&!filer.includes(corp)&&!corp.includes(filer);
-}
-
-function enrichClientItems(items){
-  const filerMap=new Map();
-  for(const item of items){
-    if(!clientExternalFiler(item)) continue;
-    const key=item.flr_nm.replace(/\s+/g,"").toLowerCase();
-    if(!filerMap.has(key)) filerMap.set(key,{name:item.flr_nm,companies:new Set()});
-    filerMap.get(key).companies.add(item.corp_name);
+function loadWatchlist(){
+  for(const key of [WATCH_KEY,LEGACY_WATCH_KEY]){
+    try{const value=JSON.parse(localStorage.getItem(key)||"null");if(Array.isArray(value)&&value.length)return [...new Set(value)];}catch(_){ }
   }
-  return items.map(item=>{
-    const connections=[...(item.connections||[])];
-    if(!connections.length&&clientExternalFiler(item)){
-      const linked=filerMap.get(item.flr_nm.replace(/\s+/g,"").toLowerCase());
-      connections.push({name:item.flr_nm,relation:"이 회사 관련 공시 제출자",confidence:"공시확인"});
-      for(const company of linked?.companies||[]){
-        if(company!==item.corp_name) connections.push({name:company,relation:`동일 제출자(${item.flr_nm})가 함께 공시한 회사`,confidence:"연결후보"});
-      }
-    }
-    return {...item,analysis:item.analysis||clientAnalyze(item),connections:connections.slice(0,6)};
-  });
+  return [...DEFAULT_WATCH];
 }
+function saveWatchlist(){localStorage.setItem(WATCH_KEY,JSON.stringify(watchlist));renderWatchlist();render();}
+function renderWatchlist(){
+  $("#watchRow").innerHTML=watchlist.map((name,index)=>`<span class="watch-chip">${esc(name)}<button data-remove-watch="${index}" aria-label="삭제">×</button></span>`).join("")+`<input class="watch-input" id="watchInput" placeholder="회사·하우스 추가"><button class="watch-add" id="watchAdd">추가</button>`;
+}
+function addWatch(){const input=$("#watchInput"),value=input?.value.trim();if(!value)return;if(!watchlist.includes(value))watchlist.push(value);saveWatchlist();}
 
-function connectionPreview(connections){
-  if(!connections || !connections.length) return "";
-  const confirmed = connections.filter(x=>x.confidence==="공시확인");
-  const candidates = connections.filter(x=>x.confidence==="연결후보");
-  const parts = [];
-  if(confirmed.length) parts.push(`<strong>공시 연결</strong> ${confirmed.map(x=>esc(x.name)).join(", ")}`);
-  if(candidates.length) parts.push(`<strong>같은 제출자 연결 후보</strong> ${candidates.map(x=>esc(x.name)).join(", ")}`);
-  return `<div class="connection-preview">${parts.join(" · ")}</div>`;
+function normalizedAnalysis(item){
+  const source=item.analysis||{};
+  const fallbackScore=source.importance==="핵심"?75:source.importance==="주시"?55:30;
+  return {event_id:"general",event_label:"관련 공시",stage:"신규 공시",new_fact:`${item.corp_name}, 관련 공시`,change_summary:"이전 공시와 비교가 필요합니다.",why:source.why||"원문 확인이 필요합니다.",next_check:"원문에서 핵심 조건 확인",call_targets:[`${item.corp_name} IR·재무 담당자`],questions:["직전 공시보다 달라진 내용은 무엇인가"],angles:["스트레이트: 새로 확인된 사실과 핵심 숫자"],signals:[],score:fallbackScore,bucket:bucketFor(fallbackScore),score_breakdown:{},key_numbers:[],...source};
 }
+function decorate(item){
+  const base=normalizedAnalysis(item),hay=`${item.corp_name} ${item.flr_nm} ${item.report_nm}`.toLowerCase();
+  const hit=watchlist.find(name=>hay.includes(name.toLowerCase()));
+  const score=Math.min(100,Number(base.score||0)+(hit?15:0));
+  return {...item,analysis:{...base,score,bucket:bucketFor(score),watchlist_hit:hit}};
+}
+function filteredItems(){
+  const term=query.trim().toLowerCase();
+  return DATA.map(decorate).filter(item=>{
+    if(category!=="ALL"&&item.category!==category)return false;
+    if(!term)return true;
+    const a=item.analysis;return `${item.corp_name} ${item.flr_nm} ${item.report_nm} ${a.event_label} ${(a.signals||[]).join(" ")}`.toLowerCase().includes(term);
+  }).sort((a,b)=>b.analysis.score-a.analysis.score||String(b.rcept_no).localeCompare(String(a.rcept_no)));
+}
+function categoryBadge(item){const key=(item.category||"IB").toLowerCase();return `<span class="badge ${key}">${esc(item.category||"IB")}</span>`;}
+function list(values){return (values||[]).map(value=>`<li>${esc(value)}</li>`).join("");}
+function scoreBreakdown(a){const labels={novelty:"새 변화",materiality:"중요도",stage:"단계",beat:"취재처",friction:"이례성",evidence:"근거"};const rows=Object.entries(a.score_breakdown||{}).map(([key,value])=>`<span>${labels[key]||esc(key)} ${Number(value)}</span>`);if(a.watchlist_hit)rows.push(`<span>감시목록 +15</span>`);return rows.join("");}
 
-function itemHTML(it, today){
-  const a = it.analysis || {importance:"참고",event_label:"관련 공시",why:"원문 확인이 필요합니다.",signals:[],stage:"공시"};
-  const levelClass = LEVEL_CLASS[a.importance] || "note";
-  const signals = (a.signals||[]).map(x=>`<span class="signal">${esc(x)}</span>`).join("");
-  return `
-    <article class="item ${it.rcept_dt===today?"today":""}" data-rcept="${esc(it.rcept_no)}">
-      <div class="row1">
-        ${CLS[it.corp_cls]?`<span class="badge b-mkt">${CLS[it.corp_cls]}</span>`:""}
-        ${it.pef_entity?`<span class="badge b-house">하우스</span>`:""}
-        <span class="corp">${highlight(it.corp_name, it.hits)}</span>
-      </div>
-      <div class="report">${highlight(it.report_nm, it.hits)}</div>
-      <div class="row3">
-        <span>제출: ${esc(it.flr_nm)}</span>
-        ${it.rm?`<span>${esc(it.rm)}</span>`:""}
-      </div>
-      <div class="insight">
-        <div class="insight-head">
-          <span class="importance ${levelClass}">${esc(a.importance)}</span>
-          <span class="event-label">${esc(a.event_label)}</span>
-          <span class="stage">${esc(a.stage)}</span>
-        </div>
-        <div class="why"><strong>왜 보나:</strong> ${esc(a.why)}</div>
-        ${signals?`<div class="signal-row">${signals}</div>`:""}
-        ${connectionPreview(it.connections)}
-      </div>
-      <div class="item-actions">
-        <button class="detail-btn" data-corp-code="${esc(it.corp_code)}" data-event-id="${esc(a.event_id)}" data-rcept-no="${esc(it.rcept_no)}" ${it.corp_code?"":"disabled"}>이전 공시·관계 보기</button>
-        <a class="dart-link" href="${esc(it.url)}" target="_blank" rel="noopener">DART 원문 ↗</a>
-      </div>
-      <div class="detail-panel" id="detail-${esc(it.rcept_no)}" hidden></div>
-    </article>`;
+function candidateHTML(item,type){
+  const a=item.analysis,numbers=(a.key_numbers||[]).map(value=>`<span class="number">${esc(value)}</span>`).join(""),signals=(a.signals||[]).map(value=>`<span class="signal">${esc(value)}</span>`).join("");
+  return `<article class="card ${type}" data-rcept="${esc(item.rcept_no)}">
+    <div class="card-top"><div class="card-main"><div class="eyebrow">${categoryBadge(item)}<span class="badge stage">${esc(a.stage)}</span>${item.pef_entity?`<span class="badge">하우스</span>`:""}${a.watchlist_hit?`<span class="watch-hit">● ${esc(a.watchlist_hit)} 감시중</span>`:""}</div><h3 class="headline">${esc(a.new_fact)}</h3><div class="source-title">${fmtDate(item.rcept_dt)} · ${esc(item.corp_name)} · ${esc(item.report_nm)} · 제출 ${esc(item.flr_nm)}</div></div><div class="score">${Number(a.score)}<small>기사감</small></div></div>
+    <div class="fact-grid"><div class="fact"><b>현재 단계</b><span>${esc(a.event_label)} · ${esc(a.stage)}</span></div><div class="fact change"><b>전회 대비</b><span>${esc(a.change_summary)}</span></div><div class="fact why"><b>왜 기사감인가</b><span>${esc(a.why)}</span></div><div class="fact"><b>다음 확인</b><span>${esc(a.next_check)}</span></div></div>
+    ${numbers?`<div class="numbers"><span class="signal">제목에서 잡힌 숫자</span>${numbers}</div>`:""}${signals?`<div class="signals">${signals}</div>`:""}
+    <details class="memo"><summary>취재 메모 열기</summary><div class="memo-body"><div><h4>전화할 곳</h4><ul>${list(a.call_targets)}</ul></div><div><h4>확인 질문</h4><ol>${list(a.questions)}</ol></div><div><h4>기사 방향</h4><ul>${list(a.angles)}</ul><h4 style="margin-top:9px">점수 근거</h4><div class="breakdown">${scoreBreakdown(a)}</div></div></div></details>
+    <div class="actions"><button class="btn deep" data-document="${esc(item.rcept_no)}">원문 숫자·문장 추출</button><button class="btn" data-company="${esc(item.corp_code||"")}" data-rcept-no="${esc(item.rcept_no)}" data-event-id="${esc(a.event_id)}" ${item.corp_code?"":"disabled"}>1년 이력·관계</button><a class="dart-link" href="${esc(item.url)}" target="_blank" rel="noopener">DART 원문 ↗</a></div>
+    <div class="detail" id="document-${esc(item.rcept_no)}" hidden></div><div class="detail" id="company-${esc(item.rcept_no)}" hidden></div>
+  </article>`;
 }
-
-function sectionHTML(items){
-  if(!items.length) return `<div class="empty">해당 공시가 없습니다.</div>`;
-  const today = todayKST();
-  const groups = {};
-  for(const it of items) (groups[it.rcept_dt] ||= []).push(it);
-  const dates = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
-  return dates.map(d=>`
-    <div class="dayhead">${fmtDate(d)} (${weekday(d)}) · ${groups[d].length}건</div>
-    ${groups[d].map(it=>itemHTML(it, today)).join("")}
-  `).join("");
-}
-
-function profileHTML(profile){
-  if(!profile) return "";
-  const fields = [
-    ["대표", profile.ceo_nm],
-    ["설립", profile.est_dt ? fmtDate(profile.est_dt) : ""],
-    ["업종코드", profile.induty_code],
-    ["결산월", profile.acc_mt ? `${profile.acc_mt}월` : ""],
-    ["홈페이지", profile.hm_url],
-    ["소재지", profile.adres],
-  ].filter(x=>x[1]);
-  if(!fields.length) return "";
-  return `<div class="profile-box"><div class="profile-grid">${fields.map(([k,v])=>`<div><b>${esc(k)}</b> ${esc(v)}</div>`).join("")}</div></div>`;
-}
-
-function relationsHTML(currentItem, serverConnections){
-  const merged = [...(currentItem.connections||[]), ...(serverConnections||[])];
-  const seen = new Set();
-  const unique = merged.filter(x=>{
-    const key = `${x.name}|${x.relation}`;
-    if(!x.name || seen.has(key)) return false;
-    seen.add(key); return true;
-  }).slice(0,12);
-  if(!unique.length) return `<div class="detail-note">현재 DART 제출자 정보에서 별도 연결 주체가 확인되지 않았습니다.</div>`;
-  return `<div class="relation-list">${unique.map(x=>`
-    <div class="relation-chip">
-      <b>${esc(x.name)} <span class="confidence">${esc(x.confidence||"공시확인")}</span></b>
-      ${esc(x.relation)}${x.count?` · ${Number(x.count).toLocaleString()}회`:""}
-    </div>`).join("")}</div>`;
-}
-
-function timelineHTML(history, eventId, currentRcept){
-  const meaningful = (history||[]).filter(x=>
-    x.rcept_no!==currentRcept && (x.analysis?.importance!=="참고" || x.analysis?.event_id===eventId)
-  );
-  const same = meaningful.filter(x=>x.analysis?.event_id===eventId);
-  const rest = meaningful.filter(x=>x.analysis?.event_id!==eventId);
-  const selected = [...same.slice(0,6), ...rest.slice(0,8)].slice(0,12)
-    .sort((a,b)=>b.rcept_no.localeCompare(a.rcept_no));
-  if(!selected.length) return `<div class="detail-note">최근 1년 내 연결할 주요 공시가 없습니다.</div>`;
-  return `<div class="timeline">${selected.map(x=>{
-    const isSame = x.analysis?.event_id===eventId;
-    return `<div class="timeline-item ${isSame?"same":""}">
-      <span class="timeline-date">${fmtDate(x.rcept_dt)} · ${esc(x.analysis?.event_label||"관련 공시")}</span>
-      ${isSame?`<span class="same-tag">같은 거래 신호</span>`:""}
-      <a class="timeline-name" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.report_nm)}</a>
-    </div>`;
-  }).join("")}</div>`;
-}
-
-async function openCompanyDetail(button){
-  const rceptNo = button.dataset.rceptNo;
-  const corpCode = button.dataset.corpCode;
-  const eventId = button.dataset.eventId;
-  const panel = document.querySelector(`#detail-${CSS.escape(rceptNo)}`);
-  const item = DATA.find(x=>x.rcept_no===rceptNo) || {};
-  if(!panel) return;
-  if(!panel.hidden){ panel.hidden=true; button.textContent="이전 공시·관계 보기"; return; }
-  panel.hidden=false; button.textContent="접기";
-  if(panel.dataset.loaded) return;
-  panel.innerHTML=`<div class="loading">최근 1년 공시와 제출자 관계를 불러오는 중…</div>`;
-  try{
-    let data = COMPANY_CACHE.get(corpCode);
-    if(!data){
-      const r = await fetch(`${API}?action=company&corp_code=${encodeURIComponent(corpCode)}&history_days=365`);
-      data = await r.json();
-      if(!data.ok) throw new Error(data.error||"회사 이력 조회 실패");
-      COMPANY_CACHE.set(corpCode,data);
-    }
-    panel.innerHTML=`
-      ${profileHTML(data.profile)}
-      <div class="detail-title">연결 주체·회사</div>
-      ${relationsHTML(item,data.connections)}
-      <div class="detail-title">이전 공시 타임라인</div>
-      ${timelineHTML(data.history,eventId,rceptNo)}
-      <div class="detail-note">‘연결후보’는 동일 제출자 정보에 따른 단서이며 지배·투자 관계를 단정하지 않습니다. 거래 조건은 DART 원문에서 확인하세요.</div>`;
-    panel.dataset.loaded="1";
-  }catch(e){
-    panel.innerHTML=`<div class="err">상세 정보를 불러오지 못했습니다: ${esc(e.message)}</div>`;
-  }
-}
+function compactHTML(item){return `<div class="compact"><span>${fmtDate(item.rcept_dt)}</span><div><b>${esc(item.corp_name)}</b><br>${esc(item.report_nm)} · ${esc(item.analysis.event_label)}</div><a href="${esc(item.url)}" target="_blank" rel="noopener">원문 ↗</a></div>`;}
+function empty(message){return `<div class="empty">${esc(message)}</div>`;}
 
 function render(){
-  const kw = q.trim();
-  let filtered = kw
-    ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm} ${it.analysis?.event_label||""} ${(it.analysis?.signals||[]).join(" ")}`.includes(kw))
-    : DATA;
-  if(hideReference) filtered = filtered.filter(it=>it.analysis?.importance!=="참고");
-  const pef = filtered.filter(it=>it.category==="PEF");
-  const vc  = filtered.filter(it=>it.category==="VC");
-  $("#listPEF").innerHTML = sectionHTML(pef);
-  $("#listVC").innerHTML  = sectionHTML(vc);
-  $("#cntPEF").textContent = `${pef.length}건`;
-  $("#cntVC").textContent  = `${vc.length}건`;
+  const all=filteredItems(),stories=all.filter(item=>item.analysis.bucket==="story"),story=stories.slice(0,5),overflow=stories.slice(5),verify=[...overflow,...all.filter(item=>item.analysis.bucket==="verify")].slice(0,10),shown=new Set([...story,...verify].map(item=>item.rcept_no)),archive=all.filter(item=>!shown.has(item.rcept_no));
+  $("#storyList").innerHTML=story.length?story.map(item=>candidateHTML(item,"story")).join(""):empty("바로 기사 후보로 올릴 공시가 없습니다.");
+  $("#verifyList").innerHTML=verify.length?verify.map(item=>candidateHTML(item,"verify")).join(""):empty("추가 확인이 필요한 공시가 없습니다.");
+  $("#archiveList").innerHTML=archive.length?archive.map(compactHTML).join(""):empty("참고·보관 공시가 없습니다.");
+  $("#statStory").textContent=stories.length;$("#statVerify").textContent=all.filter(item=>item.analysis.bucket==="verify").length;$("#statArchive").textContent=all.filter(item=>item.analysis.bucket==="archive").length;$("#statScanned").textContent=Number(scanned||0).toLocaleString();
+  $("#storyCount").textContent=`${story.length}건 표시`;$("#verifyCount").textContent=`${verify.length}건 표시`;$("#archiveCount").textContent=`${archive.length}건`;
+}
+
+function profileHTML(profile){if(!profile)return "";const fields=[["대표",profile.ceo_nm],["설립",profile.est_dt?fmtDate(profile.est_dt):""],["업종코드",profile.induty_code],["결산월",profile.acc_mt?`${profile.acc_mt}월`:""],["홈페이지",profile.hm_url],["소재지",profile.adres]].filter(row=>row[1]);return `<h4>기업 개황</h4><div class="profile">${fields.map(([key,value])=>`<div><b>${esc(key)}</b><br>${esc(value)}</div>`).join("")}</div>`;}
+function relationsHTML(current,data){const merged=[...(current.connections||[]),...(data||[])],seen=new Set(),unique=merged.filter(value=>{const key=`${value.name}|${value.relation}`;if(!value.name||seen.has(key))return false;seen.add(key);return true;}).slice(0,12);return unique.length?`<h4>연결 주체</h4>${unique.map(value=>`<span class="relation">${esc(value.name)} · ${esc(value.relation)}${value.count?` ${value.count}회`:""}</span>`).join("")}`:"";}
+function timelineHTML(history,eventId,currentRcept){const selected=(history||[]).filter(item=>item.rcept_no!==currentRcept&&(item.analysis?.event_id===eventId||item.analysis?.score>=55)).slice(0,12);return selected.length?`<h4 style="margin-top:10px">최근 1년 주요 공시</h4><div class="timeline">${selected.map(item=>`<a href="${esc(item.url)}" target="_blank" rel="noopener"><small>${fmtDate(item.rcept_dt)} · ${esc(item.analysis?.event_label||"관련 공시")}</small><br>${esc(item.report_nm)}</a>`).join("")}</div>`:`<div class="notice">최근 1년 안에 연결할 주요 공시가 없습니다.</div>`;}
+
+async function loadCompany(button){
+  const rcept=button.dataset.rceptNo,corpCode=button.dataset.company,eventId=button.dataset.eventId,panel=document.querySelector(`#company-${CSS.escape(rcept)}`),item=DATA.find(value=>value.rcept_no===rcept)||{};if(!panel)return;if(!panel.hidden){panel.hidden=true;return;}panel.hidden=false;panel.innerHTML="<div class='loading'>1년 이력과 제출자 관계를 불러오는 중…</div>";
+  try{let data=COMPANY_CACHE.get(corpCode);if(!data){const response=await fetch(`${API}?action=company&corp_code=${encodeURIComponent(corpCode)}&history_days=365`);data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"회사 이력 조회 실패");COMPANY_CACHE.set(corpCode,data);}panel.innerHTML=`${profileHTML(data.profile)}${relationsHTML(item,data.connections)}${timelineHTML(data.history,eventId,rcept)}<div class="notice">동일 제출자는 연결 단서일 뿐 지배·투자 관계를 뜻하지 않습니다.</div>`;}catch(error){panel.innerHTML=`<div class="error">${esc(error.message)}</div>`;}
+}
+async function loadDocument(button){
+  const rcept=button.dataset.document,panel=document.querySelector(`#document-${CSS.escape(rcept)}`);if(!panel)return;if(!panel.hidden){panel.hidden=true;return;}panel.hidden=false;panel.innerHTML="<div class='loading'>공시 본문에서 숫자와 핵심 문장을 찾는 중…</div>";
+  try{let data=DOCUMENT_CACHE.get(rcept);if(!data){const response=await fetch(`${API}?action=document&rcept_no=${encodeURIComponent(rcept)}`);data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"원문 추출 실패");DOCUMENT_CACHE.set(rcept,data);}const numbers=(data.numbers||[]).map(value=>`<span class="number">${esc(value)}</span>`).join("");const excerpts=(data.excerpts||[]).map(value=>`<div class="excerpt">${esc(value)}</div>`).join("");panel.innerHTML=`<h4>본문에서 잡힌 숫자</h4><div class="numbers">${numbers||"숫자를 자동으로 찾지 못했습니다."}</div><h4 style="margin-top:12px">거래·자금 관련 문장</h4>${excerpts||"핵심 문장을 자동으로 찾지 못했습니다."}<div class="notice">표가 풀리며 문장이 어색할 수 있습니다. 기사에 쓰기 전 반드시 DART 원문 표와 대조하세요.</div>`;}catch(error){panel.innerHTML=`<div class="error">${esc(error.message)}</div>`;}
 }
 
 async function load(){
-  const btn = $("#refresh");
-  btn.classList.add("spin"); btn.textContent = "갱신 중";
-  try{
-    let r = await fetch(`${API}?days=${days}`);
-    let j = await r.json().catch(()=>({ok:false}));
-    let enriched = r.ok && j.ok;
-    if(!enriched){
-      r = await fetch(`${FALLBACK_API}?days=${days}`);
-      j = await r.json();
-    }
-    if(!j.ok) throw new Error(j.error || "불러오기 실패");
-    DATA = enrichClientItems(j.items||[]);
-    const t = new Date(j.fetched_at);
-    $("#metaText").textContent =
-      `${fmtDate(j.range.bgn)} ~ ${fmtDate(j.range.end)} · 전체 ${(j.total_count??j.scanned).toLocaleString()}건 스캔 · ` +
-      `갱신 ${t.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}` +
-      (enriched?" · 1년 이력 연결 가능":" · 기본 분석 모드");
-    render();
-  }catch(e){
-    $("#listPEF").innerHTML = `<div class="err">공시를 불러오지 못했습니다: ${esc(e.message)}<br>잠시 후 새로고침을 다시 눌러보세요.</div>`;
-    $("#listVC").innerHTML = "";
-    $("#metaText").textContent = ""; $("#cntPEF").textContent=""; $("#cntVC").textContent="";
-  }finally{
-    btn.classList.remove("spin"); btn.textContent = "새로고침";
-  }
+  const button=$("#refresh");button.classList.add("spin");button.textContent="갱신 중";
+  try{let response=await fetch(`${API}?days=${days}`),data=await response.json().catch(()=>({ok:false})),enriched=response.ok&&data.ok;if(!enriched){response=await fetch(`${FALLBACK_API}?days=${days}`);data=await response.json();}if(!response.ok||!data.ok)throw new Error(data.error||"공시를 불러오지 못했습니다.");DATA=data.items||[];scanned=data.scanned??data.total_count??0;const updated=new Date(data.fetched_at);$("#meta").textContent=`${fmtDate(data.range.bgn)}~${fmtDate(data.range.end)} · DART ${Number(scanned).toLocaleString()}건 스캔 · ${DATA.length}건 선별 · ${updated.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})} 갱신${enriched?" · 누적 이력 연결":" · 기본 모드"}`;render();}
+  catch(error){$("#storyList").innerHTML=`<div class="error">${esc(error.message)}<br>잠시 뒤 새로고침을 눌러주세요.</div>`;$("#verifyList").innerHTML="";$("#meta").textContent="불러오기에 실패했습니다.";}
+  finally{button.classList.remove("spin");button.textContent="새로고침";}
 }
 
-$("#refresh").onclick = load;
-$("#q").addEventListener("input", e=>{ q = e.target.value; render(); });
-$("#hideReference").onchange = e=>{ hideReference=e.target.checked; render(); };
-document.addEventListener("click", e=>{
-  const button = e.target.closest(".detail-btn");
-  if(button && !button.disabled) openCompanyDetail(button);
-});
-document.querySelectorAll("#rangeToggle button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll("#rangeToggle button").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on"); days = +b.dataset.d; load();
-});
-function setAuto(on){ clearInterval(timer); if(on) timer = setInterval(load, 5*60*1000); }
-$("#auto").onchange = e=>setAuto(e.target.checked);
-setAuto(true);
-load();
+document.addEventListener("click",event=>{const remove=event.target.closest("[data-remove-watch]");if(remove){watchlist.splice(Number(remove.dataset.removeWatch),1);saveWatchlist();return;}if(event.target.id==="watchAdd"){addWatch();return;}const company=event.target.closest("[data-company]");if(company&&!company.disabled){loadCompany(company);return;}const documentButton=event.target.closest("[data-document]");if(documentButton)loadDocument(documentButton);});
+document.addEventListener("keydown",event=>{if(event.key==="Enter"&&event.target.id==="watchInput")addWatch();});
+$("#refresh").onclick=load;$("#search").oninput=event=>{query=event.target.value;render();};
+document.querySelectorAll("#range button").forEach(button=>button.onclick=()=>{document.querySelectorAll("#range button").forEach(value=>value.classList.remove("on"));button.classList.add("on");days=Number(button.dataset.days);load();});
+document.querySelectorAll("#category button").forEach(button=>button.onclick=()=>{document.querySelectorAll("#category button").forEach(value=>value.classList.remove("on"));button.classList.add("on");category=button.dataset.category;render();});
+function setAuto(on){clearInterval(timer);if(on)timer=setInterval(load,5*60*1000);}$("#auto").onchange=event=>setAuto(event.target.checked);
+renderWatchlist();setAuto(true);load();
 </script>
 </body>
 </html>
