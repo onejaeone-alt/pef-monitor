@@ -2,6 +2,7 @@
 const DART_KEY = process.env.DART_API_KEY || "";
 const LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 const COMPANY_URL = "https://opendart.fss.or.kr/api/company.json";
+const { persistDisclosures } = require("../lib/supabase");
 
 // 매칭 키워드 (법인명 또는 보고서명, 단순 포함 매칭)
 const PEF_KEYWORDS = [
@@ -499,10 +500,15 @@ module.exports = async (req, res) => {
 
     items.sort((a, b) => b.rcept_no.localeCompare(a.rcept_no));
     const enrichedItems = attachConnections(items);
+    const storage = await persistDisclosures(enrichedItems, {
+      source: "dart-enriched",
+      scanned: all.length,
+    });
 
     res.status(200).json({
       ok: true,
       items: enrichedItems,
+      storage,
       scanned: all.length,
       total_count: first.total_count,
       range: { bgn, end },
