@@ -1,4 +1,5 @@
 const { collectSources } = require("../lib/context-sources");
+const { buildContextInsight } = require("../lib/context-insight");
 const { persistRelatedSources } = require("../lib/supabase");
 
 function clean(value, maxLength = 160) {
@@ -16,6 +17,8 @@ module.exports = async (req, res) => {
       corpName: clean(req.query.corp_name, 80),
       filerName: clean(req.query.filer_name, 100),
       eventLabel: clean(req.query.event, 80),
+      stage: clean(req.query.stage, 60),
+      reportName: clean(req.query.report_name, 160),
     };
     if (!context.corpName || context.corpName.length < 2) {
       return res.status(400).json({ ok: false, error: "회사명이 필요합니다." });
@@ -24,6 +27,7 @@ module.exports = async (req, res) => {
     if (context.corpCode && !/^\d{8}$/.test(context.corpCode)) context.corpCode = "";
 
     const sources = await collectSources(context);
+    const insight = buildContextInsight(context, sources);
     const flat = [...sources.domestic, ...sources.foreign, ...sources.press_release];
     const storage = await persistRelatedSources(flat, context).catch((error) => ({
       ready: false,
@@ -38,6 +42,7 @@ module.exports = async (req, res) => {
       domestic: sources.domestic,
       foreign: sources.foreign,
       press_release: sources.press_release,
+      insight,
       providers: sources.providers,
       storage,
       fetched_at: new Date().toISOString(),
