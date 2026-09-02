@@ -107,15 +107,15 @@
   .dayhead{font-family:Jua,sans-serif;font-size:13px;color:var(--ink);padding:12px 4px 7px;letter-spacing:.3px}
   .dayhead::before{content:"✦ ";color:var(--pink)}
 
-  a.item{
+  .item{
     display:block;background:var(--card);
     border:2px solid var(--ink);border-radius:14px;
-    padding:11px 14px;margin-bottom:10px;text-decoration:none;color:inherit;position:relative;
+    padding:12px 14px;margin-bottom:12px;color:inherit;position:relative;
     box-shadow:3px 3px 0 var(--shadow);
     transition:transform .1s, box-shadow .1s;
   }
-  a.item:hover{transform:translate(-2px,-2px) rotate(-.3deg);box-shadow:5px 5px 0 var(--pink)}
-  a.item.today::after{
+  .item:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--pink)}
+  .item.today::after{
     content:"✦ today";position:absolute;top:-10px;right:12px;color:var(--pink);
     font-size:10px;font-weight:800;background:var(--hl);padding:1px 8px;border:2px solid var(--ink);border-radius:99px;
   }
@@ -127,6 +127,52 @@
   .report{font-size:13.5px;color:#5C2143;margin-bottom:3px;word-break:keep-all}
   mark{background:var(--hl);padding:0 3px;border-radius:4px;font-weight:700}
   .row3{font-size:11.5px;color:var(--muted);display:flex;gap:10px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+  .insight{
+    background:#FFF8FC;border:1.5px solid #E8A7C7;border-radius:11px;
+    margin-top:9px;padding:9px 10px;
+  }
+  .insight-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+  .importance{font-size:10px;font-weight:900;border-radius:99px;padding:2px 7px;border:1.5px solid var(--ink)}
+  .importance.core{background:#FF477E;color:#fff}
+  .importance.watch{background:#FFE56D;color:var(--ink)}
+  .importance.note{background:#EFE8FF;color:#6840A8}
+  .event-label{font-size:12px;font-weight:900;color:var(--ink)}
+  .stage{font-size:10px;font-weight:800;color:var(--muted);margin-left:auto}
+  .why{font-size:12px;color:#5C2143;line-height:1.55;word-break:keep-all}
+  .signal-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .signal{font-size:10px;font-weight:750;color:#7D3159;background:#FFEAF4;border-radius:99px;padding:2px 7px}
+  .connection-preview{margin-top:8px;padding-top:7px;border-top:1px dashed #E3A4C2;font-size:11px;color:#7D3159}
+  .connection-preview strong{color:var(--ink)}
+  .item-actions{display:flex;gap:7px;align-items:center;margin-top:9px;flex-wrap:wrap}
+  .detail-btn,.dart-link{
+    border:1.5px solid var(--ink);border-radius:99px;padding:5px 10px;font-size:11px;
+    font-weight:850;font-family:inherit;cursor:pointer;text-decoration:none;
+  }
+  .detail-btn{background:var(--ink);color:#fff}
+  .detail-btn[disabled]{opacity:.45;cursor:not-allowed}
+  .dart-link{background:#fff;color:var(--pink)}
+  .detail-panel{
+    margin-top:10px;border-top:2px solid var(--ink);padding-top:11px;
+    animation:openPanel .15s ease-out;
+  }
+  @keyframes openPanel{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .detail-title{font-family:Jua,sans-serif;font-size:14px;font-weight:400;margin:8px 0 7px;color:var(--ink)}
+  .profile-box{background:#FFF7D8;border:1.5px solid #C99A2E;border-radius:10px;padding:8px 10px;font-size:11px;color:#633F15}
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+  @media(max-width:560px){.profile-grid{grid-template-columns:1fr}}
+  .relation-list{display:flex;gap:6px;flex-wrap:wrap}
+  .relation-chip{background:#F3ECFF;border:1px solid #B69BE3;border-radius:9px;padding:6px 8px;font-size:10.5px;color:#5B3A84}
+  .relation-chip b{display:block;color:#3D0A29;font-size:11px}
+  .confidence{font-size:9px;border-radius:99px;background:#fff;padding:1px 5px;margin-left:3px}
+  .timeline{border-left:2px solid #E5A0C2;margin-left:6px;padding-left:13px}
+  .timeline-item{position:relative;margin-bottom:9px;padding:6px 8px;background:#fff;border:1px solid #E8C4D6;border-radius:8px}
+  .timeline-item::before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--pink);left:-18px;top:11px;border:2px solid #fff}
+  .timeline-item.same{border-color:var(--pink);background:#FFF5FA}
+  .timeline-date{font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .timeline-name{display:block;color:#4E1636;text-decoration:none;font-size:11px;font-weight:750;line-height:1.4;margin-top:1px}
+  .same-tag{font-size:9px;background:var(--pink);color:#fff;border-radius:99px;padding:1px 5px;margin-left:4px}
+  .detail-note{font-size:10px;color:var(--muted);margin-top:7px}
+  .loading{padding:14px;text-align:center;font-size:11px;color:var(--muted)}
   .empty{
     text-align:center;color:var(--muted);padding:44px 0;font-size:13.5px;
     background:rgba(255,255,255,.65);border:2px dashed var(--pink);border-radius:14px;
@@ -239,8 +285,10 @@
 </div>
 
 <script>
-const API = "/api/dart";
+const API = "/api/enriched";
+const FALLBACK_API = "/api/dart";
 let DATA = [], days = 7, q = "", timer = null;
+const COMPANY_CACHE = new Map();
 
 const $ = s => document.querySelector(s);
 const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -260,6 +308,102 @@ function todayKST(){
   return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10).replace(/-/g,"");
 }
 const CLS = {Y:"유가",K:"코스닥",N:"코넥스",E:"기타법인"};
+const LEVEL_CLASS = {"핵심":"core","주시":"watch","참고":"note"};
+const CLIENT_RULES = [
+  ["control_change","경영권·최대주주 변동","핵심",/최대주주.*변경|경영권|주식양수도|공개매수/,"경영권 이전이나 매각 절차와 연결될 수 있습니다. 거래 주체와 지분율, 종결 조건을 우선 확인할 공시입니다.",["M&A","지배구조"]],
+  ["equity_acquisition","지분 취득·투자","핵심",/타법인.*주식.*취득|출자증권.*취득|주식.*취득결정|신주인수/,"신규 투자나 인수, 추가 지분 확보 신호일 수 있습니다. 취득 목적과 인수 후 지분율을 확인할 필요가 있습니다.",["투자","인수"]],
+  ["equity_disposal","지분 매각·회수","핵심",/타법인.*주식.*처분|출자증권.*처분|주식.*처분결정/,"보유 지분 매각이나 투자금 회수와 연결될 수 있습니다. 처분 상대방과 잔여 지분을 확인할 공시입니다.",["매각","엑시트"]],
+  ["merger_restructuring","합병·분할·사업재편","핵심",/합병|분할|영업양수|영업양도|주식교환|주식이전|회생절차|워크아웃/,"기업 구조나 자산 소유관계가 바뀌는 신호입니다. 거래 구조와 존속법인을 함께 살펴볼 필요가 있습니다.",["구조개편","M&A"]],
+  ["capital_raise","유상증자·자본 확충","주시",/유상증자|제3자배정|신주발행|증자결정/,"자금 유입과 주주 구성 변화가 동시에 발생할 수 있습니다. 배정 대상과 자금 사용처가 핵심입니다.",["자금조달","지분희석"]],
+  ["mezzanine","메자닌·사채 조달","주시",/전환사채|신주인수권부사채|교환사채|사모사채|사채권.*발행/,"메자닌 또는 사채를 통한 자금조달 신호입니다. 투자자와 전환 조건, 자금 사용처를 확인할 공시입니다.",["자금조달","메자닌"]],
+  ["financing_support","담보·보증·차입","주시",/담보제공|채무보증|금전대여|차입결정|채무인수/,"인수금융이나 계열사 지원, 재무 부담 변화와 연결될 수 있습니다. 수혜자와 자금 목적을 확인해야 합니다.",["인수금융","재무부담"]],
+  ["ownership_report","대량보유·주주 변동","주시",/대량보유|주식등의대량|임원.*주요주주|특정증권등소유|소유상황보고/,"PEF·VC의 신규 진입, 추가 매수 또는 회수 움직임을 찾을 수 있습니다. 직전 보고 대비 증감이 핵심입니다.",["지분변동","주주동향"]],
+  ["performance_risk","실적·재무 위험","주시",/손상차손|매출액.*손익.*변동|자본잠식|감사의견|부도|횡령|배임/,"기업가치와 투자 회수 가능성에 영향을 줄 수 있습니다. 발생 규모와 현금흐름 영향을 확인할 필요가 있습니다.",["재무위험","밸류에이션"]],
+  ["periodic","정기·기초 공시","참고",/사업보고서|반기보고서|분기보고서|감사보고서/,"재무상태와 주주·관계회사 정보를 갱신할 수 있는 기초 공시입니다. 누적 변화 확인에 유용합니다.",["기초자료"]],
+];
+
+function clientAnalyze(item){
+  const title=item.report_nm||"";
+  const rule=CLIENT_RULES.find(x=>x[3].test(title)) || ["general","PEF·VC 관련 공시","참고",null,"PEF·VC 관련 명칭이 포착됐습니다. 실제 거래 연관성은 원문과 제출자를 함께 확인해야 합니다.",["원문확인"]];
+  const correction=/정정/.test(title);
+  let stage="공시";
+  if(correction) stage="조건·내용 변경";
+  else if(/완료|결과|종료|해제|철회/.test(title)) stage="완료·결과";
+  else if(/계약|약정/.test(title)) stage="계약·약정";
+  else if(/결정|승인/.test(title)) stage="의사결정";
+  return {event_id:rule[0],event_label:rule[1],importance:rule[2],why:(correction?"앞선 공시의 변경 전후 내용을 비교해야 합니다. ":"")+rule[4],signals:[...rule[5],...(correction?["정정공시"]:[])],stage};
+}
+
+function clientExternalFiler(item){
+  const clean=s=>(s||"").replace(/주식회사|유한회사|유한책임회사|\(주\)|㈜|\s+/g,"").toLowerCase();
+  const filer=clean(item.flr_nm),corp=clean(item.corp_name);
+  return filer&&corp&&filer.length>1&&filer!==corp&&!filer.includes(corp)&&!corp.includes(filer);
+}
+
+function enrichClientItems(items){
+  const filerMap=new Map();
+  for(const item of items){
+    if(!clientExternalFiler(item)) continue;
+    const key=item.flr_nm.replace(/\s+/g,"").toLowerCase();
+    if(!filerMap.has(key)) filerMap.set(key,{name:item.flr_nm,companies:new Set()});
+    filerMap.get(key).companies.add(item.corp_name);
+  }
+  return items.map(item=>{
+    const connections=[...(item.connections||[])];
+    if(!connections.length&&clientExternalFiler(item)){
+      const linked=filerMap.get(item.flr_nm.replace(/\s+/g,"").toLowerCase());
+      connections.push({name:item.flr_nm,relation:"이 회사 관련 공시 제출자",confidence:"공시확인"});
+      for(const company of linked?.companies||[]){
+        if(company!==item.corp_name) connections.push({name:company,relation:`동일 제출자(${item.flr_nm})가 함께 공시한 회사`,confidence:"연결후보"});
+      }
+    }
+    return {...item,analysis:item.analysis||clientAnalyze(item),connections:connections.slice(0,6)};
+  });
+}
+
+function connectionPreview(connections){
+  if(!connections || !connections.length) return "";
+  const confirmed = connections.filter(x=>x.confidence==="공시확인");
+  const candidates = connections.filter(x=>x.confidence==="연결후보");
+  const parts = [];
+  if(confirmed.length) parts.push(`<strong>공시 연결</strong> ${confirmed.map(x=>esc(x.name)).join(", ")}`);
+  if(candidates.length) parts.push(`<strong>같은 제출자 연결 후보</strong> ${candidates.map(x=>esc(x.name)).join(", ")}`);
+  return `<div class="connection-preview">${parts.join(" · ")}</div>`;
+}
+
+function itemHTML(it, today){
+  const a = it.analysis || {importance:"참고",event_label:"관련 공시",why:"원문 확인이 필요합니다.",signals:[],stage:"공시"};
+  const levelClass = LEVEL_CLASS[a.importance] || "note";
+  const signals = (a.signals||[]).map(x=>`<span class="signal">${esc(x)}</span>`).join("");
+  return `
+    <article class="item ${it.rcept_dt===today?"today":""}" data-rcept="${esc(it.rcept_no)}">
+      <div class="row1">
+        ${CLS[it.corp_cls]?`<span class="badge b-mkt">${CLS[it.corp_cls]}</span>`:""}
+        ${it.pef_entity?`<span class="badge b-house">하우스</span>`:""}
+        <span class="corp">${highlight(it.corp_name, it.hits)}</span>
+      </div>
+      <div class="report">${highlight(it.report_nm, it.hits)}</div>
+      <div class="row3">
+        <span>제출: ${esc(it.flr_nm)}</span>
+        ${it.rm?`<span>${esc(it.rm)}</span>`:""}
+      </div>
+      <div class="insight">
+        <div class="insight-head">
+          <span class="importance ${levelClass}">${esc(a.importance)}</span>
+          <span class="event-label">${esc(a.event_label)}</span>
+          <span class="stage">${esc(a.stage)}</span>
+        </div>
+        <div class="why"><strong>왜 보나:</strong> ${esc(a.why)}</div>
+        ${signals?`<div class="signal-row">${signals}</div>`:""}
+        ${connectionPreview(it.connections)}
+      </div>
+      <div class="item-actions">
+        <button class="detail-btn" data-corp-code="${esc(it.corp_code)}" data-event-id="${esc(a.event_id)}" data-rcept-no="${esc(it.rcept_no)}" ${it.corp_code?"":"disabled"}>이전 공시·관계 보기</button>
+        <a class="dart-link" href="${esc(it.url)}" target="_blank" rel="noopener">DART 원문 ↗</a>
+      </div>
+      <div class="detail-panel" id="detail-${esc(it.rcept_no)}" hidden></div>
+    </article>`;
+}
 
 function sectionHTML(items){
   if(!items.length) return `<div class="empty">해당 공시가 없습니다.</div>`;
@@ -269,26 +413,95 @@ function sectionHTML(items){
   const dates = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
   return dates.map(d=>`
     <div class="dayhead">${fmtDate(d)} (${weekday(d)}) · ${groups[d].length}건</div>
-    ${groups[d].map(it=>`
-      <a class="item ${d===today?"today":""}" href="${it.url}" target="_blank" rel="noopener">
-        <div class="row1">
-          ${CLS[it.corp_cls]?`<span class="badge b-mkt">${CLS[it.corp_cls]}</span>`:""}
-          ${it.pef_entity?`<span class="badge b-house">하우스</span>`:""}
-          <span class="corp">${highlight(it.corp_name, it.hits)}</span>
-        </div>
-        <div class="report">${highlight(it.report_nm, it.hits)}</div>
-        <div class="row3">
-          <span>제출: ${esc(it.flr_nm)}</span>
-          ${it.rm?`<span>${esc(it.rm)}</span>`:""}
-        </div>
-      </a>`).join("")}
+    ${groups[d].map(it=>itemHTML(it, today)).join("")}
   `).join("");
+}
+
+function profileHTML(profile){
+  if(!profile) return "";
+  const fields = [
+    ["대표", profile.ceo_nm],
+    ["설립", profile.est_dt ? fmtDate(profile.est_dt) : ""],
+    ["업종코드", profile.induty_code],
+    ["결산월", profile.acc_mt ? `${profile.acc_mt}월` : ""],
+    ["홈페이지", profile.hm_url],
+    ["소재지", profile.adres],
+  ].filter(x=>x[1]);
+  if(!fields.length) return "";
+  return `<div class="profile-box"><div class="profile-grid">${fields.map(([k,v])=>`<div><b>${esc(k)}</b> ${esc(v)}</div>`).join("")}</div></div>`;
+}
+
+function relationsHTML(currentItem, serverConnections){
+  const merged = [...(currentItem.connections||[]), ...(serverConnections||[])];
+  const seen = new Set();
+  const unique = merged.filter(x=>{
+    const key = `${x.name}|${x.relation}`;
+    if(!x.name || seen.has(key)) return false;
+    seen.add(key); return true;
+  }).slice(0,12);
+  if(!unique.length) return `<div class="detail-note">현재 DART 제출자 정보에서 별도 연결 주체가 확인되지 않았습니다.</div>`;
+  return `<div class="relation-list">${unique.map(x=>`
+    <div class="relation-chip">
+      <b>${esc(x.name)} <span class="confidence">${esc(x.confidence||"공시확인")}</span></b>
+      ${esc(x.relation)}${x.count?` · ${Number(x.count).toLocaleString()}회`:""}
+    </div>`).join("")}</div>`;
+}
+
+function timelineHTML(history, eventId, currentRcept){
+  const meaningful = (history||[]).filter(x=>
+    x.rcept_no!==currentRcept && (x.analysis?.importance!=="참고" || x.analysis?.event_id===eventId)
+  );
+  const same = meaningful.filter(x=>x.analysis?.event_id===eventId);
+  const rest = meaningful.filter(x=>x.analysis?.event_id!==eventId);
+  const selected = [...same.slice(0,6), ...rest.slice(0,8)].slice(0,12)
+    .sort((a,b)=>b.rcept_no.localeCompare(a.rcept_no));
+  if(!selected.length) return `<div class="detail-note">최근 1년 내 연결할 주요 공시가 없습니다.</div>`;
+  return `<div class="timeline">${selected.map(x=>{
+    const isSame = x.analysis?.event_id===eventId;
+    return `<div class="timeline-item ${isSame?"same":""}">
+      <span class="timeline-date">${fmtDate(x.rcept_dt)} · ${esc(x.analysis?.event_label||"관련 공시")}</span>
+      ${isSame?`<span class="same-tag">같은 거래 신호</span>`:""}
+      <a class="timeline-name" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.report_nm)}</a>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+async function openCompanyDetail(button){
+  const rceptNo = button.dataset.rceptNo;
+  const corpCode = button.dataset.corpCode;
+  const eventId = button.dataset.eventId;
+  const panel = document.querySelector(`#detail-${CSS.escape(rceptNo)}`);
+  const item = DATA.find(x=>x.rcept_no===rceptNo) || {};
+  if(!panel) return;
+  if(!panel.hidden){ panel.hidden=true; button.textContent="이전 공시·관계 보기"; return; }
+  panel.hidden=false; button.textContent="접기";
+  if(panel.dataset.loaded) return;
+  panel.innerHTML=`<div class="loading">최근 1년 공시와 제출자 관계를 불러오는 중…</div>`;
+  try{
+    let data = COMPANY_CACHE.get(corpCode);
+    if(!data){
+      const r = await fetch(`${API}?action=company&corp_code=${encodeURIComponent(corpCode)}&history_days=365`);
+      data = await r.json();
+      if(!data.ok) throw new Error(data.error||"회사 이력 조회 실패");
+      COMPANY_CACHE.set(corpCode,data);
+    }
+    panel.innerHTML=`
+      ${profileHTML(data.profile)}
+      <div class="detail-title">연결 주체·회사</div>
+      ${relationsHTML(item,data.connections)}
+      <div class="detail-title">이전 공시 타임라인</div>
+      ${timelineHTML(data.history,eventId,rceptNo)}
+      <div class="detail-note">‘연결후보’는 동일 제출자 정보에 따른 단서이며 지배·투자 관계를 단정하지 않습니다. 거래 조건은 DART 원문에서 확인하세요.</div>`;
+    panel.dataset.loaded="1";
+  }catch(e){
+    panel.innerHTML=`<div class="err">상세 정보를 불러오지 못했습니다: ${esc(e.message)}</div>`;
+  }
 }
 
 function render(){
   const kw = q.trim();
   const filtered = kw
-    ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm}`.includes(kw))
+    ? DATA.filter(it => `${it.corp_name} ${it.report_nm} ${it.flr_nm} ${it.analysis?.event_label||""} ${(it.analysis?.signals||[]).join(" ")}`.includes(kw))
     : DATA;
   const pef = filtered.filter(it=>it.category==="PEF");
   const vc  = filtered.filter(it=>it.category==="VC");
@@ -302,14 +515,20 @@ async function load(){
   const btn = $("#refresh");
   btn.classList.add("spin"); btn.textContent = "갱신 중";
   try{
-    const r = await fetch(`${API}?days=${days}`);
-    const j = await r.json();
+    let r = await fetch(`${API}?days=${days}`);
+    let j = await r.json().catch(()=>({ok:false}));
+    let enriched = r.ok && j.ok;
+    if(!enriched){
+      r = await fetch(`${FALLBACK_API}?days=${days}`);
+      j = await r.json();
+    }
     if(!j.ok) throw new Error(j.error || "불러오기 실패");
-    DATA = j.items;
+    DATA = enrichClientItems(j.items||[]);
     const t = new Date(j.fetched_at);
     $("#metaText").textContent =
       `${fmtDate(j.range.bgn)} ~ ${fmtDate(j.range.end)} · 전체 ${(j.total_count??j.scanned).toLocaleString()}건 스캔 · ` +
-      `갱신 ${t.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}`;
+      `갱신 ${t.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}` +
+      (enriched?" · 1년 이력 연결 가능":" · 기본 분석 모드");
     render();
   }catch(e){
     $("#listPEF").innerHTML = `<div class="err">공시를 불러오지 못했습니다: ${esc(e.message)}<br>잠시 후 새로고침을 다시 눌러보세요.</div>`;
@@ -322,6 +541,10 @@ async function load(){
 
 $("#refresh").onclick = load;
 $("#q").addEventListener("input", e=>{ q = e.target.value; render(); });
+document.addEventListener("click", e=>{
+  const button = e.target.closest(".detail-btn");
+  if(button && !button.disabled) openCompanyDetail(button);
+});
 document.querySelectorAll("#rangeToggle button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#rangeToggle button").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); days = +b.dataset.d; load();
