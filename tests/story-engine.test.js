@@ -51,3 +51,18 @@ test("같은 회사·사건의 과거 공시를 연결한다", () => {
   assert.equal(linked.analysis.previous_event.rcept_no, previous.rcept_no);
   assert.match(linked.analysis.change_summary, /같은 유형/);
 });
+
+test("PEF 관련성이 없는 일반 회생 공시는 제외한다", () => {
+  const item = toMonitoredItem(raw({ report_nm: "회생절차개시결정" }));
+  assert.equal(shouldInclude(item, item.analysis), false);
+});
+
+test("감시목록 회사의 자금조달 공시는 관련 명칭이 없어도 남긴다", () => {
+  const item = toMonitoredItem(raw({ corp_name: "포트폴리오회사", report_nm: "전환사채권발행결정" }));
+  assert.equal(shouldInclude(item, item.analysis, ["포트폴리오회사"]), true);
+});
+
+test("일반 공모펀드 투자설명서는 운용사 이름이 잡혀도 제외한다", () => {
+  const item = toMonitoredItem(raw({ corp_name: "현대인베스트먼트자산운용", report_nm: "[기재정정]투자설명서(집합투자증권)" }));
+  assert.equal(shouldInclude(item, item.analysis), false);
+});

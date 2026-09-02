@@ -47,7 +47,7 @@ h1{font-size:27px;letter-spacing:-.8px;margin:0}.subtitle{font-size:13px;color:v
   </header>
 
   <div class="toolbar">
-    <div class="range" id="range"><button data-days="1">오늘</button><button data-days="3">3일</button><button data-days="7" class="on">7일</button></div>
+    <div class="range" id="range"><button data-days="1" class="on">오늘</button><button data-days="3">3일</button><button data-days="7">7일</button></div>
     <div class="filter" id="category"><button data-category="ALL" class="on">전체</button><button data-category="PEF">PEF</button><button data-category="VC">VC</button><button data-category="IB">기타 IB</button></div>
     <label class="auto"><input type="checkbox" id="auto" checked> 5분 자동갱신</label>
     <input class="search" id="search" placeholder="회사·운용사·사건 검색">
@@ -87,7 +87,7 @@ const API="/api/enriched", FALLBACK_API="/api/dart";
 const WATCH_KEY="pef_monitor_watchlist_v1", LEGACY_WATCH_KEY="pef_monitor_favorites_v2";
 const DEFAULT_WATCH=["MBK","한앤컴퍼니","IMM","VIG","스틱","글랜우드","JKL","어피니티","센트로이드","얼라인파트너스"];
 const COMPANY_CACHE=new Map(), DOCUMENT_CACHE=new Map();
-let DATA=[], days=7, query="", category="ALL", timer=null, scanned=0, watchlist=loadWatchlist();
+let DATA=[], days=1, query="", category="ALL", timer=null, scanned=0, watchlist=loadWatchlist();
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??"").replace(/[&<>\"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[char]));
 const fmtDate=value=>/^\d{8}$/.test(String(value||""))?`${value.slice(0,4)}.${value.slice(4,6)}.${value.slice(6,8)}`:String(value||"");
@@ -99,7 +99,7 @@ function loadWatchlist(){
   }
   return [...DEFAULT_WATCH];
 }
-function saveWatchlist(){localStorage.setItem(WATCH_KEY,JSON.stringify(watchlist));renderWatchlist();render();}
+function saveWatchlist(){localStorage.setItem(WATCH_KEY,JSON.stringify(watchlist));renderWatchlist();load();}
 function renderWatchlist(){
   $("#watchRow").innerHTML=watchlist.map((name,index)=>`<span class="watch-chip">${esc(name)}<button data-remove-watch="${index}" aria-label="삭제">×</button></span>`).join("")+`<input class="watch-input" id="watchInput" placeholder="회사·하우스 추가"><button class="watch-add" id="watchAdd">추가</button>`;
 }
@@ -142,8 +142,19 @@ function candidateHTML(item,type){
 function compactHTML(item){return `<div class="compact"><span>${fmtDate(item.rcept_dt)}</span><div><b>${esc(item.corp_name)}</b><br>${esc(item.report_nm)} · ${esc(item.analysis.event_label)}</div><a href="${esc(item.url)}" target="_blank" rel="noopener">원문 ↗</a></div>`;}
 function empty(message){return `<div class="empty">${esc(message)}</div>`;}
 
+function topUniqueCompanies(items,limit){
+  const selected=[],seen=new Set();
+  for(const item of items){
+    const key=item.corp_code||item.corp_name;
+    if(seen.has(key))continue;
+    seen.add(key);selected.push(item);
+    if(selected.length===limit)break;
+  }
+  return selected;
+}
+
 function render(){
-  const all=filteredItems(),stories=all.filter(item=>item.analysis.bucket==="story"),story=stories.slice(0,5),overflow=stories.slice(5),verify=[...overflow,...all.filter(item=>item.analysis.bucket==="verify")].slice(0,10),shown=new Set([...story,...verify].map(item=>item.rcept_no)),archive=all.filter(item=>!shown.has(item.rcept_no));
+  const all=filteredItems(),stories=all.filter(item=>item.analysis.bucket==="story"),story=topUniqueCompanies(stories,5),storyIds=new Set(story.map(item=>item.rcept_no)),overflow=stories.filter(item=>!storyIds.has(item.rcept_no)),verify=[...overflow,...all.filter(item=>item.analysis.bucket==="verify")].slice(0,10),shown=new Set([...story,...verify].map(item=>item.rcept_no)),archive=all.filter(item=>!shown.has(item.rcept_no));
   $("#storyList").innerHTML=story.length?story.map(item=>candidateHTML(item,"story")).join(""):empty("바로 기사 후보로 올릴 공시가 없습니다.");
   $("#verifyList").innerHTML=verify.length?verify.map(item=>candidateHTML(item,"verify")).join(""):empty("추가 확인이 필요한 공시가 없습니다.");
   $("#archiveList").innerHTML=archive.length?archive.map(compactHTML).join(""):empty("참고·보관 공시가 없습니다.");
@@ -166,7 +177,7 @@ async function loadDocument(button){
 
 async function load(){
   const button=$("#refresh");button.classList.add("spin");button.textContent="갱신 중";
-  try{let response=await fetch(`${API}?days=${days}`),data=await response.json().catch(()=>({ok:false})),enriched=response.ok&&data.ok;if(!enriched){response=await fetch(`${FALLBACK_API}?days=${days}`);data=await response.json();}if(!response.ok||!data.ok)throw new Error(data.error||"공시를 불러오지 못했습니다.");DATA=data.items||[];scanned=data.scanned??data.total_count??0;const updated=new Date(data.fetched_at);$("#meta").textContent=`${fmtDate(data.range.bgn)}~${fmtDate(data.range.end)} · DART ${Number(scanned).toLocaleString()}건 스캔 · ${DATA.length}건 선별 · ${updated.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})} 갱신${enriched?" · 누적 이력 연결":" · 기본 모드"}`;render();}
+  try{const watch=encodeURIComponent(watchlist.join(","));let response=await fetch(`${API}?days=${days}&watch=${watch}`),data=await response.json().catch(()=>({ok:false})),enriched=response.ok&&data.ok;if(!enriched){response=await fetch(`${FALLBACK_API}?days=${days}&watch=${watch}`);data=await response.json();}if(!response.ok||!data.ok)throw new Error(data.error||"공시를 불러오지 못했습니다.");DATA=data.items||[];scanned=data.scanned??data.total_count??0;const updated=new Date(data.fetched_at);$("#meta").textContent=`${fmtDate(data.range.bgn)}~${fmtDate(data.range.end)} · DART ${Number(scanned).toLocaleString()}건 스캔 · ${DATA.length}건 선별 · ${updated.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})} 갱신${enriched?" · 누적 이력 연결":" · 기본 모드"}`;render();}
   catch(error){$("#storyList").innerHTML=`<div class="error">${esc(error.message)}<br>잠시 뒤 새로고침을 눌러주세요.</div>`;$("#verifyList").innerHTML="";$("#meta").textContent="불러오기에 실패했습니다.";}
   finally{button.classList.remove("spin");button.textContent="새로고침";}
 }

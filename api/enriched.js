@@ -258,6 +258,14 @@ function summary(items) {
   }, { story: 0, verify: 0, archive: 0 });
 }
 
+function requestWatchlist(req) {
+  return String(req.query.watch || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length >= 2)
+    .slice(0, 50);
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=300");
@@ -308,13 +316,14 @@ module.exports = async (req, res) => {
     if (first.status !== "000") return res.status(502).json({ ok: false, error: `DART 오류 ${first.status}: ${first.message || ""}` });
 
     const all = await fetchAllPages(bgn, end, first);
+    const watchTerms = requestWatchlist(req);
     const seen = new Set();
     const selected = [];
     for (const raw of all) {
       if (seen.has(raw.rcept_no)) continue;
       seen.add(raw.rcept_no);
       const item = toMonitoredItem(raw);
-      if (shouldInclude(item, item.analysis)) selected.push(item);
+      if (shouldInclude(item, item.analysis, watchTerms)) selected.push(item);
     }
 
     const connected = attachConnections(selected);

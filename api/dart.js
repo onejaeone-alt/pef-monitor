@@ -55,6 +55,7 @@ module.exports = async (req, res) => {
     if (first.status === "013") return res.status(200).json({ ok: true, items: [], summary: summary([]), scanned: 0, range: { bgn, end }, fetched_at: new Date().toISOString() });
     if (first.status !== "000") return res.status(502).json({ ok: false, error: `DART 오류 ${first.status}: ${first.message || ""}` });
 
+    const watchTerms = String(req.query.watch || "").split(",").map((value) => value.trim()).filter((value) => value.length >= 2).slice(0, 50);
     const totalPage = Math.min(first.total_page || 1, 120);
     const all = [...(first.list || [])];
     const pages = [];
@@ -70,7 +71,7 @@ module.exports = async (req, res) => {
       if (seen.has(raw.rcept_no)) continue;
       seen.add(raw.rcept_no);
       const item = toMonitoredItem(raw);
-      if (shouldInclude(item, item.analysis)) items.push(item);
+      if (shouldInclude(item, item.analysis, watchTerms)) items.push(item);
     }
     const sorted = sortByStoryValue(items);
     return res.status(200).json({
