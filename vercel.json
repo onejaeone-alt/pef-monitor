@@ -2,6 +2,7 @@
   "regions": ["icn1"],
   "functions": {
     "api/dart.js": { "maxDuration": 60 },
+    "api/dart-feed.js": { "maxDuration": 60 },
     "api/enriched.js": { "maxDuration": 60 },
     "api/context.js": { "maxDuration": 60 },
     "api/signals.js": { "maxDuration": 60 },
