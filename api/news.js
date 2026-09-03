@@ -1,5 +1,6 @@
 const { parseGoogleNewsRss } = require('../lib/context-sources');
 const { findWatchTarget, WATCH_TARGETS } = require('../lib/watch-config');
+const { fetchJakMembers } = require('../lib/jak-members');
 const {
   clusterIssues,
   eventLabel,
@@ -19,7 +20,7 @@ async function fetchText(url, timeoutMs = 12000) {
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'IB-News-Monitor/4.0' } });
+    const response = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'IB-News-Monitor/5.0' } });
     if (!response.ok) throw new Error(`News HTTP ${response.status}`);
     return await response.text();
   } finally {
@@ -44,10 +45,14 @@ module.exports = async (req, res) => {
     const days = Math.min(Math.max(parseInt(req.query.days || '7', 10), 1), 14);
     const limit = Math.min(Math.max(parseInt(req.query.limit || '240', 10), 40), 500);
     const queryList = queries(days);
-    const settled = await Promise.allSettled(queryList.map(async (q) => {
-      const xml = await fetchText(googleNewsUrl(q));
-      return parseGoogleNewsRss(xml, 'domestic', 'ko');
-    }));
+    const [jak, settled] = await Promise.all([
+      fetchJakMembers(),
+      Promise.allSettled(queryList.map(async (q) => {
+        const xml = await fetchText(googleNewsUrl(q));
+        return parseGoogleNewsRss(xml, 'domestic', 'ko');
+      })),
+    ]);
+
     const raw = settled.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
     const seenUrl = new Set(), seenTitle = new Set(), items = [];
 
@@ -59,7 +64,7 @@ module.exports = async (req, res) => {
 
       const text = `${item.title} ${item.snippet || ''}`;
       const target = findWatchTarget(text, WATCH_TARGETS);
-      if (!shouldKeep(item, target)) continue;
+      if (!shouldKeep(item, target, jak.names)) continue;
       const [theme_id, theme_label] = theme(text);
       items.push({
         signal_id: `${Date.parse(item.published_at || 0)}-${items.length}`,
@@ -73,6 +78,7 @@ module.exports = async (req, res) => {
         theme_id,
         theme_label,
         event_label: eventLabel(text),
+        jak_member: true,
       });
     }
 
@@ -82,6 +88,7 @@ module.exports = async (req, res) => {
     const ongoing = issues.filter((issue)=>issue.ongoing).slice(0,30);
     const newIssues = issues.filter((issue)=>!issue.ongoing && ageHours(issue.latest_seen) <= 30).slice(0,40);
     const recentIssues = issues.filter((issue)=>!ongoing.includes(issue) && !newIssues.includes(issue)).slice(0,80);
+    const latest24h = limitedItems.filter((item)=>ageHours(item.published_at) <= 24).length;
 
     return res.status(200).json({
       ok: true,
@@ -98,9 +105,15 @@ module.exports = async (req, res) => {
         issue_count: issues.length,
         ongoing_count: ongoing.length,
         new_issue_count: newIssues.length,
+        latest_24h: latest24h,
+      },
+      source_policy: {
+        name: '한국기자협회 회원사',
+        member_count: jak.count,
+        member_source: jak.source,
       },
       queries: queryList.length,
-      providers: { google_news_rss: settled.some((r)=>r.status==='fulfilled') },
+      providers: { google_news_rss: settled.some((r)=>r.status==='fulfilled'), jak_members: jak.source === 'official' },
       range: { days },
       fetched_at: new Date().toISOString(),
     });
