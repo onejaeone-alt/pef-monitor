@@ -22,6 +22,23 @@ test("KVIC 목록에서 단계와 게시물 ID를 뽑는다", () => {
   assert.equal(result.notices[1].stage, "document_review");
 });
 
+test("상세 ID가 없어도 KVIC 목록 행을 버리지 않는다", () => {
+  const html = `<table><tbody><tr><td>1106</td><td>[접수현황]</td><td>첨부파일 hwp</td><td>모태펀드(특허계정_특허기술사업화) 2026년 6월 수시 출자사업 접수 현황</td><td>2026-08-31</td></tr></tbody></table>`;
+  const result = parseListPage(html);
+  assert.equal(result.notices.length, 1);
+  assert.equal(result.notices[0].stage, "application");
+  assert.equal(result.notices[0].business_year, 2026);
+  assert.equal(result.notices[0].detail_resolvable, false);
+});
+
+test("자바스크립트 상세 링크에서도 KVIC 게시물 ID를 찾는다", () => {
+  const html = `<table><tbody><tr><td>1103</td><td>[선정결과]</td><td></td><td><a href="javascript:goDetailPage('5110')">모태펀드(특허계정) 2026년 6월 수시 출자사업 선정 결과</a></td><td>2026-08-27</td></tr></tbody></table>`;
+  const result = parseListPage(html);
+  assert.equal(result.notices.length, 1);
+  assert.equal(result.notices[0].notice_id, "5110");
+  assert.equal(result.notices[0].detail_resolvable, true);
+});
+
 test("KVIC 상세 본문의 핵심 숫자를 뽑는다", () => {
   const html = `<main>선정 조합 수 : 3개 모태출자액 : 350억원 최소결성규모 : 1,038억원</main>`;
   const detail = parseDetailPage(html, { notice_id: "5052", title: "모태펀드(중기부 소관) 2026년 5월 수시 출자사업 선정 결과" });
