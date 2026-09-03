@@ -4,7 +4,7 @@ const {
   parseBusinessTypePayload,
   parseFundPayload,
 } = require('../lib/kvic');
-const { LIST_URL, parseDetailPage, parseListPage } = require('../lib/kvic-notices');
+const { LIST_URL, managerCandidates, parseDetailPage, parseListPage } = require('../lib/kvic-notices');
 const { attachFormation, buildAccountStats, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 
 const KVIC_KEY = process.env.KVIC_API_KEY || '';
@@ -19,11 +19,29 @@ async function fetchText(url, timeoutMs = 15000) {
       signal: ctrl.signal,
       headers: {
         Accept: 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': 'Mozilla/5.0 (compatible; PEF-Monitor/3.0; +https://pef-monitor.vercel.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; PEF-Monitor/3.1; +https://pef-monitor.vercel.app)',
       },
     });
     if (!response.ok) throw new Error(`KVIC page HTTP ${response.status}`);
     return await response.text();
+  } finally { clearTimeout(timeout); }
+}
+
+async function fetchPdfText(url, timeoutMs = 14000) {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PEF-Monitor/3.1)' },
+    });
+    if (!response.ok) throw new Error(`KVIC PDF HTTP ${response.status}`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length > 10 * 1024 * 1024) throw new Error('KVIC PDF 10MB 초과');
+    if (buffer.slice(0,4).toString() !== '%PDF') throw new Error('KVIC PDF 형식 아님');
+    const pdfParse = require('pdf-parse');
+    const parsed = await pdfParse(buffer);
+    return String(parsed.text || '').slice(0,60000);
   } finally { clearTimeout(timeout); }
 }
 
@@ -69,32 +87,86 @@ async function fetchSavedNotices() {
   } finally { clearTimeout(timeout); }
 }
 
+function firstPdf(detail) {
+  return (detail?.attachments || []).find(item =>
+    /\.pdf(?:$|\?)/i.test(item.filename || '') || /pdf|fileDown/i.test(`${item.label || ''} ${item.url || ''}`)
+  );
+}
+
+async function hydrateLiveNotice(notice) {
+  if (!notice.detail_resolvable) {
+    return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
+  }
+  try {
+    const detailHtml = await fetchText(notice.source_url, 10000);
+    const detail = parseDetailPage(detailHtml, notice);
+    let pdfText = '';
+    let pdfError = null;
+    if (['application','document_review','selection'].includes(detail.stage)) {
+      const pdf = firstPdf(detail);
+      if (pdf) {
+        try { pdfText = await fetchPdfText(pdf.url); }
+        catch (error) { pdfError = String(error.message || error).slice(0,200); }
+      }
+    }
+    const managers = managerCandidates(`${detail.page_text || ''}\n${pdfText}`);
+    return {
+      ...detail,
+      manager_candidates: managers,
+      attachment_text: pdfText || null,
+      attachment_parse_error: pdfError,
+      live_list_only: false,
+    };
+  } catch (_) {
+    return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
+  }
+}
+
+async function mapLimited(items, concurrency, worker) {
+  const output = new Array(items.length);
+  let cursor = 0;
+  async function run() {
+    while (cursor < items.length) {
+      const index = cursor++;
+      try { output[index] = await worker(items[index]); }
+      catch (_) { output[index] = items[index]; }
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(concurrency,items.length)},run));
+  return output;
+}
+
 async function fetchLiveNotices() {
   try {
     const html = await fetchText(LIST_URL);
     const parsed = parseListPage(html, LIST_URL);
     const candidates = (parsed.notices || [])
       .filter(n => ['plan','application','document_review','selection'].includes(n.stage))
-      .slice(0, 15);
-    const settled = await Promise.allSettled(candidates.map(async notice => {
-      if (!notice.detail_resolvable) {
-        return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
-      }
-      try {
-        const detailHtml = await fetchText(notice.source_url, 10000);
-        return { ...parseDetailPage(detailHtml, notice), manager_candidates: [], live_list_only: false };
-      } catch (_) {
-        return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
-      }
-    }));
+      .slice(0, 18);
+
+    // 상세/PDF는 비용과 응답시간을 아끼기 위해 최신 공고에 한정해 동시 3건씩 읽는다.
+    // 선정·서류·접수 공고의 GP명이 우선이고, 계획 공고는 상세 숫자만 보강한다.
+    const priority = [...candidates].sort((a,b) => {
+      const rank = {selection:4,document_review:3,application:2,plan:1};
+      return (rank[b.stage]||0)-(rank[a.stage]||0) || String(b.posted_date||'').localeCompare(String(a.posted_date||''));
+    });
+    const hydrateTargets = new Set(priority.slice(0,10).map(n => n.notice_id));
+    const items = await mapLimited(candidates,3,notice =>
+      hydrateTargets.has(notice.notice_id)
+        ? hydrateLiveNotice(notice)
+        : Promise.resolve({ ...notice, aggregate:{}, attachments:[], manager_candidates:[], live_list_only:true })
+    );
+
     return {
-      items: settled.flatMap(r => r.status === 'fulfilled' ? [r.value] : []),
+      items,
       ready: candidates.length > 0,
       list_count: candidates.length,
+      manager_notice_count: items.filter(n => (n.manager_candidates || []).length > 0).length,
+      manager_candidate_count: items.reduce((sum,n)=>sum+(n.manager_candidates?.length||0),0),
       error: candidates.length ? null : 'KVIC_LIST_PARSED_ZERO',
     };
   } catch (error) {
-    return { items: [], ready: false, list_count: 0, error: String(error.message || error).slice(0,300) };
+    return { items: [], ready: false, list_count: 0, manager_notice_count:0, manager_candidate_count:0, error: String(error.message || error).slice(0,300) };
   }
 }
 
@@ -156,6 +228,9 @@ async function dashboard(res) {
       live_ready:liveResult.ready,
       live_error:liveResult.error,
       live_list_count:liveResult.list_count,
+      live_manager_notices:liveResult.manager_notice_count,
+      live_manager_candidates:liveResult.manager_candidate_count,
+      gp_count:gpStats.length,
       fund_error:fundResult.error || null,
     },
     stats:{
@@ -166,7 +241,7 @@ async function dashboard(res) {
       formation_unconfirmed:selected.filter(g=>['unconfirmed','partial'].includes(g.formation_status)).length,
       repeat_gp:gpStats.filter(g=>g.selected>=2).length,
     },
-    needs_refresh:savedResult.items.length<5,
+    needs_refresh:savedResult.items.length<5 || gpStats.length===0,
     fetched_at:new Date().toISOString(),
   });
 }
