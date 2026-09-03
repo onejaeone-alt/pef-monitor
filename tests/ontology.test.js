@@ -73,6 +73,21 @@ test("인사 기사에 실명이 있을 때만 사람 관계를 만든다", () =
   assert.equal(graph.nodes.some((node) => node.entity_type === "person" && node.canonical_name === "김민수"), true);
 });
 
+test("직함만 나온 인사 기사에서 벤처를 사람 이름으로 읽지 않는다", () => {
+  assert.deepEqual(peopleIn("SBVA, 글로벌 투자 전문가 2인 벤처파트너로 영입"), []);
+});
+
+test("따옴표 속 설명 뒤의 실제 회사명만 남긴다", () => {
+  const graph = buildOntology([lead({
+    signal_id: "signal-quoted-company",
+    title: "‘음악 데이터 기반 마케팅’ 사운독, 프라이머에서 투자 유치",
+    source_url: "https://example.com/soundog",
+    target: { id: "A-046", name: "프라이머", category: "ac", priority: "A" },
+  })]);
+  assert.equal(graph.nodes.some((node) => node.canonical_name === "사운독"), true);
+  assert.equal(graph.nodes.some((node) => node.canonical_name.includes("음악 데이터")), false);
+});
+
 test("단순 동시 언급은 관계로 확정하지 않는다", () => {
   const graph = buildOntology([lead({
     signal_id: "signal-5",
