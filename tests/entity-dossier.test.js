@@ -45,6 +45,8 @@ test("운용사 취재파일에 직접 관계·거래·근거·질문을 묶는�
   assert.equal(dossier.deals.length, 2);
   assert.equal(dossier.evidence.some((item) => item.source_url === "https://example.com/deal"), true);
   assert.equal(dossier.questions.some((question) => question.includes("우선협상대상자")), true);
+  assert.equal(dossier.summary.startsWith("IMM인베스트먼트와"), true);
+  assert.equal(dossier.questions.some((question) => question.startsWith("IMM인베스트먼트가")), true);
 });
 
 test("거래 상대방에서 보면 관계를 역방향으로 설명한다", () => {

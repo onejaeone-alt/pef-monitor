@@ -75,6 +75,19 @@ test("인사 기사에 실명이 있을 때만 사람 관계를 만든다", () =
 
 test("직함만 나온 인사 기사에서 벤처를 사람 이름으로 읽지 않는다", () => {
   assert.deepEqual(peopleIn("SBVA, 글로벌 투자 전문가 2인 벤처파트너로 영입"), []);
+  assert.deepEqual(peopleIn("한국벤처투자 신임 대표 선임"), []);
+});
+
+test("운용사 약칭을 별도 거래상대로 만들지 않는다", () => {
+  const graph = buildOntology([lead({
+    signal_id: "signal-alias",
+    title: "MBK, 신규 인수 검토",
+    source_url: "https://example.com/alias",
+    event_type: "deal_process",
+    event_label: "M&A 절차",
+    target: { id: "A-013", name: "MBK파트너스", category: "pef", priority: "A" },
+  })]);
+  assert.equal(graph.edges.length, 0);
 });
 
 test("따옴표 속 설명 뒤의 실제 회사명만 남긴다", () => {
