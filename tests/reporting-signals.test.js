@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   classifyEvent,
+  collapseStoryClusters,
   enrichSignal,
   parseOfficialPage,
   scoreSignal,
@@ -31,6 +32,8 @@ test("공식 출자 페이지에서 제목·링크·날짜를 뽑는다", () => 
 test("출자 선정과 펀드 결성 신호를 구분한다", () => {
   assert.equal(classifyEvent("국내 PE·VC 위탁운용사 최종 선정결과"), "selection_result");
   assert.equal(classifyEvent("3000억원 규모 딥테크 펀드 최종 결성"), "fund_formation");
+  assert.equal(classifyEvent("김근호 한국투자파트너스 상무, 행사 참석"), "general");
+  assert.equal(classifyEvent("한국투자파트너스 신임 대표 선임"), "people_move");
 });
 
 test("A등급 공식 선정결과는 P1으로 올린다", () => {
@@ -59,4 +62,21 @@ test("VC 뉴스는 대상·확인항목·구체 해석을 붙인다", () => {
   assert.ok(signal.story_score >= 70);
   assert.match(signal.interpretation, /앵커 LP/);
   assert.deepEqual(signal.checkpoints, ["실제 약정액", "앵커 LP", "1차·최종 클로징 시점"]);
+});
+
+test("같은 대상의 같은 투자 기사는 한 사건으로 묶는다", () => {
+  const first = enrichSignal({
+    source_type: "domestic_news", source_name: "A뉴스",
+    title: "블루포인트, 스페이스랩 시드 투자 유치",
+    source_url: "https://example.com/a", published_at: "2026-09-02T01:00:00Z",
+  });
+  const second = enrichSignal({
+    source_type: "domestic_news", source_name: "B뉴스",
+    title: "스페이스랩, 블루포인트서 시드 투자 유치…위성 추진체 개발",
+    source_url: "https://example.com/b", published_at: "2026-09-02T02:00:00Z",
+  });
+  const rows = collapseStoryClusters([first, second]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].related_count, 2);
+  assert.equal(rows[0].related_sources.length, 2);
 });
