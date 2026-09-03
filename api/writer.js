@@ -1,5 +1,6 @@
 const { collectSources } = require("../lib/context-sources");
 const { buildEntityDossier } = require("../lib/entity-dossier");
+const { generateArticle } = require("../lib/article-generator");
 const {
   buildWriterBrief,
   classifyTip,
@@ -100,10 +101,12 @@ module.exports = async (req, res) => {
     const dossier = graphDossier(graph, subject, target);
     const materials = mergeMaterials({ disclosures, sources, leads, subject, target });
     const brief = buildWriterBrief({ tip, format, notes, subject, target, materials, dossier });
+    const article = await generateArticle({ brief, notes });
 
     return res.status(200).json({
       ok: true,
       ...brief,
+      article,
       lookup: {
         dart_rows: disclosures.length,
         recent_leads: leads.length,
@@ -115,6 +118,7 @@ module.exports = async (req, res) => {
         ...sources.providers,
         supabase_disclosures: disclosures.length > 0,
         ontology: Boolean(graph),
+        article_model: article?.ok || false,
       },
       fetched_at: new Date().toISOString(),
     });
