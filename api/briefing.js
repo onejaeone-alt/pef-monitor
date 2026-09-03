@@ -1,6 +1,7 @@
 const { buildBriefing } = require("../lib/briefing");
+const { buildOntology } = require("../lib/ontology");
 const { collectReportingSignals } = require("../lib/reporting-signals");
-const { loadRecentReportingLeads, persistBriefing, persistReportingLeads } = require("../lib/supabase");
+const { loadRecentReportingLeads, persistBriefing, persistOntology, persistReportingLeads } = require("../lib/supabase");
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,8 +17,11 @@ module.exports = async (req, res) => {
       if (saved.length) items = saved;
     }
     const briefing = buildBriefing(items, type, new Date());
-    const storage = await persistBriefing(briefing);
-    return res.status(200).json({ ok: true, ...briefing, providers: collected.providers, storage, fetched_at: new Date().toISOString() });
+    const [storage, ontologyStorage] = await Promise.all([
+      persistBriefing(briefing),
+      persistOntology(buildOntology(items)),
+    ]);
+    return res.status(200).json({ ok: true, ...briefing, providers: collected.providers, storage, ontology_storage: ontologyStorage, fetched_at: new Date().toISOString() });
   } catch (error) {
     return res.status(500).json({ ok: false, error: String(error.message || error) });
   }

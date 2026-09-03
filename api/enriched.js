@@ -3,7 +3,8 @@ const DART_KEY = process.env.DART_API_KEY || "";
 const LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 const COMPANY_URL = "https://opendart.fss.or.kr/api/company.json";
 const DOCUMENT_URL = "https://opendart.fss.or.kr/api/document.xml";
-const { loadPreviousDisclosures, persistDisclosures } = require("../lib/supabase");
+const { buildOntology, disclosureToLead } = require("../lib/ontology");
+const { loadPreviousDisclosures, persistDisclosures, persistOntology } = require("../lib/supabase");
 const {
   attachPreviousEvents,
   normalizeName,
@@ -329,12 +330,16 @@ module.exports = async (req, res) => {
     const connected = attachConnections(selected);
     const previousRows = await loadPreviousDisclosures(connected).catch(() => []);
     const items = sortByStoryValue(attachPreviousEvents(connected, previousRows));
-    const storage = await persistDisclosures(items, { source: "dart-story-desk", scanned: all.length });
+    const [storage, ontologyStorage] = await Promise.all([
+      persistDisclosures(items, { source: "dart-story-desk", scanned: all.length }),
+      persistOntology(buildOntology(items.map(disclosureToLead))),
+    ]);
     return res.status(200).json({
       ok: true,
       items,
       summary: summary(items),
       storage,
+      ontology_storage: ontologyStorage,
       scanned: all.length,
       total_count: first.total_count,
       range: { bgn, end },
