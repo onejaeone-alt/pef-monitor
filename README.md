@@ -21,7 +21,7 @@ PEF Monitor는 **뉴스·DART·모태펀드·관계 자료를 무료 공개소�
 - 펀드레이징·자산운용
 - 국민연금·공제회·산업은행·SI·FI
 
-PEF Monitor와 Article Engine은 서로 다른 웹앱으로 운영합니다. PEF Monitor 상단의 `기사 엔진 ↗`을 누르면 독립된 [원재연 기사 엔진](https://article-engine-wjy.onejaeone.chatgpt.site/)이 새 창에서 열립니다.
+PEF Monitor와 Article Engine은 서로 다른 웹앱으로 운영합니다. PEF Monitor 상단의 `기사 엔진 ↗`을 누르면 독립된 [원재연 기사 엔진](https://article-engine-wjy-onejess.vercel.app/)이 새 창에서 열립니다.
 
 매체별로 나누지 않고 주제와 시간순으로 봅니다. 기사 가치 점수는 매기지 않습니다.
 
