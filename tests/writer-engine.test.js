@@ -90,3 +90,17 @@ test("충분한 인터뷰 녹취가 있으면 인터뷰 구조를 열어준다",
   assert.equal(brief.format.ready, true);
   assert.equal(brief.outline.format, "interview");
 });
+
+test("최신 보도가 회생계획 인가라면 파산 제보와 반대 흐름이라고 짚는다", () => {
+  const brief = buildWriterBrief({
+    tip: "홈플러스가 파산했다",
+    subject: "홈플러스",
+    materials: [
+      { source_type: "domestic_news", source_name: "연합뉴스", title: "홈플러스 회생계획안 법원 인가…정상화 본격화", source_url: "https://example.com/1", published_at: "2026-09-02", event_type: "distress" },
+      { source_type: "domestic_news", source_name: "경제신문", title: "홈플러스 회생안 인가…채권자 75.9% 찬성", source_url: "https://example.com/2", published_at: "2026-09-02", event_type: "distress" },
+    ],
+  });
+  assert.match(brief.meaning.summary, /입력문과 반대에 가까운 흐름/);
+  assert.match(brief.meaning.summary, /75\.9%/);
+  assert.match(brief.meaning.summary, /법원 인가 결정문/);
+});
