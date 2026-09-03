@@ -4,6 +4,11 @@
     "api/dart.js": { "maxDuration": 60 },
     "api/enriched.js": { "maxDuration": 60 },
     "api/context.js": { "maxDuration": 60 },
-    "api/signals.js": { "maxDuration": 60 }
-  }
+    "api/signals.js": { "maxDuration": 60 },
+    "api/briefing.js": { "maxDuration": 60 }
+  },
+  "crons": [
+    { "path": "/api/briefing?type=daily", "schedule": "30 22 * * *" },
+    { "path": "/api/briefing?type=weekly", "schedule": "0 23 * * 0" }
+  ]
 }

@@ -6,6 +6,7 @@ const {
   enrichSignal,
   parseOfficialPage,
   scoreSignal,
+  withinDays,
 } = require("../lib/reporting-signals");
 
 test("공식 출자 페이지에서 제목·링크·날짜를 뽑는다", () => {
@@ -80,4 +81,11 @@ test("같은 대상의 같은 투자 기사는 한 사건으로 묶는다", () =
   assert.equal(rows.length, 1);
   assert.equal(rows[0].related_count, 2);
   assert.equal(rows[0].related_sources.length, 2);
+});
+
+test("요청 기간보다 오래된 출자공고는 새 단서에서 제외한다", () => {
+  const now = new Date("2026-09-03T00:00:00Z").getTime();
+  assert.equal(withinDays({ published_at: "2026-09-01T00:00:00Z" }, 3, now), true);
+  assert.equal(withinDays({ published_at: "2026-08-14T00:00:00Z" }, 3, now), false);
+  assert.equal(withinDays({ published_at: null }, 3, now), false);
 });
