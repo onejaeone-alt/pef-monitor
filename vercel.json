@@ -5,7 +5,8 @@
     "api/enriched.js": { "maxDuration": 60 },
     "api/context.js": { "maxDuration": 60 },
     "api/signals.js": { "maxDuration": 60 },
-    "api/briefing.js": { "maxDuration": 60 }
+    "api/briefing.js": { "maxDuration": 60 },
+    "api/kvic.js": { "maxDuration": 60 }
   },
   "crons": [
     { "path": "/api/briefing?type=daily", "schedule": "30 22 * * *" },
