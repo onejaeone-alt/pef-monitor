@@ -7,9 +7,11 @@
     "api/signals.js": { "maxDuration": 60 },
     "api/briefing.js": { "maxDuration": 60 },
     "api/kvic.js": { "maxDuration": 60 },
+    "api/kvic-backfill.js": { "maxDuration": 60 },
     "api/ontology.js": { "maxDuration": 60 }
   },
   "crons": [
+    { "path": "/api/kvic-backfill?pages=2&pdf=selection", "schedule": "50 21 * * *" },
     { "path": "/api/briefing?type=daily", "schedule": "30 22 * * *" },
     { "path": "/api/briefing?type=weekly", "schedule": "0 23 * * 0" }
   ]
