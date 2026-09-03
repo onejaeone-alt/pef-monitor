@@ -1,1 +1,150 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IB 취재 레이더 · 기사작성기</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"><link rel="stylesheet" href="/app.css"></head><body><header class="topbar"><div class="brandrow"><div class="brand"><div class="eyebrow">MARKETIN RESEARCH DESK</div><h1>IB 취재 레이더</h1><p>뉴스·공시·모태펀드를 따로 모으고, 기사 판단은 나중에 함께 합니다.</p></div><div class="status">준비 중</div></div><nav class="nav"><a href="/">뉴스</a><a href="/dart.html">DART 공시</a><a href="/motae.html">모태펀드</a><a href="/relations.html">관계·취재파일</a><a href="/judgment.html">기사판단기</a><a class="on" href="/writer.html">기사작성기</a></nav></header><main class="page"><div class="page-head"><div class="page-title"><div class="kicker">ARTICLE WRITER</div><h2>기사작성기</h2><p>기사판단기가 완성된 뒤 연결합니다.</p></div></div><section class="writer-box"><h3>준비 중</h3><p>현재는 원자료 수집과 기사 작성을 분리합니다. 기사판단기가 DART·뉴스·모태펀드·관계 자료를 묶어 하나의 취재 건으로 만든 뒤, 확인된 자료 묶음만 기사작성기로 넘기도록 설계할 예정입니다.</p><button class="btn pink" disabled>기사작성기 · 준비 중</button></section><div class="footer">이 페이지에서는 아직 원자료를 직접 불러오거나 기사 초안을 만들지 않습니다.</div></main></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IB 취재 레이더 · 기사작성기</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/app.css">
+  <style>
+    textarea{font:inherit}.compose{background:#fffffb;border:1px solid #e5e7eb;border-radius:14px;padding:18px}.compose label{display:block;font-size:11px;font-weight:850;margin-bottom:6px}.tip-input,.notes-input{width:100%;border:1px solid #dbe2ea;border-radius:10px;background:#fff;padding:12px 13px;color:#172033;resize:vertical;outline:0}.tip-input{min-height:76px;font-size:16px;font-weight:750;line-height:1.5}.notes-input{min-height:86px;font-size:12px;line-height:1.55}.tip-input:focus,.notes-input:focus{border-color:#8ab5ff;box-shadow:0 0 0 3px #eff6ff}.field-help{font-size:10px;color:#94a3b8;margin:5px 0 0}.compose-row{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;margin-top:14px}.format-picker{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px}.format-chip{border:1px solid #dfe4ea;background:#fff;color:#64748b;border-radius:18px;padding:6px 11px;font-size:10px;font-weight:800;cursor:pointer}.format-chip.on{background:#172033;border-color:#172033;color:#fff}.submit-wrap{display:flex;align-items:flex-end}.submit-wrap .btn{width:100%;padding:12px}.example{border:0;background:none;color:#2563eb;padding:6px 0 0;font-size:10px;font-weight:800;cursor:pointer}.results{margin-top:16px}.results[hidden]{display:none}.claim-card{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:10px}.claim-main,.meaning-card,.readiness,.outline-card,.question-card,.dossier-card{border:1px solid #e5e7eb;background:#fffffb;border-radius:12px;padding:14px}.claim-main{border-left:4px solid #f59e0b}.claim-main.official_related{border-left-color:#2563eb}.claim-main.reported_only,.claim-main.party_statement{border-left-color:#8b5cf6}.claim-top{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.claim-text{font-size:19px;letter-spacing:-.03em;margin:9px 0 5px}.claim-reason{font-size:11px;color:#657185;line-height:1.55;margin:0}.claim-status{font-size:10px;font-weight:850;padding:3px 8px;border-radius:15px;background:#fff7ed;color:#c2410c}.claim-level{font-size:10px;font-weight:850;padding:3px 8px;border-radius:15px;background:#eff6ff;color:#1d4ed8}.meaning-card{background:#fff8fb;border-color:#f4c8dc}.meaning-card h3,.readiness h3,.outline-card h3,.question-card h3,.dossier-card h3{font-size:13px;margin:0 0 8px}.meaning-card p{font-size:13px;line-height:1.65;margin:0;color:#55223a}.basis{font-size:9px;color:#9c4d72;margin-top:8px}.count-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:10px 0}.count-box{background:#fffffb;border:1px solid #e5e7eb;border-radius:10px;padding:9px;text-align:center}.count-box span{display:block;color:#94a3b8;font-size:8.5px}.count-box strong{display:block;font-size:18px;margin-top:2px}.work-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(310px,.75fr);gap:12px}.source-section{margin-bottom:10px}.source-section h4{font-size:11px;margin:0 0 5px;color:#475569}.evidence-list{display:grid;gap:6px}.evidence-card{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:9px}.evidence-card.match{border-color:#bfd6ff;background:#fbfdff}.evidence-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:4px;color:#94a3b8;font-size:9px}.evidence-card a{font-size:12px;line-height:1.45;color:#172033;text-decoration:none;font-weight:750}.evidence-card a:hover{color:#2563eb}.evidence-card p{font-size:10px;line-height:1.45;color:#7c8798;margin:4px 0 0}.tag{display:inline-block;border-radius:12px;padding:2px 6px;font-size:8.5px;font-weight:850;background:#f1f5f9;color:#64748b}.tag.match{background:#eff6ff;color:#1d4ed8}.side-stack{display:grid;gap:10px;align-content:start}.readiness.ready{border-color:#a7d8bd;background:#f5fff9}.readiness.blocked{border-color:#f2c0c0;background:#fff8f8}.readiness p{font-size:11px;line-height:1.5;color:#64748b;margin:5px 0}.missing{padding-left:18px;margin:8px 0 0;color:#b42318;font-size:10px}.outline-list,.question-list{padding-left:20px;margin:0}.outline-list li,.question-list li{font-size:11px;line-height:1.55;margin:5px 0}.title-list{display:grid;gap:5px}.title-item{font-size:11px;font-weight:750;background:#fffde8;border:1px solid #eee9b9;border-radius:8px;padding:8px}.relation-mini{display:grid;gap:5px}.relation-mini div{font-size:10px;border:1px solid #edf0f2;background:#fff;padding:7px;border-radius:8px}.source-panel .panel-head{position:sticky;top:112px;background:#fffffb;z-index:1}.loading{padding:48px;text-align:center;color:#64748b}.loading b{display:block;font-size:15px;color:#172033;margin-bottom:5px}.empty-small{font-size:10px;color:#94a3b8;padding:8px 0}.method-note{font-size:10px;line-height:1.55;color:#64748b;margin-top:12px;background:#f8fafc;border-radius:9px;padding:9px}@media(max-width:900px){.claim-card,.work-grid,.compose-row{grid-template-columns:1fr}.count-grid{grid-template-columns:repeat(3,1fr)}.submit-wrap .btn{width:auto}}@media(max-width:560px){.count-grid{grid-template-columns:repeat(2,1fr)}.tip-input{font-size:14px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brandrow">
+      <div class="brand"><div class="eyebrow">MARKETIN RESEARCH DESK</div><h1>IB 취재 레이더</h1><p>입력한 주장을 원문·보도·관계 자료와 대조해 기사 뼈대로 바꿉니다.</p></div>
+      <div class="status" id="status">입력 대기</div>
+    </div>
+    <nav class="nav"><a href="/">뉴스</a><a href="/dart.html">DART 공시</a><a href="/motae.html">모태펀드</a><a href="/relations.html">관계·취재파일</a><a href="/judgment.html">기사판단기</a><a class="on" href="/writer.html">기사작성기</a></nav>
+  </header>
+  <main class="page">
+    <div class="page-head">
+      <div class="page-title"><div class="kicker">EVIDENCE-FIRST WRITER</div><h2>한 줄 제보에서 기사 뼈대까지</h2><p>한 줄을 넣으면 DART·국내외 보도·보도자료·기존 관계를 먼저 대조합니다. 확인되지 않은 문장은 사실로 쓰지 않습니다.</p></div>
+    </div>
+
+    <section class="compose">
+      <label for="tip">무슨 일이 생겼나요?</label>
+      <textarea class="tip-input" id="tip" maxlength="300" placeholder="예: 홈플러스가 파산했다"></textarea>
+      <button class="example" id="example" type="button">예시 문장 넣기: 홈플러스가 파산했다</button>
+      <div class="compose-row">
+        <div>
+          <label>기사 형식</label>
+          <div class="format-picker" id="formats">
+            <button class="format-chip on" data-format="auto">자동 추천</button>
+            <button class="format-chip" data-format="straight">스트레이트</button>
+            <button class="format-chip" data-format="interview">인터뷰</button>
+            <button class="format-chip" data-format="deep">심층 취재</button>
+            <button class="format-chip" data-format="column">칼럼</button>
+            <button class="format-chip" data-format="reportage">르포</button>
+          </div>
+          <label for="notes">내 취재 메모 <span class="muted">(선택)</span></label>
+          <textarea class="notes-input" id="notes" maxlength="5000" placeholder="인터뷰 녹취, 현장에서 본 장면, 취재원 답변, 칼럼의 논지를 붙여 넣으세요. 없는 내용은 만들어내지 않습니다."></textarea>
+          <p class="field-help">인터뷰는 실제 녹취, 르포는 현장 메모, 칼럼은 논지 메모가 있어야 준비 완료로 표시됩니다.</p>
+        </div>
+        <div class="submit-wrap"><button class="btn pink" id="run">자료 대조하기</button></div>
+      </div>
+    </section>
+
+    <section class="results" id="results" hidden></section>
+    <div class="footer">이 화면은 기사 초안보다 먼저 근거와 빈칸을 가립니다. 링크 원문을 직접 확인한 뒤 기사 문장으로 옮기세요.</div>
+  </main>
+
+  <script>
+    var selectedFormat = 'auto';
+    var $ = function(selector){ return document.querySelector(selector); };
+    var esc = function(value){ return String(value == null ? '' : value).replace(/[&<>\"]/g,function(char){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]; }); };
+    var dateText = function(value){ if(!value)return '날짜 미상'; var date=new Date(value); return isNaN(date.getTime())?esc(value):date.toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}); };
+    var groupInfo = {
+      disclosure:['DART 원문','disclosure'],
+      official:['공식 공고','official'],
+      press_release:['보도자료·당사자 발표','press_release'],
+      domestic_news:['국내 보도','domestic_news'],
+      foreign_news:['외신','foreign_news']
+    };
+
+    function evidenceHTML(items){
+      var keys=['disclosure','official','press_release','domestic_news','foreign_news'];
+      var sections=keys.map(function(key){
+        var rows=items.filter(function(item){return item.evidence_type===key;});
+        if(!rows.length)return '';
+        var cards=rows.map(function(item){
+          var link=item.source_url?'<a href="'+esc(item.source_url)+'" target="_blank" rel="noopener">'+esc(item.title)+'</a>':'<b>'+esc(item.title)+'</b>';
+          var snippet=item.snippet?'<p>'+esc(item.snippet)+'</p>':'';
+          return '<article class="evidence-card '+(item.event_match?'match':'')+'"><div class="evidence-meta"><span class="tag">'+esc(item.evidence_label)+'</span>'+(item.event_match?'<span class="tag match">같은 사건</span>':'<span class="tag">참고</span>')+'<span>'+esc(item.source_name)+'</span><span>'+dateText(item.published_at)+'</span></div>'+link+snippet+'</article>';
+        }).join('');
+        return '<section class="source-section"><h4>'+groupInfo[key][0]+' · '+rows.length+'건</h4><div class="evidence-list">'+cards+'</div></section>';
+      }).join('');
+      return sections||'<div class="empty">관련 자료를 찾지 못했습니다. 회사명 표기나 제보 문장을 바꿔 다시 검색해보세요.</div>';
+    }
+
+    function relationHTML(dossier){
+      if(!dossier)return '<div class="empty-small">누적 관계 자료에서 직접 연결된 대상을 찾지 못했습니다.</div>';
+      var relations=(dossier.relations||[]).slice(0,5).map(function(item){
+        return '<div><b>'+esc(item.relation_label||item.relation_type)+'</b> · '+esc(item.counterpart_name||'미분류')+(item.basis?'<br><span class="muted">'+esc(item.basis)+'</span>':'')+'</div>';
+      }).join('');
+      return '<p class="small muted">'+esc(dossier.summary||'')+'</p><div class="relation-mini">'+(relations||'<div>직접 관계 없음</div>')+'</div>';
+    }
+
+    function render(data){
+      var c=data.counts||{};
+      var readiness=data.format||{};
+      var missing=(readiness.missing||[]).map(function(item){return '<li>'+esc(item)+'</li>';}).join('');
+      var outline=(data.outline&&data.outline.sections||[]).map(function(item){return '<li>'+esc(item)+'</li>';}).join('');
+      var questions=(data.reporting_questions||[]).map(function(item){return '<li>'+esc(item)+'</li>';}).join('');
+      var titles=(data.title_ideas||[]).map(function(item){return '<div class="title-item">'+esc(item)+'</div>';}).join('');
+      var basis=(data.meaning&&data.meaning.basis_titles||[]).map(esc).join(' · ');
+      var html='';
+      html+='<div class="claim-card">';
+      html+='<section class="claim-main '+esc(data.claim.level)+'"><div class="claim-top"><span class="claim-status">'+esc(data.claim.status)+'</span><span class="claim-level">'+esc(data.claim.label)+'</span><span class="badge stage">'+esc(data.event_label)+'</span></div><h3 class="claim-text">“'+esc(data.claim.text)+'”</h3><p class="claim-reason">'+esc(data.claim.reason)+'</p></section>';
+      html+='<section class="meaning-card"><h3>자료를 대조하면 이렇게 읽힙니다</h3><p>'+esc(data.meaning&&data.meaning.summary||'해석할 근거가 부족합니다.')+'</p>'+(basis?'<div class="basis">판단에 쓴 제목 · '+basis+'</div>':'')+'</section>';
+      html+='</div>';
+      html+='<div class="count-grid"><div class="count-box"><span>관련 자료</span><strong>'+Number(c.total||0)+'</strong></div><div class="count-box"><span>같은 사건</span><strong>'+Number(c.matching_event||0)+'</strong></div><div class="count-box"><span>DART</span><strong>'+Number(c.disclosure||0)+'</strong></div><div class="count-box"><span>공식·보도자료</span><strong>'+(Number(c.official||0)+Number(c.press_release||0))+'</strong></div><div class="count-box"><span>국내뉴스</span><strong>'+Number(c.domestic_news||0)+'</strong></div><div class="count-box"><span>외신</span><strong>'+Number(c.foreign_news||0)+'</strong></div></div>';
+      html+='<div class="work-grid"><section class="panel source-panel"><div class="panel-head"><h3>확인할 원문과 보도</h3><p>‘같은 사건’ 표시가 없는 자료는 배경 참고용입니다.</p></div><div style="padding:12px">'+evidenceHTML(data.evidence||[])+'</div></section>';
+      html+='<aside class="side-stack">';
+      html+='<section class="readiness '+(readiness.ready?'ready':'blocked')+'"><h3>'+esc(readiness.selected_label)+' · '+(readiness.ready?'구성 가능':'자료 보강 필요')+'</h3><span class="badge">'+(readiness.requested==='auto'?'자동 추천':'직접 선택')+'</span><p>'+esc(readiness.message||'')+'</p>'+(missing?'<ul class="missing">'+missing+'</ul>':'')+'</section>';
+      html+='<section class="outline-card"><h3>기사 뼈대</h3><ol class="outline-list">'+outline+'</ol></section>';
+      html+='<section class="question-card"><h3>먼저 확인할 것</h3><ol class="question-list">'+questions+'</ol></section>';
+      html+='<section class="dossier-card"><h3>기존 관계·거래</h3>'+relationHTML(data.dossier)+'</section>';
+      html+='<section class="outline-card"><h3>제목 후보</h3><div class="title-list">'+titles+'</div><div class="method-note">제목 후보도 확정문이 아닙니다. ‘입력·미확인’ 상태에서는 의문형이나 확인 필요 표현만 제시합니다.</div></section>';
+      html+='</aside></div>';
+      $('#results').innerHTML=html;
+      $('#results').hidden=false;
+      $('#results').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-format]'),function(button){
+      button.addEventListener('click',function(){
+        selectedFormat=button.getAttribute('data-format');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-format]'),function(item){item.classList.toggle('on',item===button);});
+      });
+    });
+    $('#example').onclick=function(){ $('#tip').value='홈플러스가 파산했다'; $('#tip').focus(); };
+    $('#run').onclick=async function(){
+      var tip=$('#tip').value.trim();
+      if(tip.length<2){ $('#tip').focus(); return; }
+      var button=$('#run');
+      button.disabled=true;
+      button.textContent='원문·보도 대조 중…';
+      $('#status').textContent='자료 확인 중';
+      $('#results').hidden=false;
+      $('#results').innerHTML='<div class="loading"><b>공시·뉴스·관계 자료를 찾고 있습니다.</b>입력문은 아직 사실로 처리하지 않습니다.</div>';
+      try{
+        var response=await fetch('/api/writer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tip:tip,format:selectedFormat,notes:$('#notes').value})});
+        var data=await response.json();
+        if(!response.ok||!data.ok)throw new Error(data.error||'자료 대조에 실패했습니다.');
+        render(data);
+        $('#status').textContent=data.subject+' · '+data.claim.label;
+      }catch(error){
+        $('#results').innerHTML='<div class="error">'+esc(error.message)+'</div>';
+        $('#status').textContent='조회 실패';
+      }finally{
+        button.disabled=false;
+        button.textContent='자료 대조하기';
+      }
+    };
+    $('#tip').addEventListener('keydown',function(event){if((event.metaKey||event.ctrlKey)&&event.key==='Enter')$('#run').click();});
+  </script>
+</body>
+</html>
