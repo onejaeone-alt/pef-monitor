@@ -17,13 +17,14 @@ test("공식 출자 페이지에서 제목·링크·날짜를 뽑는다", () => 
     include: /(출자|선정|위탁운용사)/,
   };
   const html = `
-    <tr><td>2026-09-02</td><td><a href="/notices/17">2026년 위탁운용사 선정결과</a></td></tr>
+    <tr><td>2026-09-02</td><td><a href="/notices/17">[과학기술인공제회] 2026년 위탁운용사 선정결과</a></td></tr>
     <tr><td><a href="/notice">출자사업공지</a></td></tr>
     <tr><td><a href="/alert">출자사업 알림서비스</a></td></tr>
     <tr><td>2026-08-30</td><td><a href="/about">기관 소개</a></td></tr>`;
   const rows = parseOfficialPage(html, source);
   assert.equal(rows.length, 1);
-  assert.equal(rows[0].title, "2026년 위탁운용사 선정결과");
+  assert.equal(rows[0].title, "[과학기술인공제회] 2026년 위탁운용사 선정결과");
+  assert.equal(rows[0].subject_name, "과학기술인공제회");
   assert.equal(rows[0].source_url, "https://example.com/notices/17");
   assert.equal(rows[0].source_type, "selection_result");
   assert.equal(rows[0].published_at, "2026-09-01T15:00:00.000Z");
