@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { buildEntityDossier } = require("../lib/entity-dossier");
 const { buildOntology } = require("../lib/ontology");
+const { mergeCuratedGpKnowledge } = require("../lib/curated-gp-knowledge");
 
 function lead(overrides = {}) {
   return {
@@ -60,4 +61,20 @@ test("거래 상대방에서 보면 관계를 역방향으로 설명한다", () 
 
 test("없는 대상은 빈 취재파일을 꾸미지 않는다", () => {
   assert.equal(buildEntityDossier(sampleGraph(), "company:missing"), null);
+});
+
+test("씨케이디창업투자 취재파일에 선정 이력과 공동 GP, 미확인 항목을 묶는다", () => {
+  const graph = mergeCuratedGpKnowledge(buildOntology([]));
+  const ckd = graph.nodes.find((node) => node.canonical_name === "씨케이디창업투자");
+  const dossier = buildEntityDossier(graph, ckd.entity_key);
+
+  assert.equal(graph.featured_entities[0].entity_key, ckd.entity_key);
+  assert.equal(dossier.selection_history.length, 2);
+  assert.equal(dossier.selection_history[0].mother_commitment, "100억원");
+  assert.equal(dossier.selection_history[0].target_formation, "200억원");
+  assert.equal(dossier.co_gps[0].name, "디티앤인베스트먼트");
+  assert.equal(dossier.funds[0].name, "공식 조합명 확인 필요");
+  assert.equal(dossier.unknowns.some((item) => item.includes("민간 LP")), true);
+  assert.equal(dossier.questions.some((item) => item.includes("투자심사")), true);
+  assert.equal(dossier.evidence.some((item) => item.source_name === "한국벤처투자"), true);
 });

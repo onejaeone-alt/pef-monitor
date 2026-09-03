@@ -1,4 +1,5 @@
 const { buildOntology } = require('../lib/ontology');
+const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
@@ -26,7 +27,7 @@ module.exports = async (req, res) => {
     }
 
     // 화면용 관계지도는 요청 기간 자료만으로 다시 만든다.
-    const graph = buildOntology(items);
+    const graph = mergeCuratedGpKnowledge(buildOntology(items));
     const storage = await persistOntology(graph).catch(() => ({ ready: false }));
     return res.status(200).json({
       ok: true,
