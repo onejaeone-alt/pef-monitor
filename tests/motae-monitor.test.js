@@ -49,3 +49,14 @@ test('counts repeated GP selections', () => {
   const stats = buildGpStats(groups);
   assert.equal(stats[0].selected,2);
 });
+
+test('shows fund API managers even when selection PDF pipeline is empty', () => {
+  const stats = buildGpStats([], [
+    { year:'2026', manager:'테스트벤처스', association_name:'테스트 1호 조합', field:'청년창업' },
+    { year:'2026', manager:'테스트벤처스', association_name:'테스트 2호 조합', field:'딥테크' },
+  ]);
+  assert.equal(stats.length,1);
+  assert.equal(stats[0].manager,'테스트벤처스');
+  assert.equal(stats[0].fund_api_only,true);
+  assert.equal(stats[0].formation_confirmed,2);
+});
