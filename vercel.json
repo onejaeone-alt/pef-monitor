@@ -10,7 +10,6 @@
     "api/briefing.js": { "maxDuration": 60 },
     "api/kvic.js": { "maxDuration": 60 },
     "api/kvic-backfill.js": { "maxDuration": 60 },
-    "api/motae.js": { "maxDuration": 60 },
     "api/ontology.js": { "maxDuration": 60 },
     "api/entity.js": { "maxDuration": 60 },
     "api/writer.js": { "maxDuration": 60 }
