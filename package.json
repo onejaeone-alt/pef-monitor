@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check api/dart.js && node --check api/enriched.js && node --check api/context.js && node --check api/signals.js && node --check api/news.js && node --check api/briefing.js && node --check api/kvic.js && node --check api/kvic-backfill.js && node --check api/ontology.js && node --check lib/story-engine.js && node --check lib/context-sources.js && node --check lib/context-insight.js && node --check lib/reporting-signals.js && node --check lib/briefing.js && node --check lib/kvic.js && node --check lib/kvic-notices.js && node --check lib/ontology.js && node --check lib/watch-config.js && node --check lib/supabase.js"
+    "check": "node --check api/dart.js && node --check api/enriched.js && node --check api/context.js && node --check api/signals.js && node --check api/news.js && node --check api/briefing.js && node --check api/kvic.js && node --check api/kvic-backfill.js && node --check api/ontology.js && node --check api/entity.js && node --check lib/story-engine.js && node --check lib/context-sources.js && node --check lib/context-insight.js && node --check lib/reporting-signals.js && node --check lib/briefing.js && node --check lib/kvic.js && node --check lib/kvic-notices.js && node --check lib/ontology.js && node --check lib/entity-dossier.js && node --check lib/watch-config.js && node --check lib/supabase.js"
   },
   "dependencies": {
     "pdf-parse": "1.1.1"
