@@ -27,7 +27,7 @@ async function fetchText(url, timeoutMs = 15000) {
   } finally { clearTimeout(timeout); }
 }
 
-async function fetchPdfText(url, timeoutMs = 14000) {
+async function fetchPdfText(url, timeoutMs = 10000) {
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -98,7 +98,7 @@ async function hydrateLiveNotice(notice) {
     return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
   }
   try {
-    const detailHtml = await fetchText(notice.source_url, 10000);
+    const detailHtml = await fetchText(notice.source_url, 9000);
     const detail = parseDetailPage(detailHtml, notice);
     let pdfText = '';
     let pdfError = null;
@@ -143,20 +143,16 @@ async function fetchLiveNotices() {
     const candidates = (parsed.notices || [])
       .filter(n => ['plan','application','document_review','selection'].includes(n.stage))
       .slice(0, 18);
-
-    // 상세/PDF는 비용과 응답시간을 아끼기 위해 최신 공고에 한정해 동시 3건씩 읽는다.
-    // 선정·서류·접수 공고의 GP명이 우선이고, 계획 공고는 상세 숫자만 보강한다.
     const priority = [...candidates].sort((a,b) => {
       const rank = {selection:4,document_review:3,application:2,plan:1};
       return (rank[b.stage]||0)-(rank[a.stage]||0) || String(b.posted_date||'').localeCompare(String(a.posted_date||''));
     });
-    const hydrateTargets = new Set(priority.slice(0,10).map(n => n.notice_id));
+    const hydrateTargets = new Set(priority.slice(0,6).map(n => n.notice_id));
     const items = await mapLimited(candidates,3,notice =>
       hydrateTargets.has(notice.notice_id)
         ? hydrateLiveNotice(notice)
         : Promise.resolve({ ...notice, aggregate:{}, attachments:[], manager_candidates:[], live_list_only:true })
     );
-
     return {
       items,
       ready: candidates.length > 0,
@@ -207,7 +203,7 @@ async function dashboard(res) {
   ]);
   const notices = mergeNotices(savedResult.items, liveResult.items);
   const groups = attachFormation(groupNotices(notices),fundResult.items);
-  const gpStats = buildGpStats(groups);
+  const gpStats = buildGpStats(groups,fundResult.items);
   const selected = groups.filter(g=>g.selection);
   return res.status(200).json({
     ok:true,
@@ -231,6 +227,7 @@ async function dashboard(res) {
       live_manager_notices:liveResult.manager_notice_count,
       live_manager_candidates:liveResult.manager_candidate_count,
       gp_count:gpStats.length,
+      fund_api_gp_count:new Set((fundResult.items||[]).map(f=>String(f.manager||'').trim()).filter(Boolean)).size,
       fund_error:fundResult.error || null,
     },
     stats:{
@@ -241,16 +238,16 @@ async function dashboard(res) {
       formation_unconfirmed:selected.filter(g=>['unconfirmed','partial'].includes(g.formation_status)).length,
       repeat_gp:gpStats.filter(g=>g.selected>=2).length,
     },
-    needs_refresh:savedResult.items.length<5 || gpStats.length===0,
+    needs_refresh:savedResult.items.length<5 || !liveResult.manager_candidate_count,
     fetched_at:new Date().toISOString(),
   });
 }
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=1800');
   try {
     const mode = String(req.query.mode || 'funds').toLowerCase();
+    res.setHeader('Cache-Control', mode === 'dashboard' ? 'no-store' : 's-maxage=1800, stale-while-revalidate=3600');
     if (mode === 'dashboard') return dashboard(res);
     if (!KVIC_KEY) return res.status(503).json({ ok:false, error:'Vercel 환경변수 KVIC_API_KEY가 필요합니다.' });
     if (mode === 'types') {
