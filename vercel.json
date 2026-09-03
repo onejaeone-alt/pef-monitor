@@ -14,6 +14,9 @@
     "api/entity.js": { "maxDuration": 60 },
     "api/writer.js": { "maxDuration": 60 }
   },
+  "rewrites": [
+    { "source": "/api/motae", "destination": "/api/kvic?mode=dashboard" }
+  ],
   "crons": [
     { "path": "/api/kvic-backfill?auto=historical&pages=3&fromYear=2020&pdf=selection", "schedule": "10 20 * * *" },
     { "path": "/api/kvic-backfill?pages=2&pdf=all", "schedule": "50 21 * * *" }
