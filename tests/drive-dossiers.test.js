@@ -73,8 +73,8 @@ test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한�
   assert.match(html, /최근 14일 안에 새 이슈가 확인된 대상만 표시합니다/);
   assert.doesNotMatch(html, /<h3>드라이브 연결<\/h3>/);
   assert.match(html, /바로가기에 보이지 않는 취재파일도 검색할 수 있습니다/);
-  assert.match(html, /최근 14일 취재 단서/);
+  assert.doesNotMatch(html, /최근 14일 취재 단서/);
   assert.match(html, /취재에 쓰는 이유/);
-  assert.match(html, /다음 확인/);
+  assert.match(html, /바로 물어볼 것/);
   assert.doesNotMatch(html, /최근 14일 직접 관계|<h3>직접 관계<\/h3>/);
 });
