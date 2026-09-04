@@ -88,6 +88,18 @@ test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함�
   assert.equal(dossier.profile_overview.portfolio_count, "31개 기업");
 });
 
+test("취재파일 본문에 적힌 현 대표와 AUM을 기본 정보로 끌어온다", () => {
+  const graph = mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology([])));
+  const mirae = graph.nodes.find((node) => node.canonical_name === "미래에셋벤처투자");
+  const companyK = graph.nodes.find((node) => node.canonical_name === "컴퍼니케이파트너스");
+
+  const miraeDossier = buildEntityDossier(graph, mirae.entity_key);
+  const companyKDossier = buildEntityDossier(graph, companyK.entity_key);
+
+  assert.equal(miraeDossier.profile_overview.representatives.includes("김응석"), true);
+  assert.equal(companyKDossier.profile_overview.assets_under_management, "1조원대");
+});
+
 test("없는 대상은 빈 취재파일을 꾸미지 않는다", () => {
   assert.equal(buildEntityDossier(sampleGraph(), "company:missing"), null);
 });
