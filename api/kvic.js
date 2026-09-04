@@ -6,8 +6,11 @@ const {
 } = require('../lib/kvic');
 const { LIST_URL, managerCandidates, parseDetailPage, parseListPage } = require('../lib/kvic-notices');
 const { attachFormation, buildAccountStats, buildGpStats, groupNotices } = require('../lib/motae-monitor');
+const { buildKstartupUrl, buildManagerUrl, parseKstartup, parseManagers } = require('../lib/policy-sources');
 
 const KVIC_KEY = process.env.KVIC_API_KEY || '';
+const DATA_GO_KEY = process.env.DATA_GO_KR_SERVICE_KEY || '';
+const KSTARTUP_KEY = process.env.KSTARTUP_API_KEY || DATA_GO_KEY;
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/,'');
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
@@ -57,6 +60,27 @@ async function fetchJson(url) {
     if (error.name === 'AbortError') throw new Error('KVIC 응답 지연(20초 초과)');
     throw error;
   } finally { clearTimeout(timeout); }
+}
+
+async function collectPolicySource(source, key, url, parser) {
+  if (!key) return { source, ready:false, items:[], total:0, error:'API_KEY_MISSING' };
+  try {
+    const parsed = parser(await fetchJson(url));
+    return { source, ready:!parsed.error, ...parsed };
+  } catch (error) {
+    return { source, ready:false, items:[], total:0, error:String(error.message || error) };
+  }
+}
+
+async function policy(req, res) {
+  const page = req.query.page || 1;
+  const perPage = req.query.perPage || 100;
+  const sources = await Promise.all([
+    collectPolicySource('KVIC 자조합 운용사정보', DATA_GO_KEY, buildManagerUrl(DATA_GO_KEY,{page,perPage}), parseManagers),
+    collectPolicySource('K-Startup 사업공고', KSTARTUP_KEY, buildKstartupUrl(KSTARTUP_KEY,{page,perPage}), parseKstartup),
+  ]);
+  const ok = sources.some(source => source.ready);
+  return res.status(ok ? 200 : 502).json({ ok, sources, diagnostics:{ data_go_key:Boolean(DATA_GO_KEY), kstartup_key:Boolean(KSTARTUP_KEY) }, fetched_at:new Date().toISOString() });
 }
 
 function supabaseHeaders() {
@@ -249,6 +273,7 @@ module.exports = async (req, res) => {
     const mode = String(req.query.mode || 'funds').toLowerCase();
     res.setHeader('Cache-Control', mode === 'dashboard' ? 'no-store' : 's-maxage=1800, stale-while-revalidate=3600');
     if (mode === 'dashboard') return dashboard(res);
+    if (mode === 'policy') return policy(req, res);
     if (!KVIC_KEY) return res.status(503).json({ ok:false, error:'Vercel 환경변수 KVIC_API_KEY가 필요합니다.' });
     if (mode === 'types') {
       const payload = await fetchJson(buildBusinessTypeUrl(KVIC_KEY, req.query));
