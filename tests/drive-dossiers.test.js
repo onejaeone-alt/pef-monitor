@@ -64,7 +64,7 @@ test("드라이브 카드와 기존 선정 이력을 같은 취재파일에 합�
 test("관계 화면은 전체 검색과 같은 상세 서랍을 사용한다", () => {
   const html = fs.readFileSync(path.join(__dirname, "../relations.html"), "utf8");
   assert.match(html, /id="dossierSearch"/);
-  assert.match(html, /\/api\/entity-search/);
+  assert.match(html, /\/api\/entity\?action=search/);
   assert.match(html, /data-entity/);
   assert.match(html, /관련 뉴스/);
   assert.match(html, /최근 14일 안에 새 이슈가 확인된 대상만 표시합니다/);
