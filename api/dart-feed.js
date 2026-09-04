@@ -2,6 +2,7 @@ const DART_KEY = process.env.DART_API_KEY || "";
 const LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 const { toMonitoredItem } = require("../lib/story-engine");
 const { buildFamilies, enrich, shouldKeep } = require("../lib/dart-monitor");
+const { loadStorageStatus } = require("../lib/supabase");
 
 function kstDate(offsetDays = 0) {
   const date = new Date(Date.now() + 9 * 3600 * 1000);
@@ -34,6 +35,11 @@ module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=600");
   try {
+    if (req.query.action === "storage-status") {
+      res.setHeader("Cache-Control", "no-store");
+      const storage = await loadStorageStatus();
+      return res.status(200).json({ ok: true, storage, checked_at: new Date().toISOString() });
+    }
     if (!DART_KEY) return res.status(503).json({ ok: false, error: "Vercel 환경변수 DART_API_KEY가 필요합니다." });
     const days = Math.min(Math.max(parseInt(req.query.days || "3", 10), 1), 14);
     const limit = Math.min(Math.max(parseInt(req.query.limit || "500", 10), 50), 800);
