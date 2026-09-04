@@ -6,6 +6,7 @@ const {
   managerCandidates,
   parseDetailPage,
   parseListPage,
+  preferredPdfAttachment,
   stageFromTitle,
 } = require("../lib/kvic-notices");
 
@@ -56,6 +57,20 @@ test("같은 출자사업의 단계 제목을 공통 키로 정리한다", () =>
 test("PDF 텍스트에서 GP 후보 이름을 보수적으로 뽑는다", () => {
   const text = `운용사명\n알파인베스트먼트\n베타벤처스\n한국벤처투자 출자사업 선정결과\n감마파트너스`;
   assert.deepEqual(managerCandidates(text), ["알파인베스트먼트", "베타벤처스", "감마파트너스"]);
+});
+
+test("PDF 바로보기보다 실제 다운로드 첨부파일을 고른다", () => {
+  const viewer = {
+    filename: "선정결과.pdf",
+    label: "바로보기",
+    url: "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?id=5104",
+  };
+  const download = {
+    filename: "선정결과.pdf",
+    label: "내려받기",
+    url: "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
+  };
+  assert.equal(preferredPdfAttachment([viewer, download]), download);
 });
 
 test("제목만으로 출자사업 단계를 분류한다", () => {

@@ -1,10 +1,12 @@
 const {
   buildBusinessTypeUrl,
   buildFundUrl,
+  fundYearNumber,
   parseBusinessTypePayload,
   parseFundPayload,
+  recentFundWindow,
 } = require('../lib/kvic');
-const { LIST_URL, managerCandidates, parseDetailPage, parseListPage } = require('../lib/kvic-notices');
+const { LIST_URL, managerCandidates, parseDetailPage, parseListPage, preferredPdfAttachment } = require('../lib/kvic-notices');
 const { attachFormation, buildAccountStats, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 const { buildKstartupUrl, buildManagerUrl, parseKstartup, parseManagers } = require('../lib/policy-sources');
 
@@ -111,12 +113,6 @@ async function fetchSavedNotices() {
   } finally { clearTimeout(timeout); }
 }
 
-function firstPdf(detail) {
-  return (detail?.attachments || []).find(item =>
-    /\.pdf(?:$|\?)/i.test(item.filename || '') || /pdf|fileDown/i.test(`${item.label || ''} ${item.url || ''}`)
-  );
-}
-
 async function hydrateLiveNotice(notice) {
   if (!notice.detail_resolvable) {
     return { ...notice, aggregate: {}, attachments: [], manager_candidates: [], live_list_only: true };
@@ -127,7 +123,7 @@ async function hydrateLiveNotice(notice) {
     let pdfText = '';
     let pdfError = null;
     if (['application','document_review','selection'].includes(detail.stage)) {
-      const pdf = firstPdf(detail);
+      const pdf = preferredPdfAttachment(detail.attachments);
       if (pdf) {
         try { pdfText = await fetchPdfText(pdf.url); }
         catch (error) { pdfError = String(error.message || error).slice(0,200); }
@@ -202,18 +198,17 @@ function mergeNotices(saved, live) {
   return [...map.values()].sort((a,b)=>String(b.posted_date||'').localeCompare(String(a.posted_date||'')));
 }
 
-async function fetchFundsForYears(years) {
+async function fetchRecentFunds() {
   if (!KVIC_KEY) return { items: [], ready: false, error: 'KVIC_API_KEY_MISSING' };
-  const settled = await Promise.allSettled(years.map(async year => {
-    const payload = await fetchJson(buildFundUrl(KVIC_KEY,{ fundType:'11', year }));
-    const parsed = parseFundPayload(payload,'11');
-    if (parsed.error) throw new Error(parsed.error.message || 'KVIC API 오류');
-    return parsed.items;
-  }));
+  const payload = await fetchJson(buildFundUrl(KVIC_KEY,{ fundType:'11' }));
+  const parsed = parseFundPayload(payload,'11');
+  if (parsed.error) throw new Error(parsed.error.message || 'KVIC API 오류');
+  const recent = recentFundWindow(parsed.items, 3);
   return {
-    items: settled.flatMap(r=>r.status==='fulfilled'?r.value:[]),
-    ready: settled.some(r=>r.status==='fulfilled'),
-    error: settled.every(r=>r.status==='rejected') ? 'KVIC_FUND_FETCH_FAILED' : null,
+    ...recent,
+    ready: true,
+    total: parsed.items.length,
+    error: null,
   };
 }
 
@@ -223,7 +218,7 @@ async function dashboard(res) {
   const [savedResult, liveResult, fundResult] = await Promise.all([
     fetchSavedNotices(),
     fetchLiveNotices(),
-    fetchFundsForYears(years).catch(error=>({items:[],ready:false,error:String(error.message||error)})),
+    fetchRecentFunds().catch(error=>({items:[],years:[],latest_year:null,ready:false,error:String(error.message||error)})),
   ]);
   const notices = mergeNotices(savedResult.items, liveResult.items);
   const groups = attachFormation(groupNotices(notices),fundResult.items);
@@ -242,6 +237,9 @@ async function dashboard(res) {
     account_stats:buildAccountStats(groups),
     funds:fundResult.items,
     funds_ready:fundResult.ready,
+    fund_years:fundResult.years || [],
+    fund_latest_year:fundResult.latest_year || null,
+    fund_total_count:fundResult.total || 0,
     diagnostics:{
       supabase_ready:savedResult.ready,
       supabase_error:savedResult.error,
@@ -285,7 +283,7 @@ module.exports = async (req, res) => {
     const payload = await fetchJson(buildFundUrl(KVIC_KEY, req.query));
     const parsed = parseFundPayload(payload,fundType);
     if (parsed.error) return res.status(502).json({ok:false,error:parsed.error});
-    const items = parsed.items.sort((a,b)=>Number(b.year||0)-Number(a.year||0)||a.manager.localeCompare(b.manager,'ko'));
+    const items = parsed.items.sort((a,b)=>fundYearNumber(b.year)-fundYearNumber(a.year)||a.manager.localeCompare(b.manager,'ko'));
     return res.status(200).json({ok:true,mode:'funds',fund_type:fundType,filters:{year:req.query.year||req.query.y||null,field:req.query.fd||null,manager:req.query.mng||null,association_name:req.query.asn||null},items,count:items.length,fetched_at:new Date().toISOString()});
   } catch (error) {
     return res.status(500).json({ ok:false, error:String(error.message||error) });

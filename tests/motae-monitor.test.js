@@ -34,6 +34,14 @@ test('accepts next-year fund formation after selection', () => {
   assert.equal(result[0].manager_formation[0].match_timing,'next_year');
 });
 
+test('accepts KVIC year values with the Korean year suffix', () => {
+  const groups = [{ year:2025, selection:{}, selected_managers:['테스트인베스트먼트'], application_managers:[], document_managers:[], account:'특허계정', business_key:'x' }];
+  const funds = [{ year:'2026년', manager:'테스트인베스트먼트', association_name:'2026 테스트 벤처조합' }];
+  const result = attachFormation(groups,funds);
+  assert.equal(result[0].formation_status,'confirmed');
+  assert.equal(result[0].manager_formation[0].match_timing,'next_year');
+});
+
 test('does not match a fund formed two years later', () => {
   const groups = [{ year:2024, selection:{}, selected_managers:['테스트인베스트먼트'], application_managers:[], document_managers:[], account:'특허계정', business_key:'x' }];
   const funds = [{ year:'2026', manager:'테스트인베스트먼트', association_name:'2026 테스트 벤처조합' }];

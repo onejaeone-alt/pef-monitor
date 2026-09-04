@@ -3,6 +3,7 @@ const {
   managerCandidates,
   parseDetailPage,
   parseListPage,
+  preferredPdfAttachment,
   toReportingLead,
 } = require("../lib/kvic-notices");
 const { persistReportingLeads } = require("../lib/supabase");
@@ -107,7 +108,7 @@ async function hydrateNotice(notice, pdfMode) {
   detail.attachment_parse_error = null;
 
   if (shouldReadPdf(detail, pdfMode)) {
-    const pdf = (detail.attachments || []).find((item) => /\.pdf/i.test(item.filename || "") || /pdf|fileDown/i.test(`${item.label} ${item.url}`));
+    const pdf = preferredPdfAttachment(detail.attachments);
     if (pdf) {
       try {
         const text = await fetchPdfText(pdf.url);
