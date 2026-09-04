@@ -1,0 +1,2723 @@
+{
+  "source": "취재 에이전트/03_기업별",
+  "basis_date": "2026-09-04",
+  "items": [
+    {
+      "company_id": "ORG-029",
+      "canonical_name": "VIG파트너스",
+      "aliases": [
+        "VIG",
+        "VIG Partners"
+      ],
+      "entity_type": "pef",
+      "type_label": "PEF·중견기업 바이아웃",
+      "identification_status": "공식 홈페이지와 감시목록에서 식별 확정",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-09-04",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-029_VIG파트너스_기업카드.md",
+      "summary": "VIG파트너스는 2005년 설립된 보고펀드를 모태로 하며 국내 중견기업 바이아웃에 집중한다고 공식 홈페이지에서 설명한다. 공식 홈페이지에 따르면 지금까지 약 5조5000억원을 운용해 31개 기업에 투자했으며, 이 가운데 28건은 경영권 지분 인수다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "VIG파트너스는 2005년 설립된 보고펀드를 모태로 하며 국내 중견기업 바이아웃에 집중한다고 공식 홈페이지에서 설명한다."
+        },
+        {
+          "label": "확인",
+          "text": "공식 홈페이지에 따르면 지금까지 약 5조5000억원을 운용해 31개 기업에 투자했으며, 이 가운데 28건은 경영권 지분 인수다."
+        },
+        {
+          "label": "보도",
+          "text": "VIG파트너스는 2026년 9월 4일 보스턴컨설팅그룹 출신 유신혁 부대표와 GE헬스케어 아시아태평양 총괄사장 출신 강성욱 총괄을 영입했다고 밝혔다."
+        },
+        {
+          "label": "보도",
+          "text": "유신혁 부대표는 투자팀에서 신규 투자 검토와 포트폴리오 관리를 맡는다."
+        },
+        {
+          "label": "보도",
+          "text": "강성욱 총괄은 싱가포르를 거점으로 해외 투자 기회를 찾고 포트폴리오 기업의 해외 진출과 크로스보더 M&A, 인수 후 통합을 지원한다."
+        },
+        {
+          "label": "확인필요",
+          "text": "유신혁 부대표가 우선 맡을 산업과 거래, 투자심의위원회에서 담당할 역할은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "VIG파트너스는 2005년 설립된 보고펀드를 모태로 하며 국내 중견기업 바이아웃에 집중한다고 공식 홈페이지에서 설명한다."
+            },
+            {
+              "label": "확인",
+              "text": "공식 홈페이지에 따르면 지금까지 약 5조5000억원을 운용해 31개 기업에 투자했으며, 이 가운데 28건은 경영권 지분 인수다."
+            },
+            {
+              "label": "보도",
+              "text": "VIG파트너스는 2026년 9월 4일 보스턴컨설팅그룹 출신 유신혁 부대표와 GE헬스케어 아시아태평양 총괄사장 출신 강성욱 총괄을 영입했다고 밝혔다."
+            },
+            {
+              "label": "보도",
+              "text": "유신혁 부대표는 투자팀에서 신규 투자 검토와 포트폴리오 관리를 맡는다."
+            },
+            {
+              "label": "보도",
+              "text": "강성욱 총괄은 싱가포르를 거점으로 해외 투자 기회를 찾고 포트폴리오 기업의 해외 진출과 크로스보더 M&A, 인수 후 통합을 지원한다."
+            },
+            {
+              "label": "확인필요",
+              "text": "유신혁 부대표가 우선 맡을 산업과 거래, 투자심의위원회에서 담당할 역할은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "대표·매니징 파트너: PER-013 신창훈",
+        "대표·시니어 파트너: PER-014 이철민",
+        "신규 영입: 유신혁 부대표",
+        "신규 영입: 강성욱 총괄",
+        "감시목록: 기관_감시 30행",
+        "개체 마스터: 개체_마스터 30행"
+      ],
+      "questions": [
+        "유신혁 부대표가 우선 검토하거나 관리할 산업과 포트폴리오는 무엇인가.",
+        "유신혁 부대표가 투자심의위원회에 참여하는가. 참여한다면 의결권과 담당 영역은 어떻게 정했는가.",
+        "기존 파트너와 유신혁 부대표 사이에 신규 투자 발굴과 포트폴리오 관리 업무를 어떻게 나눴는가.",
+        "강성욱 총괄이 지원할 첫 해외 진출 또는 크로스보더 M&A 대상은 어디인가.",
+        "이번 조직 개편이 현재 펀드레이징과 신규 투자 일정에 어떤 영향을 주는가."
+      ],
+      "decision_boundary": "영입 사실과 공개된 담당 업무는 확인됐다. 다만 두 사람이 맡을 구체적인 거래와 펀드, 투자심의 권한은 공개되지 않았다. 실제 담당 거래를 확인하기 전에는 이번 영입이 특정 투자나 펀드레이징을 위한 인사라고 단정하지 않는다.",
+      "next_updates": [
+        "VIG파트너스가 유신혁 부대표와 강성욱 총괄의 공식 약력을 홈페이지에 올릴 때",
+        "두 사람이 담당할 첫 거래나 포트폴리오가 확인될 때",
+        "대표·파트너와 투자심의위원회 구성이 바뀔 때",
+        "신규 펀드의 목표액과 실제 약정액, 최종 결성일이 확인될 때"
+      ],
+      "sources": [
+        {
+          "title": "VIG파트너스 공식 홈페이지",
+          "source_name": "VIG파트너스 공식 홈페이지",
+          "source_url": "https://www.vigpartners.com/index_kor.html",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "연합뉴스 2026-09-04",
+          "source_name": "연합뉴스 2026-09-04",
+          "source_url": "https://www.yna.co.kr/view/AKR20260904048200008",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "인베스트조선 2026-09-04",
+          "source_name": "인베스트조선 2026-09-04",
+          "source_url": "https://www.investchosun.com/site/data/html_dir/2026/09/04/2026090480061.html",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "감시목록",
+          "source_name": "감시목록",
+          "source_url": "https://docs.google.com/spreadsheets/d/13kWKTy_KGjhhJCwOdW52mc3DlBQdfv5qCkWOxJIjaA0/edit",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-057",
+      "canonical_name": "인피니툼파트너스",
+      "aliases": [],
+      "entity_type": "pef",
+      "type_label": "PEF·VC·모태펀드 GP",
+      "identification_status": "식별확정",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-057_인피니툼파트너스_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 인피니툼파트너스를 관광 M&A·세컨더리 분야 운용사로 선정했다. 인피니툼파트너스와 호라이즌아이엠이 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 인피니툼파트너스를 관광 M&A·세컨더리 분야 운용사로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "인피니툼파트너스와 호라이즌아이엠이 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "공식 선정표에는 두 조합의 개별 배정액과 결성예정액이 따로 나오지 않는다."
+        },
+        {
+          "label": "미확인",
+          "text": "인피니툼파트너스 조합의 목표 규모, GP 커밋, 민간 LP, 대표 운용역은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 인피니툼파트너스를 관광 M&A·세컨더리 분야 운용사로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "인피니툼파트너스와 호라이즌아이엠이 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "공식 선정표에는 두 조합의 개별 배정액과 결성예정액이 따로 나오지 않는다."
+            },
+            {
+              "label": "미확인",
+              "text": "인피니툼파트너스 조합의 목표 규모, GP 커밋, 민간 LP, 대표 운용역은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "같은 분야 선정사: ORG-108 호라이즌아이엠 주식회사",
+        "관련 단서: CLUE-20260903-KVIC-002",
+        "관련 사건: EVT-20260827-KVIC-002",
+        "관련 관계: REL-20260827-KVIC-TS-ORG057",
+        "시트 연결: 단서_개체연결 77행"
+      ],
+      "questions": [
+        "인피니툼파트너스에 배정된 모태출자액과 결성예정액은 각각 얼마인가.",
+        "관광기업 인수와 기존 지분 매입 가운데 어느 쪽에 더 무게를 두는가.",
+        "대표 운용역과 투자위원회 구성원은 누구인가.",
+        "민간 LP별 약정액과 GP 커밋은 얼마인가.",
+        "첫 번째 거래 후보와 결성 일정은 어디까지 정했는가."
+      ],
+      "decision_boundary": "두 조합의 합계 293억원을 인피니툼파트너스의 펀드 규모로 쓰지 않는다. 회사별 배정액을 확인하기 전에는 합계와 개별 수치를 분리한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5104",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-104",
+      "canonical_name": "크로스로드파트너스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-104_크로스로드파트너스_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 크로스로드파트너스를 특허계정 IP직접투자 분야 운용사로 선정했다. 모태출자액은 100억원, 의무조합결성액은 252억6000만원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 크로스로드파트너스를 특허계정 IP직접투자 분야 운용사로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "모태출자액은 100억원, 의무조합결성액은 252억6000만원이다."
+        },
+        {
+          "label": "산술",
+          "text": "의무조합결성액에서 모태출자액을 빼면 152억6000만원이다. 이 금액을 민간 LP 약정액으로 확정해서는 안 된다."
+        },
+        {
+          "label": "미확인",
+          "text": "위탁계약, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 크로스로드파트너스를 특허계정 IP직접투자 분야 운용사로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "모태출자액은 100억원, 의무조합결성액은 252억6000만원이다."
+            },
+            {
+              "label": "산술",
+              "text": "의무조합결성액에서 모태출자액을 빼면 152억6000만원이다. 이 금액을 민간 LP 약정액으로 확정해서는 안 된다."
+            },
+            {
+              "label": "미확인",
+              "text": "위탁계약, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-001",
+        "관련 사건: EVT-20260827-KVIC-001",
+        "관련 관계: REL-20260827-KVIC-IP-ORG104",
+        "선정 주체: ORG-008 한국벤처투자",
+        "시트 연결: 단서_개체연결 72행"
+      ],
+      "questions": [
+        "목표 결성액과 1차 결성 최소액은 각각 얼마인가.",
+        "모태출자 100억원 외에 어느 기관이 얼마를 약정했는가.",
+        "대표 운용역과 핵심운용인력은 누구이며 의무근무 조건이 있는가.",
+        "GP 커밋은 얼마이며 누가 부담하는가.",
+        "결성총회, 조합등록, 최종 클로징을 각각 언제 할 계획인가."
+      ],
+      "decision_boundary": "선정은 결성이 아니다. LP가 내부 투자심의를 통과했는지, 출자확약서나 규약에 서명했는지 확인하기 전에는 LP 이름과 약정액을 확정해 쓰지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5103",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5103&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-105",
+      "canonical_name": "디티앤인베스트먼트",
+      "aliases": [
+        "DTNI"
+      ],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 공동GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-105_디티앤인베스트먼트_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 디티앤인베스트먼트와 씨케이디창업투자를 특허계정 IP거래·사업화 분야 공동GP로 선정했다. 공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 디티앤인베스트먼트와 씨케이디창업투자를 특허계정 IP거래·사업화 분야 공동GP로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다."
+        },
+        {
+          "label": "산술",
+          "text": "두 금액의 차이는 100억원이다. 민간 LP별 약정액과 GP 커밋은 아직 확인되지 않았다."
+        },
+        {
+          "label": "보도",
+          "text": "가칭 2026 IP브릿지업 거래사업화펀드에 공동GP가 합산 20%, 40억원을 출자하고 이승석 대표와 김현우 씨케이디창업투자 이사가 공동 대표펀드매니저를 맡는다고 전해졌다."
+        },
+        {
+          "label": "미확인",
+          "text": "회사별 커밋 분담액, 나머지 60억원의 LP, 투자위원회 의결권, 관리보수·성과보수 배분, 결성 일정은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 디티앤인베스트먼트와 씨케이디창업투자를 특허계정 IP거래·사업화 분야 공동GP로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다."
+            },
+            {
+              "label": "산술",
+              "text": "두 금액의 차이는 100억원이다. 민간 LP별 약정액과 GP 커밋은 아직 확인되지 않았다."
+            },
+            {
+              "label": "보도",
+              "text": "가칭 2026 IP브릿지업 거래사업화펀드에 공동GP가 합산 20%, 40억원을 출자하고 이승석 대표와 김현우 씨케이디창업투자 이사가 공동 대표펀드매니저를 맡는다고 전해졌다."
+            },
+            {
+              "label": "미확인",
+              "text": "회사별 커밋 분담액, 나머지 60억원의 LP, 투자위원회 의결권, 관리보수·성과보수 배분, 결성 일정은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "공동GP: ORG-106 씨케이디창업투자",
+        "관련 단서: CLUE-20260903-KVIC-001",
+        "관련 사건: EVT-20260827-KVIC-001",
+        "관련 관계: REL-20260827-KVIC-IP-ORG105",
+        "시트 연결: 단서_개체연결 73행"
+      ],
+      "questions": [
+        "어느 회사의 인력이 대표 운용역을 맡는가.",
+        "발굴, 심사, 사후관리, 회수 업무를 두 회사가 어떻게 나누는가.",
+        "투자위원회 구성과 의결권·거부권은 어떻게 정했는가.",
+        "관리보수·성과보수·GP 커밋은 어떤 비율로 나누는가.",
+        "민간 LP와 1차·최종 결성 일정을 어디까지 확정했는가."
+      ],
+      "decision_boundary": "공동으로 선정됐다는 사실만으로 두 회사의 운용권이 같다고 단정하지 않는다. 규약, 공동운용 계약 또는 두 회사의 일치하는 답변으로 역할을 확인한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5103",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5103&idx=1",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "보도 단서",
+          "source_name": "보도 단서",
+          "source_url": "https://www.newstopkorea.com/news/articleView.html?idxno=47335",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-106",
+      "canonical_name": "씨케이디창업투자",
+      "aliases": [
+        "CKD창업투자"
+      ],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 공동GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-106_씨케이디창업투자_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 씨케이디창업투자와 디티앤인베스트먼트를 특허계정 IP거래·사업화 분야 공동GP로 선정했다. 공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 씨케이디창업투자와 디티앤인베스트먼트를 특허계정 IP거래·사업화 분야 공동GP로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다."
+        },
+        {
+          "label": "단서",
+          "text": "감시목록에는 씨케이디창업투자가 2025년 보건계정에서 다른 운용사와 공동 선정된 이력이 적혀 있다."
+        },
+        {
+          "label": "보도",
+          "text": "가칭 2026 IP브릿지업 거래사업화펀드에 공동GP가 합산 20%, 40억원을 출자하고 김현우 이사와 이승석 디티앤인베스트먼트 대표가 공동 대표펀드매니저를 맡는다고 전해졌다."
+        },
+        {
+          "label": "미확인",
+          "text": "회사별 커밋 분담액과 나머지 60억원의 LP는 공개되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "과거 공동GP 경험이 이번 민간 LP 모집에 실제로 보탬이 됐는지는 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 씨케이디창업투자와 디티앤인베스트먼트를 특허계정 IP거래·사업화 분야 공동GP로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "공동GP 조합의 모태출자액은 100억원, 의무조합결성액은 200억원이다."
+            },
+            {
+              "label": "단서",
+              "text": "감시목록에는 씨케이디창업투자가 2025년 보건계정에서 다른 운용사와 공동 선정된 이력이 적혀 있다."
+            },
+            {
+              "label": "보도",
+              "text": "가칭 2026 IP브릿지업 거래사업화펀드에 공동GP가 합산 20%, 40억원을 출자하고 김현우 이사와 이승석 디티앤인베스트먼트 대표가 공동 대표펀드매니저를 맡는다고 전해졌다."
+            },
+            {
+              "label": "미확인",
+              "text": "회사별 커밋 분담액과 나머지 60억원의 LP는 공개되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "과거 공동GP 경험이 이번 민간 LP 모집에 실제로 보탬이 됐는지는 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "공동GP: ORG-105 디티앤인베스트먼트",
+        "관련 단서: CLUE-20260903-KVIC-001",
+        "관련 사건: EVT-20260827-KVIC-001",
+        "관련 관계: REL-20260827-KVIC-IP-ORG106",
+        "시트 연결: 단서_개체연결 74행"
+      ],
+      "questions": [
+        "2025년 공동GP 조합과 이번 조합의 LP 가운데 겹치는 기관이 있는가.",
+        "이번 조합에서 대표 운용역과 핵심운용인력을 누가 맡는가.",
+        "씨케이디창업투자가 맡은 발굴·심사·사후관리 영역은 무엇인가.",
+        "GP 커밋과 보수·성과보수 배분은 어떻게 정했는가.",
+        "11월 말까지 결성을 마칠 수 있는가. 현재 확약한 민간 LP는 어디인가."
+      ],
+      "decision_boundary": "과거 공동GP 이력과 이번 결성 가능성 사이의 인과는 아직 확인되지 않았다. LP 중복과 실제 약정액을 확인한 뒤 판단한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5103",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5103&idx=1",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "보도 단서",
+          "source_name": "보도 단서",
+          "source_url": "https://www.newstopkorea.com/news/articleView.html?idxno=47335",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-107",
+      "canonical_name": "유니스트기술지주",
+      "aliases": [
+        "UNIST기술지주"
+      ],
+      "entity_type": "vc",
+      "type_label": "대학기술지주·모태펀드 GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-107_유니스트기술지주_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 유니스트기술지주를 관광계정 AI특성화 분야 운용사로 선정했다. 모태출자액은 100억원, 결성예정액은 154억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 유니스트기술지주를 관광계정 AI특성화 분야 운용사로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "모태출자액은 100억원, 결성예정액은 154억원이다."
+        },
+        {
+          "label": "산술",
+          "text": "두 금액의 차이는 54억원이다. GP 커밋과 민간 LP별 약정액은 확인되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "대학·지역 기관이 LP로 참여하는지, 대표 운용역이 누구인지, 결성 일정이 언제인지는 확인되지 않았다."
+        },
+        {
+          "label": "보도",
+          "text": "앞서 결성한 120억원 공공기술사업화펀드에는 울산시·BNK경남은행·덕산그룹 등이 출자했다. 이번 관광 AI 펀드의 출자자로 다시 참여하는지는 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 유니스트기술지주를 관광계정 AI특성화 분야 운용사로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "모태출자액은 100억원, 결성예정액은 154억원이다."
+            },
+            {
+              "label": "산술",
+              "text": "두 금액의 차이는 54억원이다. GP 커밋과 민간 LP별 약정액은 확인되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "대학·지역 기관이 LP로 참여하는지, 대표 운용역이 누구인지, 결성 일정이 언제인지는 확인되지 않았다."
+            },
+            {
+              "label": "보도",
+              "text": "앞서 결성한 120억원 공공기술사업화펀드에는 울산시·BNK경남은행·덕산그룹 등이 출자했다. 이번 관광 AI 펀드의 출자자로 다시 참여하는지는 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-002",
+        "관련 사건: EVT-20260827-KVIC-002",
+        "관련 관계: REL-20260827-KVIC-TS-ORG107",
+        "선정 주체: ORG-008 한국벤처투자",
+        "시트 연결: 단서_개체연결 76행"
+      ],
+      "questions": [
+        "54억원을 어느 LP와 GP가 나눠 부담하는가.",
+        "UNIST, 울산 지역 기관 또는 관광기업이 출자하는가.",
+        "대표 운용역과 관광·AI 분야 핵심운용인력은 누구인가.",
+        "관광기업과 AI 기술기업 가운데 어느 쪽을 주된 투자 대상으로 삼는가.",
+        "결성총회와 조합등록을 언제 마칠 계획인가."
+      ],
+      "decision_boundary": "대학기술지주라는 이유만으로 학교나 지역 기관이 LP로 참여한다고 쓰지 않는다. 출자확약과 약정액을 따로 확인한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5104",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "보도 단서",
+          "source_name": "보도 단서",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?key=202608310806092340101019",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-108",
+      "canonical_name": "호라이즌아이엠",
+      "aliases": [],
+      "entity_type": "company",
+      "type_label": "모태펀드 GP",
+      "identification_status": "원문 명칭 확인·정확한 법인 정보 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-108_호라이즌아이엠_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 호라이즌아이엠 주식회사를 관광 M&A·세컨더리 분야 운용사로 선정했다. 호라이즌아이엠과 인피니툼파트너스가 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 호라이즌아이엠 주식회사를 관광 M&A·세컨더리 분야 운용사로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "호라이즌아이엠과 인피니툼파트너스가 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "호라이즌아이엠 조합에 배정된 모태출자액, 목표 결성액, GP 커밋, 민간 LP는 공개되지 않았다."
+        },
+        {
+          "label": "보도",
+          "text": "회사 주주에게서 출자확약서(LOC)를 확보했고 민경철 대표가 투자 전략을 이끈다고 전해졌다."
+        },
+        {
+          "label": "보도불일치",
+          "text": "관련 기사 제목과 본문에 최소 결성액이 143억원·150억원으로 다르게 적혀 있어 회사별 공식 목표액으로 확정하지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "LOC를 낸 주주의 이름·액수·조건, 대표 운용역과 회사의 정확한 법인 정보도 따로 확인해야 한다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 호라이즌아이엠 주식회사를 관광 M&A·세컨더리 분야 운용사로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "호라이즌아이엠과 인피니툼파트너스가 선정된 두 조합의 모태출자액 합계는 200억원, 결성예정액 합계는 293억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "호라이즌아이엠 조합에 배정된 모태출자액, 목표 결성액, GP 커밋, 민간 LP는 공개되지 않았다."
+            },
+            {
+              "label": "보도",
+              "text": "회사 주주에게서 출자확약서(LOC)를 확보했고 민경철 대표가 투자 전략을 이끈다고 전해졌다."
+            },
+            {
+              "label": "보도불일치",
+              "text": "관련 기사 제목과 본문에 최소 결성액이 143억원·150억원으로 다르게 적혀 있어 회사별 공식 목표액으로 확정하지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "LOC를 낸 주주의 이름·액수·조건, 대표 운용역과 회사의 정확한 법인 정보도 따로 확인해야 한다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "같은 분야 선정사: ORG-057 인피니툼파트너스",
+        "관련 단서: CLUE-20260903-KVIC-002",
+        "관련 사건: EVT-20260827-KVIC-002",
+        "관련 관계: REL-20260827-KVIC-TS-ORG108",
+        "시트 연결: 단서_개체연결 78행"
+      ],
+      "questions": [
+        "법인명, 설립일, 주요 주주와 현재 대표자는 누구인가.",
+        "배정된 모태출자액과 목표 결성액은 각각 얼마인가.",
+        "대표 운용역과 과거 관광·M&A·세컨더리 투자 실적은 무엇인가.",
+        "민간 LP와 GP 커밋을 얼마까지 확보했는가.",
+        "결성총회와 조합등록은 언제 할 계획인가."
+      ],
+      "decision_boundary": "같은 분야의 합계 수치를 회사별 수치로 나누어 추정하지 않는다. 법인 식별과 운용인력 확인을 마치기 전에는 신생 운용사 여부도 단정하지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5104",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "보도 단서",
+          "source_name": "보도 단서",
+          "source_url": "https://www.topdaily.kr/articles/111712",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-109",
+      "canonical_name": "현대차증권",
+      "aliases": [],
+      "entity_type": "financial_institution",
+      "type_label": "증권사·모태펀드 GP",
+      "identification_status": "원문 명칭 확인·GP 담당 조직 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-08-27",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-109_현대차증권_기업카드.md",
+      "summary": "한국벤처투자는 2026년 8월 27일 현대차증권을 국민안전계정 재난안전 분야 운용사로 선정했다. 모태출자액은 50억원, 결성예정액은 105억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "한국벤처투자는 2026년 8월 27일 현대차증권을 국민안전계정 재난안전 분야 운용사로 선정했다."
+        },
+        {
+          "label": "확인",
+          "text": "모태출자액은 50억원, 결성예정액은 105억원이다."
+        },
+        {
+          "label": "회사발표",
+          "text": "펀드 가칭은 에이치엠에스(HMS) 첨단안전 S.A.F.E. 신기술사업투자조합이며 현대건설이 앵커 LP로 참여한다."
+        },
+        {
+          "label": "회사발표",
+          "text": "현대건설을 비롯한 출자자 구성을 마쳤다고 밝혔다. 정부 출자금은 50억원, 민간 출자금 합계는 55억원이다."
+        },
+        {
+          "label": "확인필요",
+          "text": "현대건설의 약정액, 현대차증권의 GP 커밋, 다른 외부 LP 명단, 약정서 서명·납입 단계, 결성 일정은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "한국벤처투자는 2026년 8월 27일 현대차증권을 국민안전계정 재난안전 분야 운용사로 선정했다."
+            },
+            {
+              "label": "확인",
+              "text": "모태출자액은 50억원, 결성예정액은 105억원이다."
+            },
+            {
+              "label": "회사발표",
+              "text": "펀드 가칭은 에이치엠에스(HMS) 첨단안전 S.A.F.E. 신기술사업투자조합이며 현대건설이 앵커 LP로 참여한다."
+            },
+            {
+              "label": "회사발표",
+              "text": "현대건설을 비롯한 출자자 구성을 마쳤다고 밝혔다. 정부 출자금은 50억원, 민간 출자금 합계는 55억원이다."
+            },
+            {
+              "label": "확인필요",
+              "text": "현대건설의 약정액, 현대차증권의 GP 커밋, 다른 외부 LP 명단, 약정서 서명·납입 단계, 결성 일정은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-002",
+        "관련 사건: EVT-20260827-KVIC-002",
+        "관련 관계: REL-20260827-KVIC-TS-ORG109",
+        "펀드 운용 관계: REL-20260827-HMCSEC-HMS-SAFE",
+        "앵커 LP: [ORG-152 현대건설](https://drive.google.com/file/d/1wUTV7uwTIuiA3HaPw4XmWDFZ0rvNfkaB/view)",
+        "선정 주체: ORG-008 한국벤처투자",
+        "시트 연결: 단서_개체연결 79행"
+      ],
+      "questions": [
+        "펀드를 맡은 부서와 대표 운용역은 누구인가.",
+        "현대차증권과 현대차그룹 계열사의 출자액은 각각 얼마인가.",
+        "외부 LP는 어디이며 내부 투자심의를 통과했는가.",
+        "재난안전 가운데 어떤 기술과 기업을 투자 대상으로 정했는가.",
+        "1차 결성, 결성총회, 조합등록 일정을 어떻게 잡았는가."
+      ],
+      "decision_boundary": "현대건설의 앵커 LP 참여와 출자자 구성 완료는 회사가 발표한 사실이다. 다만 현대건설의 약정액과 약정서 서명·납입은 공개되지 않았다. 그룹 협업 가능성과 실제 출자액을 구분한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "선정 공지",
+          "source_name": "선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5104",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "회사 배포 보도자료 전재본",
+          "source_name": "회사 배포 보도자료 전재본",
+          "source_url": "https://www.hankyung.com/article/202609016890P",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "회사발표 인용 보도",
+          "source_name": "회사발표 인용 보도",
+          "source_url": "https://www.viva100.com/article/20260901501203",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-110",
+      "canonical_name": "비전벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-110_비전벤처스_기업카드.md",
+      "summary": "비전벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 관광기업육성 분야에 단독 지원했다. 출자요청액은 115억원, 결성예정액은 177억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "비전벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 관광기업육성 분야에 단독 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "출자요청액은 115억원, 결성예정액은 177억원이다."
+        },
+        {
+          "label": "산술",
+          "text": "결성예정액에서 출자요청액을 빼면 62억원이다. 이를 실제 민간 LP 약정액으로 확정해서는 안 된다."
+        },
+        {
+          "label": "미확인",
+          "text": "선정 여부, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "비전벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 관광기업육성 분야에 단독 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "출자요청액은 115억원, 결성예정액은 177억원이다."
+            },
+            {
+              "label": "산술",
+              "text": "결성예정액에서 출자요청액을 빼면 62억원이다. 이를 실제 민간 LP 약정액으로 확정해서는 안 된다."
+            },
+            {
+              "label": "미확인",
+              "text": "선정 여부, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG110",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "177억원 가운데 모태출자 요청액을 뺀 재원은 어느 LP가 얼마씩 부담할 예정인가.",
+        "관광기업육성 투자 범위와 주목표 투자비율은 어떻게 설계했는가.",
+        "대표 운용역과 핵심운용인력은 누구이며 관광산업 투자 이력은 무엇인가.",
+        "GP 커밋, 관리보수, 성과보수 조건은 어떻게 제안했는가.",
+        "선정될 경우 결성총회와 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "단독 지원은 선정이 아니다. 출자확약서나 규약을 확인하기 전에는 산술상 62억원을 민간 LP 약정액으로 쓰지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-111",
+      "canonical_name": "넥스트지인베스트먼트",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-111_넥스트지인베스트먼트_기업카드.md",
+      "summary": "넥스트지인베스트먼트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야에는 9개 조합이 출자 1800억원을 요청했고 결성예정액 합계는 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "넥스트지인베스트먼트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야에는 9개 조합이 출자 1800억원을 요청했고 결성예정액 합계는 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "지원사별 출자요청액과 결성예정액은 공개되지 않았다."
+        },
+        {
+          "label": "단서",
+          "text": "원장에는 ‘2025 문화·관광 선정’ 이력이 적혀 있다. 선정 분야·조합·결성 결과는 별도 원문 확인이 필요하다."
+        },
+        {
+          "label": "미확인",
+          "text": "2026년 선정 여부, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "넥스트지인베스트먼트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야에는 9개 조합이 출자 1800억원을 요청했고 결성예정액 합계는 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "지원사별 출자요청액과 결성예정액은 공개되지 않았다."
+            },
+            {
+              "label": "단서",
+              "text": "원장에는 ‘2025 문화·관광 선정’ 이력이 적혀 있다. 선정 분야·조합·결성 결과는 별도 원문 확인이 필요하다."
+            },
+            {
+              "label": "미확인",
+              "text": "2026년 선정 여부, 대표 운용역, GP 커밋, 민간 LP, 결성 일정은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG111",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "이번 출자요청액과 결성예정액은 각각 얼마인가.",
+        "2025년 선정 조합은 실제로 언제 얼마로 결성됐고 현재 투자 속도는 어떤가.",
+        "이번 제안과 기존 문화·관광 펀드의 인력·투자영역은 어떻게 구분되는가.",
+        "민간 LP 후보와 내부 투자심의 진행 단계는 어디까지 왔는가.",
+        "대표 운용역, GP 커밋, 보수 조건은 어떻게 제안했는가."
+      ],
+      "decision_boundary": "분야 합계는 넥스트지인베스트먼트의 개별 신청액이 아니다. 과거 선정 단서도 당시 공식 선정·결성 원문을 대조한 뒤 확정한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-112",
+      "canonical_name": "로간벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-112_로간벤처스_기업카드.md",
+      "summary": "로간벤처스는 2026년 문화·관광계정 8월 수시 출자사업에서 CT와 청년콘텐츠 두 분야에 각각 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "로간벤처스는 2026년 문화·관광계정 8월 수시 출자사업에서 CT와 청년콘텐츠 두 분야에 각각 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "확인",
+          "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "로간벤처스가 두 분야에서 각각 요청한 금액은 공개되지 않았다."
+        },
+        {
+          "label": "단서",
+          "text": "원장에는 ‘2025 문화·관광 선정’ 이력이 적혀 있다. 공식 선정·결성 자료 대조가 필요하다."
+        },
+        {
+          "label": "미확인",
+          "text": "2026년 선정 여부와 두 제안의 인력·LP 구성은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "로간벤처스는 2026년 문화·관광계정 8월 수시 출자사업에서 CT와 청년콘텐츠 두 분야에 각각 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "확인",
+              "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "로간벤처스가 두 분야에서 각각 요청한 금액은 공개되지 않았다."
+            },
+            {
+              "label": "단서",
+              "text": "원장에는 ‘2025 문화·관광 선정’ 이력이 적혀 있다. 공식 선정·결성 자료 대조가 필요하다."
+            },
+            {
+              "label": "미확인",
+              "text": "2026년 선정 여부와 두 제안의 인력·LP 구성은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "CT 관계: REL-20260827-KVIC-CT-ORG112A",
+        "청년콘텐츠 관계: REL-20260827-KVIC-CT-ORG112B",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "두 분야에 제안한 출자요청액과 결성예정액은 각각 얼마인가.",
+        "대표 운용역·핵심인력·투자 파이프라인은 두 조합 사이에 겹치는가.",
+        "민간 LP 후보와 GP 커밋 재원은 두 조합에 어떻게 나뉘는가.",
+        "한 분야만 선정될 경우 어느 제안을 우선해 결성할 계획인가.",
+        "2025년 선정 조합의 실제 결성일·결성액·투자 실적은 무엇인가."
+      ],
+      "decision_boundary": "두 분야 지원은 두 건의 선정이 아니다. 분야별 합계를 개별 신청액으로 배분하거나, 겹치는 인력·LP를 확인 없이 이중 약정으로 계산하지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-113",
+      "canonical_name": "비커밍벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-113_비커밍벤처스_기업카드.md",
+      "summary": "비커밍벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "비커밍벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "비커밍벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "비커밍벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "비커밍벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG113",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "주목표 투자영역과 차별화한 콘텐츠 산업군은 무엇인가.",
+        "대표 운용역과 핵심운용인력의 CT 투자 이력은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 각 기관의 심의 단계는 어디까지 왔는가.",
+        "선정될 경우 첫 클로징과 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "CT 분야 합계는 비커밍벤처스의 개별 신청액이 아니다. 심사 결과가 나오기 전에는 지원 사실만 쓴다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-114",
+      "canonical_name": "어니스트벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-114_어니스트벤처스_기업카드.md",
+      "summary": "어니스트벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "어니스트벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "어니스트벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "어니스트벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "어니스트벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG114",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "이번 출자요청액과 결성예정액은 각각 얼마인가.",
+        "콘텐츠 분야 투자전략과 핵심 파이프라인은 무엇인가.",
+        "대표 운용역과 핵심운용인력의 유사 펀드 성과는 어떤가.",
+        "GP 커밋과 민간 LP 후보는 누구이며 투자심의 단계는 어디까지 왔는가.",
+        "선정될 경우 결성총회와 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "분야 합계를 개별 신청액으로 보지 않는다. LP 이름은 공식 확인이나 당사자 복수 확인 전까지 후보로만 관리한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-115",
+      "canonical_name": "에스비파트너스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-115_에스비파트너스_기업카드.md",
+      "summary": "에스비파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "에스비파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "에스비파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "에스비파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "에스비파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG115",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "CT 분야에서 집중할 세부 산업과 목표 수익률은 무엇인가.",
+        "대표 운용역과 핵심인력의 관련 투자·회수 사례는 무엇인가.",
+        "GP 커밋, 민간 LP 후보, 각 기관의 확약 단계는 어디까지 왔는가.",
+        "선정될 경우 첫 클로징을 언제 할 계획인가."
+      ],
+      "decision_boundary": "지원 사실은 선정이나 결성 가능성을 보장하지 않는다. 분야 합계를 개별 신청액으로 쓰지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-116",
+      "canonical_name": "이크럭스벤처파트너스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-116_이크럭스벤처파트너스_기업카드.md",
+      "summary": "이크럭스벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "이크럭스벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "이크럭스벤처파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "이크럭스벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "이크럭스벤처파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG116",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "이번 출자요청액과 결성예정액은 각각 얼마인가.",
+        "제안한 CT 세부 투자전략과 우선 검토 기업은 무엇인가.",
+        "대표 운용역과 핵심인력의 콘텐츠 투자 경험은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 투자심의 통과 여부는 어떤가.",
+        "선정될 경우 결성총회와 조합등록 일정은 어떻게 잡았는가."
+      ],
+      "decision_boundary": "분야 합계와 개별 신청액을 구분한다. 비공개 LP와 약정액은 당사자 확인 전까지 확정하지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-117",
+      "canonical_name": "주식회사 에이피투자금융",
+      "aliases": [],
+      "entity_type": "financial_institution",
+      "type_label": "투자금융사·모태펀드 GP 지원사",
+      "identification_status": "법인등기·등록 정보 대조 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-117_에이피투자금융_기업카드.md",
+      "summary": "원문에 적힌 에이피투자금융은 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "원문에 적힌 에이피투자금융은 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "지원 주체의 정확한 법인명·등록 유형, 개별 신청액, 선정 여부, 운용인력, LP 구성은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "원문에 적힌 에이피투자금융은 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "지원 주체의 정확한 법인명·등록 유형, 개별 신청액, 선정 여부, 운용인력, LP 구성은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG117",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "공고 원문의 ‘에이피투자금융’과 주식회사 에이피투자금융이 같은 법인인가.",
+        "벤처투자회사 등 운용 자격과 등록번호는 무엇인가.",
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "대표 운용역, GP 커밋, 민간 LP 후보는 누구인가.",
+        "선정될 경우 첫 클로징과 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "법인 식별이 끝나기 전에는 동명·유사 상호의 다른 회사를 합치지 않는다. 분야 합계도 개별 신청액으로 쓰지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-118",
+      "canonical_name": "크릿벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-118_크릿벤처스_기업카드.md",
+      "summary": "크릿벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "크릿벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "크릿벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "크릿벤처스는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "크릿벤처스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG118",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "CT 가운데 우선 투자할 세부 분야와 지역·단계 전략은 무엇인가.",
+        "대표 운용역과 핵심인력의 관련 투자 이력은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 각 기관의 투자심의 단계는 어디까지 왔는가.",
+        "선정될 경우 결성총회와 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "분야 합계는 크릿벤처스의 개별 신청액이 아니다. 신청과 선정, 선정과 결성을 각각 분리해 기록한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-119",
+      "canonical_name": "펜처인베스트",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "정확한 법인명·등록 정보 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-119_펜처인베스트_기업카드.md",
+      "summary": "원문에 적힌 펜처인베스트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다. CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "원문에 적힌 펜처인베스트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "‘펜처인베스트’의 정확한 법인명·등록 유형, 개별 신청액, 선정 여부, 운용인력, LP 구성은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "원문에 적힌 펜처인베스트는 2026년 문화·관광계정 8월 수시 출자사업의 CT 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "CT 분야 9개 조합의 출자요청액은 1800억원, 결성예정액은 3313억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "‘펜처인베스트’의 정확한 법인명·등록 유형, 개별 신청액, 선정 여부, 운용인력, LP 구성은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG119",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "지원서에 적힌 법인명과 사업자·벤처투자회사 등록번호는 무엇인가.",
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "대표 운용역과 핵심인력의 CT 투자 이력은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 각 기관의 투자심의 단계는 어디까지 왔는가.",
+        "선정될 경우 첫 클로징과 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "법인 식별 전에는 유사 상호 회사를 같은 개체로 합치지 않는다. 분야 합계도 개별 신청액으로 쓰지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-120",
+      "canonical_name": "쏠레어파트너스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-120_쏠레어파트너스_기업카드.md",
+      "summary": "쏠레어파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다. 청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "쏠레어파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "쏠레어파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "쏠레어파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "쏠레어파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG120",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "청년콘텐츠의 연령·업력·콘텐츠 범위를 어떻게 정의했는가.",
+        "대표 운용역과 핵심인력의 관련 투자·회수 경험은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 투자심의 단계는 어디까지 왔는가.",
+        "선정될 경우 첫 클로징과 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "청년콘텐츠 분야 합계는 쏠레어파트너스의 개별 신청액이 아니다. 지원 사실만으로 선정 가능성이나 LP 약정을 단정하지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-121",
+      "canonical_name": "아이비케이벤처투자",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·계열 관계와 출자 주체 구분 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-121_아이비케이벤처투자_기업카드.md",
+      "summary": "아이비케이벤처투자는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다. 청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "아이비케이벤처투자는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "아이비케이벤처투자의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "IBK 계열 관계와 IBK기업은행 등 계열사의 실제 출자 참여는 별개로 확인해야 한다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "아이비케이벤처투자는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "아이비케이벤처투자의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "IBK 계열 관계와 IBK기업은행 등 계열사의 실제 출자 참여는 별개로 확인해야 한다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG121",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "IBK기업은행이나 다른 계열사가 LP로 참여하는가. 참여한다면 확약액과 심의 단계는 무엇인가.",
+        "GP 자체 출자와 계열사 LP 출자를 각각 얼마로 제안했는가.",
+        "대표 운용역과 청년콘텐츠 투자전략은 무엇인가.",
+        "선정될 경우 결성총회와 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "계열 관계는 실제 LP 약정의 증거가 아니다. GP 출자와 계열사 LP 출자를 합치지 않고 출자 주체별로 확인한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-122",
+      "canonical_name": "오거스트벤처파트너스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP 지원사",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-122_오거스트벤처파트너스_기업카드.md",
+      "summary": "오거스트벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다. 청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "오거스트벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "오거스트벤처파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "오거스트벤처파트너스는 2026년 문화·관광계정 8월 수시 출자사업의 청년콘텐츠 분야에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "청년콘텐츠 분야 4개 조합의 출자요청액은 1000억원, 결성예정액은 1840억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "오거스트벤처파트너스의 개별 출자요청액·결성예정액, 선정 여부, 운용인력, LP 구성은 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-003",
+        "관련 사건: EVT-20260827-KVIC-003",
+        "관련 관계: REL-20260827-KVIC-CT-ORG122",
+        "사업 주체: ORG-008 한국벤처투자"
+      ],
+      "questions": [
+        "개별 출자요청액과 결성예정액은 각각 얼마인가.",
+        "청년콘텐츠 분야에서 우선 투자할 세부 산업과 기업 단계는 무엇인가.",
+        "대표 운용역과 핵심인력의 관련 투자·회수 경험은 무엇인가.",
+        "GP 커밋과 민간 LP 후보, 투자심의 단계는 어디까지 왔는가.",
+        "선정될 경우 첫 클로징과 조합등록 목표일은 언제인가."
+      ],
+      "decision_boundary": "분야 합계는 오거스트벤처파트너스의 개별 신청액이 아니다. 선정 결과와 실제 LP 약정은 공식 원문이나 당사자 확인 뒤 기록한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "지원 현황 공지",
+          "source_name": "지원 현황 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5105",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5105&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-123",
+      "canonical_name": "수인베스트먼트캐피탈",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 지원 GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-06-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-123_수인베스트먼트캐피탈_기업카드.md",
+      "summary": "수인베스트먼트캐피탈은 특허기술사업화 2026년 6월 수시 출자사업에 단독으로 한 조합을 지원했다. 이 분야에는 수인베스트먼트캐피탈 조합과 에이온인베스트먼트·신한캐피탈 공동GP 조합 등 두 조합이 접수됐다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "수인베스트먼트캐피탈은 특허기술사업화 2026년 6월 수시 출자사업에 단독으로 한 조합을 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "이 분야에는 수인베스트먼트캐피탈 조합과 에이온인베스트먼트·신한캐피탈 공동GP 조합 등 두 조합이 접수됐다."
+        },
+        {
+          "label": "확인",
+          "text": "두 조합의 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "회사별 요청액, 목표 결성액, 민간 LP, 대표 운용역, 선정 예정 조합 수는 공개되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "수인베스트먼트캐피탈은 특허기술사업화 2026년 6월 수시 출자사업에 단독으로 한 조합을 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "이 분야에는 수인베스트먼트캐피탈 조합과 에이온인베스트먼트·신한캐피탈 공동GP 조합 등 두 조합이 접수됐다."
+            },
+            {
+              "label": "확인",
+              "text": "두 조합의 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "회사별 요청액, 목표 결성액, 민간 LP, 대표 운용역, 선정 예정 조합 수는 공개되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-004",
+        "관련 사건: EVT-20260831-KVIC-004",
+        "관련 관계: REL-20260831-KVIC-IPB-ORG123",
+        "경쟁 지원 조합: ORG-124 에이온인베스트먼트·ORG-125 신한캐피탈 공동GP",
+        "시트 연결: 단서_개체연결 96행"
+      ],
+      "questions": [
+        "요청한 모태출자액과 목표 결성액은 각각 얼마인가.",
+        "대표 운용역과 특허기술사업화 투자 실적은 무엇인가.",
+        "민간 LP별 약정액과 GP 커밋은 얼마인가.",
+        "정책 출자 없이도 결성할 수 있는 최소 규모는 얼마인가.",
+        "선정 심사와 결성 일정에 맞춰 무엇을 준비하고 있는가."
+      ],
+      "decision_boundary": "두 조합만 지원했다는 사실만으로 선정 가능성이 높다고 쓰지 않는다. 선정 예정 조합 수와 심사 기준을 확인해야 한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "접수 공지",
+          "source_name": "접수 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5108",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5108&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-124",
+      "canonical_name": "에이온인베스트먼트",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 공동지원 GP",
+      "identification_status": "원문 명칭 확인·정확한 법인명 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-06-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-124_에이온인베스트먼트_기업카드.md",
+      "summary": "에이온인베스트먼트는 신한캐피탈과 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다. 분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "에이온인베스트먼트는 신한캐피탈과 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "에이온·신한 공동GP 조합의 개별 요청액과 목표 결성액은 공개되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "공동운용 계약, 대표 운용역, 투자위원회, 보수 배분, GP 커밋, 민간 LP도 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "에이온인베스트먼트는 신한캐피탈과 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "에이온·신한 공동GP 조합의 개별 요청액과 목표 결성액은 공개되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "공동운용 계약, 대표 운용역, 투자위원회, 보수 배분, GP 커밋, 민간 LP도 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "공동지원 GP: ORG-125 신한캐피탈",
+        "관련 단서: CLUE-20260903-KVIC-004",
+        "관련 사건: EVT-20260831-KVIC-004",
+        "관련 관계: REL-20260831-KVIC-IPB-ORG124",
+        "시트 연결: 단서_개체연결 97행"
+      ],
+      "questions": [
+        "목표 결성액과 모태출자 요청액은 각각 얼마인가.",
+        "에이온과 신한캐피탈 가운데 어느 회사가 대표 운용역을 내는가.",
+        "투자위원회 의결권과 거부권을 어떻게 나누는가.",
+        "보수·성과보수·GP 커밋을 어떤 비율로 배분하는가.",
+        "민간 LP와 선정 뒤 결성 일정을 어디까지 협의했는가."
+      ],
+      "decision_boundary": "공동으로 지원했다는 사실만으로 신한캐피탈이 앵커 LP라고 쓰지 않는다. 신한캐피탈의 GP 지위와 출자액을 따로 확인한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "접수 공지",
+          "source_name": "접수 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5108",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5108&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-125",
+      "canonical_name": "신한캐피탈",
+      "aliases": [],
+      "entity_type": "financial_institution",
+      "type_label": "캐피탈사·모태펀드 공동지원 GP",
+      "identification_status": "원문 명칭 확인·GP 담당 조직 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-06-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-125_신한캐피탈_기업카드.md",
+      "summary": "신한캐피탈은 에이온인베스트먼트와 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다. 분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "신한캐피탈은 에이온인베스트먼트와 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다."
+        },
+        {
+          "label": "확인",
+          "text": "분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+        },
+        {
+          "label": "미확인",
+          "text": "공동GP 조합의 개별 요청액과 목표 결성액, 신한캐피탈의 GP 커밋과 추가 출자액은 공개되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "대표 운용역, 공동운용 역할, 민간 LP, 결성 일정도 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "신한캐피탈은 에이온인베스트먼트와 공동으로 특허기술사업화 2026년 6월 수시 출자사업에 지원했다."
+            },
+            {
+              "label": "확인",
+              "text": "분야 전체에는 두 조합이 접수됐고 결성예정액 합계는 1000억원, 모태출자 요청액 합계는 125억원이다."
+            },
+            {
+              "label": "미확인",
+              "text": "공동GP 조합의 개별 요청액과 목표 결성액, 신한캐피탈의 GP 커밋과 추가 출자액은 공개되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "대표 운용역, 공동운용 역할, 민간 LP, 결성 일정도 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "공동지원 GP: ORG-124 에이온인베스트먼트",
+        "관련 단서: CLUE-20260903-KVIC-004",
+        "관련 사건: EVT-20260831-KVIC-004",
+        "관련 관계: REL-20260831-KVIC-IPB-ORG125",
+        "시트 연결: 단서_개체연결 98행"
+      ],
+      "questions": [
+        "신한캐피탈은 GP 업무와 출자 업무를 각각 어느 조직에서 맡는가.",
+        "공동GP 조합에 얼마를 출자할 계획인가.",
+        "대표 운용역과 투자위원회 구성은 어떻게 정했는가.",
+        "신한금융 계열사가 추가 LP로 참여하는가.",
+        "에이온인베스트먼트와 운용권·보수·성과보수를 어떻게 나누는가."
+      ],
+      "decision_boundary": "신한금융 계열사의 추가 출자는 아직 확인되지 않았다. 그룹 계열이라는 사실과 실제 약정을 구분한다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "접수 공지",
+          "source_name": "접수 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5108",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "첨부 원문",
+          "source_name": "첨부 원문",
+          "source_url": "https://www.kvic.or.kr/fileDown?boardDataNo=5108&idx=1",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-148",
+      "canonical_name": "마그나인베스트먼트",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·모태펀드 GP",
+      "identification_status": "원문 명칭 확인·법인 식별 대기",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-07-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-148_마그나인베스트먼트_기업카드.md",
+      "summary": "회사 홈페이지에서 박기일 대표이사, 전양우 CIO, 이석배 벤처투자본부장을 확인했다. 2024년 모태펀드 1차 정시 임팩트 분야에 선정돼 172억원 규모의 마그나 IMPACT 펀드를 결성했다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "회사 홈페이지에서 박기일 대표이사, 전양우 CIO, 이석배 벤처투자본부장을 확인했다."
+        },
+        {
+          "label": "확인",
+          "text": "2024년 모태펀드 1차 정시 임팩트 분야에 선정돼 172억원 규모의 마그나 IMPACT 펀드를 결성했다."
+        },
+        {
+          "label": "확인",
+          "text": "2026년 4월 29일 프로텍벤처스와 모태펀드 재도전 분야 공동GP로 선정됐다."
+        },
+        {
+          "label": "확인",
+          "text": "회사 펀드 현황에는 마그나-프로텍 REBOOT 펀드가 2026년 7월 347억원 규모로 표시돼 있다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "회사 홈페이지에서 박기일 대표이사, 전양우 CIO, 이석배 벤처투자본부장을 확인했다."
+            },
+            {
+              "label": "확인",
+              "text": "2024년 모태펀드 1차 정시 임팩트 분야에 선정돼 172억원 규모의 마그나 IMPACT 펀드를 결성했다."
+            },
+            {
+              "label": "확인",
+              "text": "2026년 4월 29일 프로텍벤처스와 모태펀드 재도전 분야 공동GP로 선정됐다."
+            },
+            {
+              "label": "확인",
+              "text": "회사 펀드 현황에는 마그나-프로텍 REBOOT 펀드가 2026년 7월 347억원 규모로 표시돼 있다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 인물: PER-056 박기일, PER-057 전양우, PER-058 이석배",
+        "공동GP: ORG-149 프로텍벤처스",
+        "관련 사건: EVT-20240329-KVIC-MAGNA-SEL, EVT-20260429-KVIC-MAGNA-PROTEC",
+        "관련 결성: FORM-2024-MAGNA-IMPACT, FORM-202607-MAGNA-PROTEC-REBOOT",
+        "관련 단서: CLUE-20260904-TEAM-002"
+      ],
+      "questions": [
+        "REBOOT 펀드 대표PM은 누구인가.",
+        "두 GP의 투자위원회 의결권과 운용 영역은 어떻게 나뉘는가.",
+        "관리보수·성과보수·GP 커밋은 어떤 비율로 배분하는가.",
+        "347억원 가운데 민간 LP별 약정액은 얼마인가.",
+        "2026년 7월의 정확한 결성총회일과 조합등록일은 언제인가."
+      ],
+      "decision_boundary": "",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "2024 선정 원문",
+          "source_name": "2024 선정 원문",
+          "source_url": "https://www.kvic.or.kr/upload/notice/20240329/20240329212121_22432.pdf",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "2026 선정 원문",
+          "source_name": "2026 선정 원문",
+          "source_url": "https://kvic.or.kr/upload/notice/20260429/20260429121837_76861.pdf",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "회사 인력·펀드 현황",
+          "source_name": "회사 인력·펀드 현황",
+          "source_url": "https://mgni.co.kr/",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-149",
+      "canonical_name": "프로텍벤처스",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·공동GP",
+      "identification_status": "원문 명칭 확인·법인 식별 대기",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-07-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-149_프로텍벤처스_기업카드.md",
+      "summary": "2026년 4월 29일 모태펀드 1차 정시 재도전 분야에서 마그나인베스트먼트와 공동GP로 선정됐다. 마그나인베스트먼트 회사 펀드 현황에서 마그나-프로텍 REBOOT 펀드의 2026년 7월 결성과 347억원 규모를 확인했다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "2026년 4월 29일 모태펀드 1차 정시 재도전 분야에서 마그나인베스트먼트와 공동GP로 선정됐다."
+        },
+        {
+          "label": "확인",
+          "text": "마그나인베스트먼트 회사 펀드 현황에서 마그나-프로텍 REBOOT 펀드의 2026년 7월 결성과 347억원 규모를 확인했다."
+        },
+        {
+          "label": "미확인",
+          "text": "프로텍벤처스의 법인 고유정보, 대표PM, 투자위원회 권한, 보수배분, GP 커밋은 아직 확정하지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "2026년 4월 29일 모태펀드 1차 정시 재도전 분야에서 마그나인베스트먼트와 공동GP로 선정됐다."
+            },
+            {
+              "label": "확인",
+              "text": "마그나인베스트먼트 회사 펀드 현황에서 마그나-프로텍 REBOOT 펀드의 2026년 7월 결성과 347억원 규모를 확인했다."
+            },
+            {
+              "label": "미확인",
+              "text": "프로텍벤처스의 법인 고유정보, 대표PM, 투자위원회 권한, 보수배분, GP 커밋은 아직 확정하지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "공동GP: ORG-148 마그나인베스트먼트",
+        "관련 사건: EVT-20260429-KVIC-MAGNA-PROTEC",
+        "관련 결성: FORM-202607-MAGNA-PROTEC-REBOOT",
+        "관련 단서: CLUE-20260904-TEAM-002"
+      ],
+      "questions": [
+        "법인등록번호와 정식 법인명은 무엇인가.",
+        "공동운용 계약에서 담당 산업·지역·투자단계가 어떻게 나뉘는가.",
+        "대표PM과 핵심운용인력은 누구이며 키맨 조항은 무엇인가.",
+        "독립적인 LP 모집 역할과 GP 커밋은 얼마인가."
+      ],
+      "decision_boundary": "",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "2026 선정 원문",
+          "source_name": "2026 선정 원문",
+          "source_url": "https://kvic.or.kr/upload/notice/20260429/20260429121837_76861.pdf",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "결성 확인",
+          "source_name": "결성 확인",
+          "source_url": "https://mgni.co.kr/",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-151",
+      "canonical_name": "대성창업투자",
+      "aliases": [
+        "대성창투"
+      ],
+      "entity_type": "vc",
+      "type_label": "VC·정책펀드 GP",
+      "identification_status": "원문 명칭 확인·법인 식별 대기",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2025-12-24",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-151_대성창업투자_기업카드.md",
+      "summary": "김영훈은 2024년 3월 이후 단독대표로 공시됐다. 박근진은 2024년 3월 대표이사·사내이사에서 사임했다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "김영훈은 2024년 3월 이후 단독대표로 공시됐다."
+        },
+        {
+          "label": "확인",
+          "text": "박근진은 2024년 3월 대표이사·사내이사에서 사임했다."
+        },
+        {
+          "label": "보도",
+          "text": "김완식은 CIO·전무로 투자실무와 심사역 관리를 총괄하는 것으로 보도됐다."
+        },
+        {
+          "label": "확인·원장",
+          "text": "2023년 정책펀드 반납 이력이 있고, 2025년 10월 모태펀드 LP첫걸음 세컨더리 분야에 다시 선정됐다."
+        },
+        {
+          "label": "보도",
+          "text": "대성 세컨더리 투자조합 2호는 2025년 12월 24일 300억원 규모로 결성된 것으로 파악됐다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "김영훈은 2024년 3월 이후 단독대표로 공시됐다."
+            },
+            {
+              "label": "확인",
+              "text": "박근진은 2024년 3월 대표이사·사내이사에서 사임했다."
+            },
+            {
+              "label": "보도",
+              "text": "김완식은 CIO·전무로 투자실무와 심사역 관리를 총괄하는 것으로 보도됐다."
+            },
+            {
+              "label": "확인·원장",
+              "text": "2023년 정책펀드 반납 이력이 있고, 2025년 10월 모태펀드 LP첫걸음 세컨더리 분야에 다시 선정됐다."
+            },
+            {
+              "label": "보도",
+              "text": "대성 세컨더리 투자조합 2호는 2025년 12월 24일 300억원 규모로 결성된 것으로 파악됐다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 인물: PER-064 김영훈, PER-065 박근진, PER-066 김완식",
+        "관련 사건: EVT-20240329-DAESUNG-CEO-RESET, EVT-20230428-KVIC-DAESUNG-KIP",
+        "관련 결성: FORM-2025-DAESUNG-SECONDARY2",
+        "관련 단서: CLUE-20260904-TEAM-004"
+      ],
+      "questions": [
+        "김영훈과 김완식 사이 LP 협상·투자위원회·인사 권한은 어떻게 나뉘는가.",
+        "2023년 반납 펀드와 2025년 결성 펀드의 대표PM·핵심인력은 어떻게 달라졌는가.",
+        "300억원의 LP별 약정액과 GP 커밋은 얼마인가.",
+        "결성총회일과 조합등록일은 2025년 12월 24일과 일치하는가."
+      ],
+      "decision_boundary": "",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "김영훈 공시",
+          "source_name": "김영훈 공시",
+          "source_url": "https://kind.krx.co.kr/external/2026/05/15/000342/20260515000656/11013.htm",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "박근진 공시",
+          "source_name": "박근진 공시",
+          "source_url": "https://kind.krx.co.kr/external/2024/03/21/000986/20240321004316/11011.htm",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "김완식 보도",
+          "source_name": "김완식 보도",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?code=00&key=202505151353271680102726",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "결성 보도",
+          "source_name": "결성 보도",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?code=0303&key=202512161534040200109694",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "ORG-152",
+      "canonical_name": "현대건설",
+      "aliases": [],
+      "entity_type": "company",
+      "type_label": "건설사·정책펀드 앵커 LP",
+      "identification_status": "법인 식별 완료·펀드 출자 세부 확인 필요",
+      "basis_date": "2026-09-04",
+      "latest_issue_at": null,
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "ORG-152_현대건설_기업카드.md",
+      "summary": "현대차증권이 배포한 보도자료는 현대건설을 가칭 에이치엠에스(HMS) 첨단안전 S.A.F.E. 신기술사업투자조합의 앵커 LP로 명시했다. 현대차증권은 현대건설을 비롯한 출자자 구성을 마쳤으며, 정부 출자금 50억원과 민간 출자금 55억원을 합쳐 105억원 규모로 펀드를 결성할 계획이라고 밝혔다.",
+      "current_status": [
+        {
+          "label": "회사발표",
+          "text": "현대차증권이 배포한 보도자료는 현대건설을 가칭 에이치엠에스(HMS) 첨단안전 S.A.F.E. 신기술사업투자조합의 앵커 LP로 명시했다."
+        },
+        {
+          "label": "회사발표",
+          "text": "현대차증권은 현대건설을 비롯한 출자자 구성을 마쳤으며, 정부 출자금 50억원과 민간 출자금 55억원을 합쳐 105억원 규모로 펀드를 결성할 계획이라고 밝혔다."
+        },
+        {
+          "label": "회사발표",
+          "text": "현대건설은 건설·플랜트·에너지·원전 현장과 H-Safe 오픈이노베이션 등 실증 채널을 연계할 예정이다."
+        },
+        {
+          "label": "미확인",
+          "text": "현대건설의 개별 약정액, 내부 투자심의일, 출자확약서나 약정서 서명일, 최초 납입일은 공개되지 않았다."
+        },
+        {
+          "label": "미확인",
+          "text": "출자자 구성을 마쳤다는 발표만으로 결성총회와 조합등록을 마쳤다고 볼 수 없다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "이번 펀드에서 확인된 역할",
+          "items": [
+            {
+              "label": "회사발표",
+              "text": "현대차증권이 배포한 보도자료는 현대건설을 가칭 에이치엠에스(HMS) 첨단안전 S.A.F.E. 신기술사업투자조합의 앵커 LP로 명시했다."
+            },
+            {
+              "label": "회사발표",
+              "text": "현대차증권은 현대건설을 비롯한 출자자 구성을 마쳤으며, 정부 출자금 50억원과 민간 출자금 55억원을 합쳐 105억원 규모로 펀드를 결성할 계획이라고 밝혔다."
+            },
+            {
+              "label": "회사발표",
+              "text": "현대건설은 건설·플랜트·에너지·원전 현장과 H-Safe 오픈이노베이션 등 실증 채널을 연계할 예정이다."
+            },
+            {
+              "label": "미확인",
+              "text": "현대건설의 개별 약정액, 내부 투자심의일, 출자확약서나 약정서 서명일, 최초 납입일은 공개되지 않았다."
+            },
+            {
+              "label": "미확인",
+              "text": "출자자 구성을 마쳤다는 발표만으로 결성총회와 조합등록을 마쳤다고 볼 수 없다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 단서: CLUE-20260903-KVIC-002",
+        "관련 사건: EVT-20260827-KVIC-002",
+        "관련 펀드: FUND-2026-HMS-SAFE-PENDING",
+        "관계ID: REL-20260901-HDEC-HMS-SAFE",
+        "시트: 개체_마스터, 관계_원장, 선정_결성_추적"
+      ],
+      "questions": [
+        "현대건설이 승인하거나 약정한 출자액은 얼마인가.",
+        "내부 투자심의와 출자확약서·조합규약 서명은 각각 언제 끝났는가.",
+        "첫 납입일과 납입액은 언제, 얼마로 정했는가.",
+        "현대건설 외 민간 LP와 현대차증권의 GP 커밋은 각각 얼마인가.",
+        "H-Safe 오픈이노베이션과 조합의 투자심사·실증 절차를 어떻게 연결하는가."
+      ],
+      "decision_boundary": "출자자 구성 완료는 회사의 발표다. 현대건설의 약정액과 법적 약정·납입 단계는 확인되지 않았다. 현대건설이 민간 출자금 55억원 전액을 부담한다고 추정하지 않는다.",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "현대차증권 배포 보도자료 전재본",
+          "source_name": "현대차증권 배포 보도자료 전재본",
+          "source_url": "https://www.hankyung.com/article/202609016890P",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "현대차증권 발표 인용 보도",
+          "source_name": "현대차증권 발표 인용 보도",
+          "source_url": "https://www.viva100.com/article/20260901501203",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "KVIC 선정 공지",
+          "source_name": "KVIC 선정 공지",
+          "source_url": "https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?pageNo=1&searchCategory=&searchType=all&searchWord=&id=5104",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "VAC-015",
+      "canonical_name": "미래에셋벤처투자",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC·상장 벤처캐피탈",
+      "identification_status": null,
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2026-04-24",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "VAC-015_미래에셋벤처투자_기업카드.md",
+      "summary": "김응석 대표이사 체제와 회사 공개 인력 구성을 확인했다. 김경모는 벤처투자3본부장·전무로 회사 공개자료에서 확인된다.",
+      "current_status": [
+        {
+          "label": "확인",
+          "text": "김응석 대표이사 체제와 회사 공개 인력 구성을 확인했다."
+        },
+        {
+          "label": "확인",
+          "text": "김경모는 벤처투자3본부장·전무로 회사 공개자료에서 확인된다."
+        },
+        {
+          "label": "보도",
+          "text": "김경모는 2026년 국민연금 벤처펀드의 대표펀드매니저로 보도됐다."
+        },
+        {
+          "label": "보도",
+          "text": "최태환은 미래에셋 딥테크 특허사업화 투자조합 대표펀드매니저, 조정현은 핵심운용인력으로 보도됐다."
+        },
+        {
+          "label": "확인·원장",
+          "text": "2026년 1월 30일 특허기술사업화 출자사업 선정 이력이 있다."
+        },
+        {
+          "label": "보도",
+          "text": "해당 펀드는 2026년 4월 24일 320억원 규모로 결성된 것으로 파악됐다. 정확한 최종 2차 클로징일은 확인되지 않았다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "확인",
+              "text": "김응석 대표이사 체제와 회사 공개 인력 구성을 확인했다."
+            },
+            {
+              "label": "확인",
+              "text": "김경모는 벤처투자3본부장·전무로 회사 공개자료에서 확인된다."
+            },
+            {
+              "label": "보도",
+              "text": "김경모는 2026년 국민연금 벤처펀드의 대표펀드매니저로 보도됐다."
+            },
+            {
+              "label": "보도",
+              "text": "최태환은 미래에셋 딥테크 특허사업화 투자조합 대표펀드매니저, 조정현은 핵심운용인력으로 보도됐다."
+            },
+            {
+              "label": "확인·원장",
+              "text": "2026년 1월 30일 특허기술사업화 출자사업 선정 이력이 있다."
+            },
+            {
+              "label": "보도",
+              "text": "해당 펀드는 2026년 4월 24일 320억원 규모로 결성된 것으로 파악됐다. 정확한 최종 2차 클로징일은 확인되지 않았다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 인물: PER-052 김응석, PER-053 김경모, PER-054 최태환, PER-055 조정현",
+        "관련 사건: EVT-20260130-KVIC-MIRAE-PATENT, EVT-20251031-MIRAE-KIMKM-PROMOTE",
+        "관련 결성: FORM-20260424-MIRAE-PATENT",
+        "관련 단서: CLUE-20260904-TEAM-001"
+      ],
+      "questions": [
+        "2022~2023년 실패 펀드와 2026년 펀드의 대표PM·키맨 구성이 어떻게 달라졌는가.",
+        "국민연금 펀드와 특허사업화 펀드의 투자위원회 의결권은 누구에게 있는가.",
+        "GP 커밋과 민간 LP별 약정액은 얼마인가.",
+        "1차 결성일, 2차 클로징일, 조합등록일을 각각 확인할 수 있는가."
+      ],
+      "decision_boundary": "",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "회사 인력",
+          "source_name": "회사 인력",
+          "source_url": "https://venture.miraeasset.co.kr/company.jsp",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "특허사업화 펀드 보도",
+          "source_name": "특허사업화 펀드 보도",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?code=0701&key=202608240822481180109543",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    },
+    {
+      "company_id": "VAC-039",
+      "canonical_name": "UTC인베스트먼트",
+      "aliases": [],
+      "entity_type": "vc",
+      "type_label": "VC",
+      "identification_status": null,
+      "basis_date": "2026-09-04",
+      "latest_issue_at": "2025-08-01",
+      "source_system": "구글 드라이브 · 03_기업별",
+      "file_name": "VAC-039_UTC인베스트먼트_기업카드.md",
+      "summary": "2025년 8월 한승이 대표로 취임했고, 같은 해 9월 김동환 해임 뒤 단독대표 체제로 전환된 것으로 보도됐다. 김동환은 UTC인베스트먼트에서 다수 펀드 대표펀드매니저를 맡은 뒤 이탈해 2026년 넥시드벤처스를 설립한 것으로 파악됐다.",
+      "current_status": [
+        {
+          "label": "보도",
+          "text": "2025년 8월 한승이 대표로 취임했고, 같은 해 9월 김동환 해임 뒤 단독대표 체제로 전환된 것으로 보도됐다."
+        },
+        {
+          "label": "보도",
+          "text": "김동환은 UTC인베스트먼트에서 다수 펀드 대표펀드매니저를 맡은 뒤 이탈해 2026년 넥시드벤처스를 설립한 것으로 파악됐다."
+        },
+        {
+          "label": "보도",
+          "text": "김세연은 2024년 운용인력 이탈 과정에서 회사를 떠난 전 대표로 보도됐다."
+        },
+        {
+          "label": "보도",
+          "text": "조현진과 이길훈은 2025년 농금원 민간제안 펀드 핵심운용인력으로 확인되나 2026년 현재 보직은 다시 확인해야 한다."
+        }
+      ],
+      "drive_sections": [
+        {
+          "title": "현재 상태",
+          "items": [
+            {
+              "label": "보도",
+              "text": "2025년 8월 한승이 대표로 취임했고, 같은 해 9월 김동환 해임 뒤 단독대표 체제로 전환된 것으로 보도됐다."
+            },
+            {
+              "label": "보도",
+              "text": "김동환은 UTC인베스트먼트에서 다수 펀드 대표펀드매니저를 맡은 뒤 이탈해 2026년 넥시드벤처스를 설립한 것으로 파악됐다."
+            },
+            {
+              "label": "보도",
+              "text": "김세연은 2024년 운용인력 이탈 과정에서 회사를 떠난 전 대표로 보도됐다."
+            },
+            {
+              "label": "보도",
+              "text": "조현진과 이길훈은 2025년 농금원 민간제안 펀드 핵심운용인력으로 확인되나 2026년 현재 보직은 다시 확인해야 한다."
+            }
+          ]
+        }
+      ],
+      "connections": [
+        "관련 인물: PER-059 한승, PER-060 김동환, PER-061 김세연, PER-062 조현진, PER-063 이길훈",
+        "관련 사건: EVT-20250904-UTC-CEO-RESET, EVT-2024H1-UTC-KEYEXIT, EVT-20241114-UTC-JOHJ-PROMOTE, EVT-20240401-UTC-VCREORG",
+        "관련 단서: CLUE-20260904-TEAM-003"
+      ],
+      "questions": [
+        "운용 중인 펀드별 대표PM과 핵심운용인력은 현재 누구인가.",
+        "대표PM 변경에 LP 동의나 총회 결의가 있었는가.",
+        "키맨 조항 발동, 투자 중단, 관리보수 조정이 있었는가.",
+        "2024~2025년 이탈한 인력이 함께 옮긴 펀드·딜·조직은 무엇인가."
+      ],
+      "decision_boundary": "",
+      "next_updates": [],
+      "sources": [
+        {
+          "title": "대표 체제 보도",
+          "source_name": "대표 체제 보도",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?code=0303&key=202509021953051840101343",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "이탈 보도",
+          "source_name": "이탈 보도",
+          "source_url": "https://v.daum.net/v/20250902173648342",
+          "fact": null,
+          "verification_status": null
+        },
+        {
+          "title": "운용인력 보도",
+          "source_name": "운용인력 보도",
+          "source_url": "https://www.thebell.co.kr/front/newsview.asp?key=202506240843028500101859",
+          "fact": null,
+          "verification_status": null
+        }
+      ]
+    }
+  ]
+}
