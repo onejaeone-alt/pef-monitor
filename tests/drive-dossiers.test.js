@@ -34,6 +34,16 @@ test("감시목록의 약칭도 기존 취재파일 이름에 합쳐서 찾는�
   assert.equal(matches.some((item) => item.canonical_name === "가비아"), true);
 });
 
+test("취재파일 데이터가 없는 감시대상도 상세 날개를 열 수 있다", () => {
+  const graph = mergeDriveDossiers(buildOntology([]));
+  const match = matchDossiersInText("국민연금이 새 위탁운용사를 선정했다.")[0];
+  const dossier = buildEntityDossier(graph, match.entity_key);
+
+  assert.equal(dossier.entity.canonical_name, "국민연금공단 기금운용본부");
+  assert.equal(dossier.entity.aliases.includes("국민연금"), true);
+  assert.equal(dossier.type_label, "LP");
+});
+
 test("드라이브 기업카드 100곳 이상을 전체 검색 대상으로 보존한다", () => {
   assert.equal(DRIVE_DOSSIERS.length >= 100, true);
   assert.equal(searchDriveDossiers("VIG")[0].canonical_name, "VIG파트너스");
