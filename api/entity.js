@@ -6,13 +6,15 @@ const { mergeDriveDossiers, searchDriveDossiers } = require('../lib/drive-dossie
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
 const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
+const { getInstitutionBasicFinalOverride } = require('../lib/institution-basic-final-overrides');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
 function applyBasicInfo(dossier) {
   const base = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name) || {};
   const override = getInstitutionBasicOverride(dossier?.company_id) || {};
-  const basic = { ...base, ...override };
+  const finalOverride = getInstitutionBasicFinalOverride(dossier?.company_id) || {};
+  const basic = { ...base, ...override, ...finalOverride };
   if (!Object.keys(basic).length) return dossier;
   const current = dossier.profile_overview || {};
   dossier.profile_overview = {
@@ -44,7 +46,6 @@ module.exports = async (req, res) => {
   const entityKey = String(req.query.entity_key || '').trim();
   if (!entityKey || entityKey.length > 120) return res.status(400).json({ ok:false, error:'확인할 기업·운용사·펀드·인물을 골라주세요.' });
   try {
-    // 취재파일을 열 때마다 외부 사이트를 다시 읽지 않고 저장된 최근 단서를 먼저 쓴다.
     let items = await loadRecentReportingLeads(14).catch(() => []);
     if (!items.length) {
       const collected = await collectReportingSignals({ days: 14 });
