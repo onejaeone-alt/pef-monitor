@@ -8,6 +8,7 @@ const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
 const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
 const { getInstitutionBasicFinalOverride } = require('../lib/institution-basic-final-overrides');
 const { getInstitutionBasicLatestOverride } = require('../lib/institution-basic-latest-overrides');
+const { getInstitutionHomepageOverride } = require('../lib/institution-homepage-overrides');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
@@ -16,8 +17,9 @@ function applyBasicInfo(dossier) {
   const override = getInstitutionBasicOverride(dossier?.company_id) || {};
   const finalOverride = getInstitutionBasicFinalOverride(dossier?.company_id) || {};
   const latestOverride = getInstitutionBasicLatestOverride(dossier?.company_id) || {};
+  const homepageOverride = getInstitutionHomepageOverride(dossier?.company_id);
   const basic = { ...base, ...override, ...finalOverride, ...latestOverride };
-  if (!Object.keys(basic).length) return dossier;
+  if (!Object.keys(basic).length && !homepageOverride) return dossier;
   const current = dossier.profile_overview || {};
   dossier.profile_overview = {
     ...current,
@@ -28,7 +30,7 @@ function applyBasicInfo(dossier) {
     assets_under_management: basic.assets_under_management || current.assets_under_management,
     portfolio_count: basic.portfolio_count || current.portfolio_count,
     investment_count: basic.investment_count || current.investment_count || null,
-    homepage: basic.homepage || current.homepage || null,
+    homepage: homepageOverride || basic.homepage || current.homepage || null,
     basis_date: basic.basis_date || current.basis_date,
     basic_source_url: basic.source_url || current.basic_source_url || null,
   };
