@@ -127,3 +127,9 @@ test("뉴스 화면은 매체 이름표 대신 취재파일 키워드와 상세 
   assert.doesNotMatch(html, /<div class="source-chips">/);
   assert.doesNotMatch(html, /source_name\|\|'출처 미상'/);
 });
+
+test("상세 서랍은 관련 최신뉴스를 최대 다섯 건만 보여준다", () => {
+  const script = fs.readFileSync(path.join(__dirname, "../dossier-drawer.js"), "utf8");
+  assert.match(script, /related_news \|\| \[\]\)\.slice\(0, 5\)/);
+  assert.match(script, /관련 최신뉴스/);
+});
