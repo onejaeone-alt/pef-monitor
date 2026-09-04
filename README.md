@@ -146,7 +146,6 @@ Vercel Cron에서는 현재 KVIC 자료만 자동 백필·갱신합니다.
 - `api/ontology.js` — 최근 단서 관계 변환
 - `api/entity.js` — 대상별 취재파일
 - `api/entity.js?action=search` — 드라이브 기업카드 검색
-- `api/nugu.js` — 누구머니 투자사 평판 조회
 - `api/writer.js` — 자료 대조와 ChatGPT용 취재패키지 생성
 - `lib/chatgpt-package.js` — 원재연 기사 스타일을 포함한 복사용 패키지 생성
 - `lib/writer-principles.js` — 기사 형식·검증 원칙
