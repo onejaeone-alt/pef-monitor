@@ -29,11 +29,17 @@ test('clusters repeated coverage of the same deal', () => {
     target:{ id:'A-013', name:'MBK파트너스', category:'pef' }, snippet:''
   };
   const issues = clusterIssues([
-    { ...base, title:'MBK, 홈플러스 매각 본입찰 돌입', source_name:'서울경제', source_url:'https://a.test/1', published_at:'2026-09-03T01:00:00Z' },
-    { ...base, title:'홈플러스 매각 본입찰…MBK 새 주인 찾기 속도', source_name:'이데일리', source_url:'https://b.test/2', published_at:'2026-09-02T02:00:00Z' },
+    { ...base, title:'MBK, 홈플러스 매각 본입찰 돌입', source_name:'서울경제', source_url:'https://a.test/1', published_at:'2026-09-03T01:00:00Z', related_entities:[
+      { entity_key:'pef:mbk', canonical_name:'MBK파트너스' },
+      { entity_key:'company:homeplus', canonical_name:'홈플러스' },
+    ] },
+    { ...base, title:'홈플러스 매각 본입찰…MBK 새 주인 찾기 속도', source_name:'이데일리', source_url:'https://b.test/2', published_at:'2026-09-02T02:00:00Z', related_entities:[
+      { entity_key:'company:homeplus', canonical_name:'홈플러스' },
+    ] },
   ]);
   assert.equal(issues.length, 1);
   assert.equal(issues[0].article_count, 2);
   assert.equal(issues[0].source_count, 2);
   assert.equal(issues[0].ongoing, true);
+  assert.deepEqual(issues[0].related_entities.map((item)=>item.canonical_name), ['MBK파트너스','홈플러스']);
 });

@@ -1,5 +1,6 @@
 const { parseGoogleNewsRss } = require('../lib/context-sources');
 const { findWatchTarget, WATCH_TARGETS } = require('../lib/watch-config');
+const { matchDossiersInText } = require('../lib/drive-dossiers');
 const { fetchJakMembers } = require('../lib/jak-members');
 const {
   clusterIssues,
@@ -64,6 +65,7 @@ module.exports = async (req, res) => {
 
       const text = `${item.title} ${item.snippet || ''}`;
       const target = findWatchTarget(text, WATCH_TARGETS);
+      const relatedEntities = matchDossiersInText(text, 6);
       if (!shouldKeep(item, target, jak.names)) continue;
       const [theme_id, theme_label] = theme(text);
       items.push({
@@ -75,6 +77,7 @@ module.exports = async (req, res) => {
         source_url: item.source_url,
         snippet: item.snippet || '',
         target: target ? { id: target.id, name: target.name, category: target.category } : null,
+        related_entities: relatedEntities,
         theme_id,
         theme_label,
         event_label: eventLabel(text),

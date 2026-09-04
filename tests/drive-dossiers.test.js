@@ -7,10 +7,26 @@ const { buildOntology } = require("../lib/ontology");
 const { mergeCuratedGpKnowledge } = require("../lib/curated-gp-knowledge");
 const {
   DRIVE_DOSSIERS,
+  matchDossiersInText,
   mergeDriveDossiers,
   searchDriveDossiers,
   selectFeaturedDossiers,
 } = require("../lib/drive-dossiers");
+
+test("뉴스 제목과 요약에서 취재파일 이름과 별칭을 찾는다", () => {
+  const matches = matchDossiersInText("국민연금이 VIG파트너스의 새 펀드에 출자하는 방안을 검토한다.");
+  assert.deepEqual(
+    matches.map((item) => item.canonical_name).sort(),
+    ["국민연금공단 기금운용본부", "VIG파트너스"].sort(),
+  );
+  assert.equal(matches.every((item) => item.entity_key && item.type_label), true);
+});
+
+test("여러 취재파일이 함께 쓰는 짧은 별칭은 잘못 붙이지 않는다", () => {
+  const matches = matchDossiersInText("IMM인베스트먼트가 후속 투자에 참여했다.");
+  assert.equal(matches.some((item) => item.canonical_name === "IMM인베스트먼트"), true);
+  assert.equal(matches.some((item) => item.canonical_name === "IMM프라이빗에쿼티"), false);
+});
 
 test("드라이브 기업카드 100곳 이상을 전체 검색 대상으로 보존한다", () => {
   assert.equal(DRIVE_DOSSIERS.length >= 100, true);
@@ -27,7 +43,7 @@ test("바로가기는 최근 14일 이슈가 있는 취재파일만 6개까지 �
   const items = selectFeaturedDossiers({}, { now: "2026-09-04T12:00:00+09:00", days: 14, limit: 6 });
   assert.equal(items.length, 6);
   assert.equal(items.every((item) => item.updated_at >= "2026-08-21"), true);
-  assert.equal(items.some((item) => item.canonical_name === "현대차증권"), true);
+  assert.equal(items.some((item) => item.canonical_name === "VIG파트너스"), true);
   assert.equal(items.some((item) => item.canonical_name === "대성창업투자"), false);
 });
 
@@ -84,4 +100,14 @@ test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한�
   assert.doesNotMatch(html, /<h3>현재 상태<\/h3>|<h3>판단 경계<\/h3>|<h3>먼저 물어볼 것<\/h3>/);
   assert.doesNotMatch(html, /<h3>관련 거래<\/h3>|<h3>다음 갱신 조건<\/h3>|바로 물어볼 것|취재에 쓰는 이유/);
   assert.doesNotMatch(html, /최근 14일 직접 관계|<h3>직접 관계<\/h3>/);
+});
+
+test("뉴스 화면은 매체 이름표 대신 취재파일 키워드와 상세 서랍을 사용한다", () => {
+  const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
+  assert.match(html, /dossier-drawer\.css/);
+  assert.match(html, /dossier-drawer\.js/);
+  assert.match(html, /related_entities/);
+  assert.match(html, /DossierDrawer\?\.chips/);
+  assert.doesNotMatch(html, /<div class="source-chips">/);
+  assert.doesNotMatch(html, /source_name\|\|'출처 미상'/);
 });
