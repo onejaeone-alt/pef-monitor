@@ -67,12 +67,13 @@ test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한�
   assert.match(html, /<h2>취재파일<\/h2>/);
   assert.doesNotMatch(html, /관계·취재파일|관계 취재파일/);
   assert.match(html, /id="dossierSearch"/);
+  assert.equal(html.indexOf('id="dossierSearch"') < html.indexOf('class="stats"'), true);
   assert.match(html, /\/api\/entity\?action=search/);
   assert.match(html, /data-entity/);
   assert.match(html, /관련 뉴스/);
   assert.match(html, /최근 14일 안에 새 이슈가 확인된 대상만 표시합니다/);
   assert.doesNotMatch(html, /<h3>드라이브 연결<\/h3>/);
-  assert.match(html, /바로가기에 보이지 않는 취재파일도 검색할 수 있습니다/);
+  assert.match(html, /기업이나 운용사 이름, 확인하려는 이슈를 입력하세요/);
   assert.doesNotMatch(html, /최근 14일 취재 단서/);
   assert.match(html, /취재에 쓰는 이유/);
   assert.match(html, /바로 물어볼 것/);
