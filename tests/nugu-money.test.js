@@ -58,7 +58,10 @@ test("부분 문자열만 겹치는 투자사는 잘못 연결하지 않는다",
 
 test("공개 프로필에는 후기 식별자를 제외하고 최대 세 건만 담는다", async () => {
   resetNuguMoneyCache();
-  const fetchImpl = async () => ({
+  let request;
+  const fetchImpl = async (url, options) => {
+    request = { url, options };
+    return ({
     ok: true,
     status: 200,
     json: async () => [{
@@ -70,9 +73,16 @@ test("공개 프로필에는 후기 식별자를 제외하고 최대 세 건만 
         reviewID: `review-${index + 1}`,
       })),
     }],
-  });
+    });
+  };
   const profile = await getNuguMoneyProfile("마그나", { fetchImpl, force: true, reviewLimit: 3 });
   assert.equal(profile.found, true);
   assert.equal(profile.review_excerpts.length, 3);
   assert.equal("reviewID" in profile.review_excerpts[0], false);
+  assert.equal(request.url, "https://nugu-backend.vercel.app/reviews");
+  assert.equal(request.options.cache, "no-store");
+  assert.equal(request.options.redirect, "follow");
+  assert.equal(request.options.headers.Origin, "https://nugu.money");
+  assert.equal(request.options.headers.Referer, "https://nugu.money/");
+  assert.match(request.options.headers["User-Agent"], /^PEF-Monitor\//);
 });
