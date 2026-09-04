@@ -6,7 +6,7 @@ const {
   parseFundPayload,
   recentFundWindow,
 } = require('../lib/kvic');
-const { LIST_URL, managerCandidates, parseDetailPage, parseListPage, preferredPdfAttachment } = require('../lib/kvic-notices');
+const { LIST_URL, managerCandidates, parseDetailPage, parseListPage, preferredPdfAttachment, verifiedSelectionManagers } = require('../lib/kvic-notices');
 const { attachFormation, buildAccountStats, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 const { buildKstartupUrl, buildManagerUrl, parseKstartup, parseManagers } = require('../lib/policy-sources');
 
@@ -129,10 +129,13 @@ async function hydrateLiveNotice(notice) {
         catch (error) { pdfError = String(error.message || error).slice(0,200); }
       }
     }
-    const managers = managerCandidates(`${detail.page_text || ''}\n${pdfText}`);
+    const extractedManagers = managerCandidates(`${detail.page_text || ''}\n${pdfText}`);
+    const verifiedManagers = verifiedSelectionManagers(detail);
+    const managers = extractedManagers.length ? extractedManagers : verifiedManagers;
     return {
       ...detail,
       manager_candidates: managers,
+      manager_candidates_source: extractedManagers.length ? 'kvic_pdf' : verifiedManagers.length ? 'verified_selection_result' : null,
       attachment_text: pdfText || null,
       attachment_parse_error: pdfError,
       live_list_only: false,

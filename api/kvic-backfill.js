@@ -5,6 +5,7 @@ const {
   parseListPage,
   preferredPdfAttachment,
   toReportingLead,
+  verifiedSelectionManagers,
 } = require("../lib/kvic-notices");
 const { persistReportingLeads } = require("../lib/supabase");
 
@@ -118,6 +119,12 @@ async function hydrateNotice(notice, pdfMode) {
         detail.attachment_parse_error = String(error.message || error).slice(0, 300);
       }
     }
+  }
+  if (!detail.manager_candidates.length) {
+    detail.manager_candidates = verifiedSelectionManagers(detail);
+    if (detail.manager_candidates.length) detail.manager_candidates_source = "verified_selection_result";
+  } else {
+    detail.manager_candidates_source = "kvic_pdf";
   }
   return detail;
 }

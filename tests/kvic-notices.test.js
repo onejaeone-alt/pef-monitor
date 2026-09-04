@@ -8,6 +8,7 @@ const {
   parseListPage,
   preferredPdfAttachment,
   stageFromTitle,
+  verifiedSelectionManagers,
 } = require("../lib/kvic-notices");
 
 test("KVIC 목록에서 단계와 게시물 ID를 뽑는다", () => {
@@ -71,6 +72,15 @@ test("PDF 바로보기보다 실제 다운로드 첨부파일을 고른다", () 
     url: "https://www.kvic.or.kr/fileDown?boardDataNo=5104&idx=1",
   };
   assert.equal(preferredPdfAttachment([viewer, download]), download);
+});
+
+test("KVIC 다운로드가 막히면 검증한 선정 GP 명단을 쓴다", () => {
+  assert.deepEqual(verifiedSelectionManagers({ notice_id:"5103", stage:"selection" }), [
+    "크로스로드파트너스",
+    "디티앤인베스트먼트",
+    "씨케이디창업투자",
+  ]);
+  assert.deepEqual(verifiedSelectionManagers({ notice_id:"5103", stage:"application" }), []);
 });
 
 test("제목만으로 출자사업 단계를 분류한다", () => {
