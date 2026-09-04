@@ -61,8 +61,11 @@ test("드라이브 카드와 기존 선정 이력을 같은 취재파일에 합�
   assert.equal(dossier.evidence.some((item) => item.source_name === "선정 공지"), true);
 });
 
-test("관계 화면은 전체 검색과 같은 상세 서랍을 사용한다", () => {
+test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한다", () => {
   const html = fs.readFileSync(path.join(__dirname, "../relations.html"), "utf8");
+  assert.match(html, /<title>IB 취재 레이더 · 취재파일<\/title>/);
+  assert.match(html, /<h2>취재파일<\/h2>/);
+  assert.doesNotMatch(html, /관계·취재파일|관계 취재파일/);
   assert.match(html, /id="dossierSearch"/);
   assert.match(html, /\/api\/entity\?action=search/);
   assert.match(html, /data-entity/);
