@@ -7,6 +7,7 @@ const { collectReportingSignals } = require('../lib/reporting-signals');
 const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
 const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
 const { getInstitutionBasicFinalOverride } = require('../lib/institution-basic-final-overrides');
+const { getInstitutionBasicLatestOverride } = require('../lib/institution-basic-latest-overrides');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
@@ -14,7 +15,8 @@ function applyBasicInfo(dossier) {
   const base = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name) || {};
   const override = getInstitutionBasicOverride(dossier?.company_id) || {};
   const finalOverride = getInstitutionBasicFinalOverride(dossier?.company_id) || {};
-  const basic = { ...base, ...override, ...finalOverride };
+  const latestOverride = getInstitutionBasicLatestOverride(dossier?.company_id) || {};
+  const basic = { ...base, ...override, ...finalOverride, ...latestOverride };
   if (!Object.keys(basic).length) return dossier;
   const current = dossier.profile_overview || {};
   dossier.profile_overview = {
