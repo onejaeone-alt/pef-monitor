@@ -28,6 +28,12 @@ test("여러 취재파일이 함께 쓰는 짧은 별칭은 잘못 붙이지 않
   assert.equal(matches.some((item) => item.canonical_name === "IMM프라이빗에쿼티"), false);
 });
 
+test("감시목록의 약칭도 기존 취재파일 이름에 합쳐서 찾는다", () => {
+  const matches = matchDossiersInText("맥쿼리 공개매수 관련 가비아 측 입장이 내주 나온다.");
+  assert.equal(matches.some((item) => item.canonical_name === "맥쿼리자산운용그룹 한국"), true);
+  assert.equal(matches.some((item) => item.canonical_name === "가비아"), true);
+});
+
 test("드라이브 기업카드 100곳 이상을 전체 검색 대상으로 보존한다", () => {
   assert.equal(DRIVE_DOSSIERS.length >= 100, true);
   assert.equal(searchDriveDossiers("VIG")[0].canonical_name, "VIG파트너스");
