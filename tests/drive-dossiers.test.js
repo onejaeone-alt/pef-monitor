@@ -12,13 +12,13 @@ const {
   selectFeaturedDossiers,
 } = require("../lib/drive-dossiers");
 
-test("드라이브 기업카드 30개를 전체 검색 대상으로 보존한다", () => {
-  assert.equal(DRIVE_DOSSIERS.length, 30);
+test("드라이브 기업카드 100곳 이상을 전체 검색 대상으로 보존한다", () => {
+  assert.equal(DRIVE_DOSSIERS.length >= 100, true);
   assert.equal(searchDriveDossiers("VIG")[0].canonical_name, "VIG파트너스");
   assert.equal(searchDriveDossiers("씨케이")[0].canonical_name, "씨케이디창업투자");
   assert.deepEqual(
     searchDriveDossiers("현대").map((item) => item.canonical_name).sort(),
-    ["현대건설", "현대차증권"].sort(),
+    ["현대건설", "현대차그룹 ZER01NE", "현대차증권"].sort(),
   );
   assert.equal(searchDriveDossiers("특허계정").some((item) => item.canonical_name === "디티앤인베스트먼트"), true);
 });
@@ -54,7 +54,7 @@ test("드라이브 카드와 기존 선정 이력을 같은 취재파일에 합�
   const ckd = graph.nodes.find((node) => node.canonical_name === "씨케이디창업투자");
   const dossier = buildEntityDossier(graph, ckd.entity_key);
 
-  assert.equal(graph.dossier_count, 30);
+  assert.equal(graph.dossier_count, DRIVE_DOSSIERS.length);
   assert.equal(dossier.current_status.some((item) => item.text.includes("2026년 8월 27일")), true);
   assert.equal(dossier.selection_history.length, 2);
   assert.equal(dossier.decision_boundary.includes("인과는 아직 확인되지 않았다"), true);
@@ -73,4 +73,8 @@ test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한�
   assert.match(html, /최근 14일 안에 새 이슈가 확인된 대상만 표시합니다/);
   assert.doesNotMatch(html, /<h3>드라이브 연결<\/h3>/);
   assert.match(html, /바로가기에 보이지 않는 취재파일도 검색할 수 있습니다/);
+  assert.match(html, /최근 14일 취재 단서/);
+  assert.match(html, /취재에 쓰는 이유/);
+  assert.match(html, /다음 확인/);
+  assert.doesNotMatch(html, /최근 14일 직접 관계|<h3>직접 관계<\/h3>/);
 });

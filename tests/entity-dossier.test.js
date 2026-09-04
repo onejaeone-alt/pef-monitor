@@ -36,7 +36,7 @@ function sampleGraph() {
   ]);
 }
 
-test("운용사 취재파일에 직접 관계·거래·근거·질문을 묶는다", () => {
+test("운용사 취재파일에 관계별 취재 가치와 다음 질문을 묶는다", () => {
   const graph = sampleGraph();
   const imm = graph.nodes.find((node) => node.canonical_name === "IMM인베스트먼트");
   const dossier = buildEntityDossier(graph, imm.entity_key);
@@ -46,7 +46,10 @@ test("운용사 취재파일에 직접 관계·거래·근거·질문을 묶는�
   assert.equal(dossier.deals.length, 2);
   assert.equal(dossier.evidence.some((item) => item.source_url === "https://example.com/deal"), true);
   assert.equal(dossier.questions.some((question) => question.includes("우선협상대상자")), true);
-  assert.equal(dossier.summary.startsWith("IMM인베스트먼트와"), true);
+  assert.equal(dossier.relations[0].category, "M&A");
+  assert.equal(dossier.relations[0].reporting_value.includes("제시 가격"), true);
+  assert.equal(dossier.relations[0].follow_up_question.includes("배타적 협상기간"), true);
+  assert.equal(dossier.summary.startsWith("IMM인베스트먼트 관련"), true);
   assert.equal(dossier.questions.some((question) => question.startsWith("IMM인베스트먼트가")), true);
 });
 
@@ -74,6 +77,7 @@ test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함�
   const dossier = buildEntityDossier(graph, vig.entity_key);
 
   assert.equal(dossier.relations.some((item) => item.counterpart_name === "유신혁"), true);
+  assert.equal(dossier.relations.find((item) => item.counterpart_name === "유신혁").follow_up_question.includes("어느 펀드와 거래"), true);
   assert.equal(dossier.related_news.length, 1);
   assert.equal(dossier.related_news[0].title.includes("유신혁 부대표"), true);
   assert.equal(dossier.stats.news, 1);
