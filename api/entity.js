@@ -1,6 +1,7 @@
 const { buildEntityDossier } = require('../lib/entity-dossier');
 const { buildOntology } = require('../lib/ontology');
 const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
+const { mergeDriveDossiers } = require('../lib/drive-dossiers');
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
@@ -17,7 +18,7 @@ module.exports = async (req, res) => {
       items = collected.items || [];
       await persistReportingLeads(items).catch(()=>({ready:false}));
     }
-    const graph = mergeCuratedGpKnowledge(buildOntology(items));
+    const graph = mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology(items)));
     const storage = await persistOntology(graph).catch(()=>({ready:false}));
     const dossier = buildEntityDossier(graph, entityKey);
     if (!dossier) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
