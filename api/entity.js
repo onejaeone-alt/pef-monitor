@@ -3,6 +3,7 @@ const { buildOntology } = require('../lib/ontology');
 const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
 const { mergeDriveDossiers, searchDriveDossiers } = require('../lib/drive-dossiers');
 const { collectReportingSignals } = require('../lib/reporting-signals');
+const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
 module.exports = async (req, res) => {
@@ -29,7 +30,20 @@ module.exports = async (req, res) => {
     const storage = await persistOntology(graph).catch(()=>({ready:false}));
     const dossier = buildEntityDossier(graph, entityKey);
     if (!dossier) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
-    return res.status(200).json({ ok:true, ...dossier, storage, range:{days:14}, fetched_at:new Date().toISOString() });
+
+    let nuguMoney = null;
+    if (['pef', 'vc', 'ac'].includes(dossier.entity?.entity_type)) {
+      nuguMoney = await getNuguMoneyProfile(dossier.entity.canonical_name, { reviewLimit: 3 })
+        .catch(() => ({
+          ready: false,
+          found: false,
+          provider: '누구머니',
+          source_url: 'https://nugu.money/',
+          error: '현재 누구머니 정보를 불러오지 못했습니다.',
+        }));
+    }
+
+    return res.status(200).json({ ok:true, ...dossier, nugu_money:nuguMoney, storage, range:{days:14}, fetched_at:new Date().toISOString() });
   } catch (error) {
     return res.status(500).json({ ok:false, error:String(error.message||error) });
   }
