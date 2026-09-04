@@ -5,12 +5,15 @@ const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
 const { mergeDriveDossiers, searchDriveDossiers } = require('../lib/drive-dossiers');
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
+const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
 
 function applyBasicInfo(dossier) {
-  const basic = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name);
-  if (!basic) return dossier;
+  const base = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name) || {};
+  const override = getInstitutionBasicOverride(dossier?.company_id) || {};
+  const basic = { ...base, ...override };
+  if (!Object.keys(basic).length) return dossier;
   const current = dossier.profile_overview || {};
   dossier.profile_overview = {
     ...current,
