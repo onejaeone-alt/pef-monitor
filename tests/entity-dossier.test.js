@@ -59,6 +59,26 @@ test("거래 상대방에서 보면 관계를 역방향으로 설명한다", () 
   assert.equal(dossier.relations[0].counterpart_name, "IMM인베스트먼트");
 });
 
+test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함께 묶는다", () => {
+  const graph = buildOntology([lead({
+    signal_id: "people-vig-1",
+    title: "VIG파트너스, 유신혁 부대표·강성욱 총괄 영입",
+    source_url: "https://example.com/vig-people",
+    source_name: "테스트뉴스",
+    published_at: "2026-09-04T00:50:00Z",
+    event_type: "people_move",
+    event_label: "핵심 인사",
+    target: { id: "A-016", name: "VIG파트너스", category: "pef", priority: "A" },
+  })]);
+  const vig = graph.nodes.find((node) => node.canonical_name === "VIG파트너스");
+  const dossier = buildEntityDossier(graph, vig.entity_key);
+
+  assert.equal(dossier.relations.some((item) => item.counterpart_name === "유신혁"), true);
+  assert.equal(dossier.related_news.length, 1);
+  assert.equal(dossier.related_news[0].title.includes("유신혁 부대표"), true);
+  assert.equal(dossier.stats.news, 1);
+});
+
 test("없는 대상은 빈 취재파일을 꾸미지 않는다", () => {
   assert.equal(buildEntityDossier(sampleGraph(), "company:missing"), null);
 });
