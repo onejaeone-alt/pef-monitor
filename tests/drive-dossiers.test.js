@@ -68,4 +68,6 @@ test("관계 화면은 전체 검색과 같은 상세 서랍을 사용한다", (
   assert.match(html, /data-entity/);
   assert.match(html, /관련 뉴스/);
   assert.match(html, /최근 14일 안에 새 이슈가 확인된 대상만 표시합니다/);
+  assert.doesNotMatch(html, /<h3>드라이브 연결<\/h3>/);
+  assert.match(html, /바로가기에 보이지 않는 취재파일도 검색할 수 있습니다/);
 });
