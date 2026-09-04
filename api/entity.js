@@ -3,32 +3,8 @@ const { buildOntology } = require('../lib/ontology');
 const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
 const { mergeDriveDossiers, searchDriveDossiers } = require('../lib/drive-dossiers');
 const { collectReportingSignals } = require('../lib/reporting-signals');
-const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
-const { getInstitutionBasicExtraInfo } = require('../lib/institution-basic-extra-data');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
 const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
-
-function applyBasicInfo(dossier) {
-  const primary = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name);
-  const extra = getInstitutionBasicExtraInfo(dossier?.company_id);
-  const basic = primary || extra ? { ...(extra || {}), ...(primary || {}) } : null;
-  if (!basic) return dossier;
-  const current = dossier.profile_overview || {};
-  dossier.profile_overview = {
-    ...current,
-    category: basic.category || current.category,
-    aliases: basic.aliases?.length ? basic.aliases : current.aliases,
-    founded_year: basic.founded_year || current.founded_year,
-    representatives: basic.representatives?.length ? basic.representatives : current.representatives,
-    assets_under_management: basic.assets_under_management || current.assets_under_management,
-    portfolio_count: basic.portfolio_count || current.portfolio_count,
-    investment_count: basic.investment_count || current.investment_count || null,
-    homepage: basic.homepage || current.homepage || null,
-    basis_date: basic.basis_date || current.basis_date,
-    basic_source_url: basic.source_url || current.basic_source_url || null,
-  };
-  return dossier;
-}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,19 +28,26 @@ module.exports = async (req, res) => {
     }
     const graph = mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology(items)));
     const storage = await persistOntology(graph).catch(()=>({ready:false}));
-    const dossier = applyBasicInfo(buildEntityDossier(graph, entityKey));
+    const dossier = buildEntityDossier(graph, entityKey);
     if (!dossier) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
 
     let nuguMoney = null;
     if (['pef', 'vc', 'ac'].includes(dossier.entity?.entity_type)) {
       nuguMoney = await getNuguMoneyProfile(dossier.entity.canonical_name, { reviewLimit: 3 })
-        .catch(() => ({
-          ready: false,
-          found: false,
-          provider: '누구머니',
-          source_url: 'https://nugu.money/',
-          error: '현재 누구머니 정보를 불러오지 못했습니다.',
-        }));
+        .catch((error) => {
+          console.error('[nugu-money] collection failed', {
+            name: error?.name || 'Error',
+            message: String(error?.message || error),
+            cause: error?.cause?.code || error?.code || null,
+          });
+          return {
+            ready: false,
+            found: false,
+            provider: '누구머니',
+            source_url: 'https://nugu.money/',
+            error: '현재 누구머니 정보를 불러오지 못했습니다.',
+          };
+        });
     }
 
     return res.status(200).json({ ok:true, ...dossier, nugu_money:nuguMoney, storage, range:{days:14}, fetched_at:new Date().toISOString() });
