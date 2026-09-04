@@ -75,7 +75,10 @@ test("취재파일 화면은 전체 검색과 같은 상세 서랍을 사용한�
   assert.doesNotMatch(html, /<h3>드라이브 연결<\/h3>/);
   assert.match(html, /기업이나 운용사 이름, 확인하려는 이슈를 입력하세요/);
   assert.doesNotMatch(html, /최근 14일 취재 단서/);
-  assert.match(html, /취재에 쓰는 이유/);
-  assert.match(html, /바로 물어볼 것/);
+  assert.match(html, /<h3>기본 정보<\/h3>/);
+  assert.match(html, /<h3>투자·운용<\/h3>/);
+  assert.match(html, /<h3>운용 현황<\/h3>/);
+  assert.doesNotMatch(html, /<h3>현재 상태<\/h3>|<h3>판단 경계<\/h3>|<h3>먼저 물어볼 것<\/h3>/);
+  assert.doesNotMatch(html, /<h3>관련 거래<\/h3>|<h3>다음 갱신 조건<\/h3>|바로 물어볼 것|취재에 쓰는 이유/);
   assert.doesNotMatch(html, /최근 14일 직접 관계|<h3>직접 관계<\/h3>/);
 });

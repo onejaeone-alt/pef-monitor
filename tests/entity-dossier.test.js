@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const { buildEntityDossier } = require("../lib/entity-dossier");
 const { buildOntology } = require("../lib/ontology");
 const { mergeCuratedGpKnowledge } = require("../lib/curated-gp-knowledge");
+const { mergeDriveDossiers } = require("../lib/drive-dossiers");
 
 function lead(overrides = {}) {
   return {
@@ -63,7 +64,7 @@ test("거래 상대방에서 보면 관계를 역방향으로 설명한다", () 
 });
 
 test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함께 묶는다", () => {
-  const graph = buildOntology([lead({
+  const graph = mergeDriveDossiers(buildOntology([lead({
     signal_id: "people-vig-1",
     title: "VIG파트너스, 유신혁 부대표·강성욱 총괄 영입",
     source_url: "https://example.com/vig-people",
@@ -72,7 +73,7 @@ test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함�
     event_type: "people_move",
     event_label: "핵심 인사",
     target: { id: "A-016", name: "VIG파트너스", category: "pef", priority: "A" },
-  })]);
+  })]));
   const vig = graph.nodes.find((node) => node.canonical_name === "VIG파트너스");
   const dossier = buildEntityDossier(graph, vig.entity_key);
 
@@ -81,6 +82,10 @@ test("VIG파트너스 취재파일에 유신혁 관계와 관련 뉴스를 함�
   assert.equal(dossier.related_news.length, 1);
   assert.equal(dossier.related_news[0].title.includes("유신혁 부대표"), true);
   assert.equal(dossier.stats.news, 1);
+  assert.equal(dossier.profile_overview.founded_year, "2005년");
+  assert.equal(dossier.profile_overview.representatives.includes("신창훈"), true);
+  assert.equal(dossier.profile_overview.assets_under_management, "약 5조5000억원");
+  assert.equal(dossier.profile_overview.portfolio_count, "31개 기업");
 });
 
 test("없는 대상은 빈 취재파일을 꾸미지 않는다", () => {
@@ -88,7 +93,7 @@ test("없는 대상은 빈 취재파일을 꾸미지 않는다", () => {
 });
 
 test("씨케이디창업투자 취재파일에 선정 이력과 공동 GP, 미확인 항목을 묶는다", () => {
-  const graph = mergeCuratedGpKnowledge(buildOntology([]));
+  const graph = mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology([])));
   const ckd = graph.nodes.find((node) => node.canonical_name === "씨케이디창업투자");
   const dossier = buildEntityDossier(graph, ckd.entity_key);
 
@@ -100,5 +105,7 @@ test("씨케이디창업투자 취재파일에 선정 이력과 공동 GP, 미�
   assert.equal(dossier.funds[0].name, "공식 조합명 확인 필요");
   assert.equal(dossier.unknowns.some((item) => item.includes("민간 LP")), true);
   assert.equal(dossier.questions.some((item) => item.includes("투자심사")), true);
-  assert.equal(dossier.evidence.some((item) => item.source_name === "한국벤처투자"), true);
+  assert.equal(dossier.evidence.some((item) => item.source_url?.includes("id=5103")), true);
+  assert.equal(dossier.profile_overview.category, "벤처캐피탈");
+  assert.equal(dossier.profile_overview.service_name, "벤처투자");
 });
