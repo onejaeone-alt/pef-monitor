@@ -67,13 +67,20 @@ module.exports = async (req, res) => {
     }).catch(() => (dossier.related_news || []).slice(0, 5));
     const nuguMoneyPromise = ['pef', 'vc', 'ac'].includes(dossier.entity?.entity_type)
       ? getNuguMoneyProfile(dossier.entity.canonical_name, { reviewLimit: 3 })
-        .catch(() => ({
-          ready: false,
-          found: false,
-          provider: '누구머니',
-          source_url: 'https://nugu.money/',
-          error: '현재 누구머니 정보를 불러오지 못했습니다.',
-        }))
+        .catch((error) => {
+          console.error('[nugu-money] collection failed', {
+            name: error?.name || 'Error',
+            message: String(error?.message || error),
+            cause: error?.cause?.code || error?.code || null,
+          });
+          return {
+            ready: false,
+            found: false,
+            provider: '누구머니',
+            source_url: 'https://nugu.money/',
+            error: '현재 누구머니 정보를 불러오지 못했습니다.',
+          };
+        })
       : Promise.resolve(null);
     const [latestNews, nuguMoney] = await Promise.all([latestNewsPromise, nuguMoneyPromise]);
     dossier.related_news = latestNews;
