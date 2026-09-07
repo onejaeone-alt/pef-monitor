@@ -69,14 +69,14 @@ function tickerText(item) {
 function tickerCss(items) {
   const rows = (items || []).slice(0, 10);
   const fallback = '최신뉴스  새 기사를 불러오는 중입니다.';
-  const separator = '     ◆     ';
+  const separator = '          ◆          ';
   const stream = rows.length ? rows.map(tickerText).join(separator) : fallback;
   const doubled = `${stream}${separator}${stream}${separator}`;
   const duration = Math.max(24, rows.length * 4);
 
   return `
 .topbar{overflow-x:clip}
-.topbar::before{content:"${cssString(doubled)}";display:inline-flex;align-items:center;width:max-content;min-width:max-content;margin:-18px -26px 8px;padding:0 22px;height:24px;line-height:24px;background:#050505;color:#fff;font-size:10.5px;font-weight:760;letter-spacing:-.015em;white-space:nowrap;animation:ibLatestTicker ${duration}s linear infinite;will-change:transform;transform:translateX(0)}
+.topbar::before{content:"${doubled}";display:inline-flex;align-items:center;width:max-content;min-width:max-content;margin:-18px -26px 8px;padding:0 22px;height:24px;line-height:24px;background:#050505;color:#fff;font-size:10.5px;font-weight:760;letter-spacing:-.015em;white-space:pre;animation:ibLatestTicker ${duration}s linear infinite;will-change:transform;transform:translateX(0)}
 @keyframes ibLatestTicker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media(max-width:760px){.topbar::before{margin:-18px -14px 7px;padding:0 14px;height:23px;line-height:23px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.topbar::before{animation-duration:120s}}
