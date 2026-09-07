@@ -105,6 +105,7 @@ function simplifyLead(html, file) {
   next = next.replace('발견함입니다. 공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 달라진 점과 확인할 질문만 찾습니다. 기사화 여부는 여기서 판단하지 않습니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
   next = next.replace('이전 상태와 비교해 달라진 점만 보여줍니다. 취재할 건은 ‘내 취재’로 보냅니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
   next = next.replace('공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 기자가 확인할 변화를 먼저 찾습니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
+  next = next.replace(/내 취재로 보내기 →/g,'진행중 취재로 보내기 →');
   next = next.replace("$('#status').textContent=`단서 ${DATA.length}건 · 점수화 없음`", "$('#status').textContent=`단서 ${DATA.length}건`");
   return next;
 }
@@ -115,6 +116,11 @@ function clarifyProject(html, file) {
   next = next.replace(/<h2>내 취재<\/h2>/g, '<h2>진행중 취재</h2>');
   next = next.replace('통화·원문 확인 결과를 적고, 판단할 만큼 모이면 기사판단기로 넘깁니다.', '내가 실제로 취재하기로 고른 건만 모읍니다. 전화·원문 확인·메모를 여기서 쌓습니다.');
   next = next.replace('AI 취재단서에서 <b>내 취재로 보내기</b>를 누른 건만 들어옵니다. 통화 결과와 확인 내용을 적고 기사판단기로 넘깁니다.', '내가 실제로 취재하기로 고른 건만 모읍니다. 전화·원문 확인·메모를 여기서 쌓습니다.');
+  next = next.replace(/기사판단기로 보내기 →/g,'기사화 판단으로 보내기 →');
+  next = next.replace(/기사판단 다시 보기 →/g,'기사화 판단 다시 보기 →');
+  next = next.replace(/AI 취재단서/g,'AI 발견');
+  next = next.replace(/내 취재에서 빼기/g,'진행중 취재에서 빼기');
+  next = next.replace(/'내 취재 '/g,"'진행중 취재 '");
   return next;
 }
 
@@ -124,6 +130,7 @@ function clarifyJudgment(html, file) {
   next = next.replace(/<h2>기사판단기<\/h2>/g, '<h2>기사화 판단</h2>');
   next = next.replace('선택한 취재 한 건의 근거를 점검하고 기사화·추가취재·보류·폐기 중 하나로 결정합니다.', '취재가 진행된 건만 검토합니다. 기사화·추가취재·보류·폐기 중 하나를 결정합니다.');
   next = next.replace('내 취재에서 넘긴 한 건을 놓고 <b>기사화 / 추가취재 / 보류 / 폐기</b>를 실제로 결정하고 기록합니다.', '취재가 진행된 건만 검토합니다. 기사화·추가취재·보류·폐기 중 하나를 결정합니다.');
+  next = next.replace(/내 취재에서/g,'진행중 취재에서');
   return next;
 }
 
