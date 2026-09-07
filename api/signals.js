@@ -1,6 +1,12 @@
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { persistReportingLeads } = require('../lib/supabase');
-const { buildClues } = require('../lib/clue-engine');
+const {
+  detectCrossSourceSequences,
+  detectDartChanges,
+  detectFormationGaps,
+  detectKvicPlanChanges,
+  detectRepeatGps,
+} = require('../lib/clue-engine');
 const { fetchKvicFunds, kvicNoticesFromLeads, loadDisclosureHistory, loadReportingLeadHistory } = require('../lib/clue-data');
 const { attachFormation, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 
@@ -47,6 +53,69 @@ function clueStats(items) {
   };
 }
 
+function sortClues(items) {
+  return [...(items || [])].sort((a, b) =>
+    String(b.sort_date || '').localeCompare(String(a.sort_date || '')) ||
+    String(a.detector || '').localeCompare(String(b.detector || ''))
+  );
+}
+
+function dartPriority(clue) {
+  const text = `${clue.changed_fact || ''} ${(clue.confirmed_facts || []).join(' ')}`;
+  let score = 0;
+  if (/→/.test(text)) score += 5;
+  if ((clue.sources || []).length >= 2) score += 3;
+  if (/공개매수|최대주주|유상증자|전환사채|채무보증|차입|회생|매각|인수/.test(text)) score += 2;
+  if (/투자설명서\(집합투자증권\)|ETF|인덱스/.test(text)) score -= 8;
+  return score;
+}
+
+function selectDartClues(disclosures, limit = 12) {
+  return detectDartChanges(disclosures)
+    .filter((clue) => !/투자설명서\(집합투자증권\)|ETF|인덱스/.test((clue.confirmed_facts || []).join(' ')))
+    .sort((a, b) => dartPriority(b) - dartPriority(a) || String(b.sort_date || '').localeCompare(String(a.sort_date || '')))
+    .slice(0, limit);
+}
+
+const ALLOWED_RELATION_SEQUENCES = [
+  ['회생·위험', 'M&A 절차'],
+  ['M&A 절차', '핵심 인사'],
+  ['출자공고', '운용사 선정'],
+  ['운용사 선정', '펀드 결성'],
+  ['핵심 인사', '펀드 결성'],
+  ['펀드 결성', '투자'],
+  ['펀드 결성', '회수'],
+];
+
+function strongCrossSourceClue(clue) {
+  const line = String(clue.one_line_signal || '');
+  const allowed = ALLOWED_RELATION_SEQUENCES.some(([before, after]) => line.includes(`${before} → ${after}`));
+  if (!allowed) return false;
+  const evidence = clue.sources || [];
+  const nonNoise = evidence.filter((source) => !/blog|블로그|Traders Union/i.test(`${source.label || ''} ${source.url || ''}`));
+  if (nonNoise.length < 2) return false;
+  if (/한국벤처투자 · 서로 다른 사건 신호/.test(clue.headline || '')) return false;
+  return true;
+}
+
+function balancedClues({ disclosures, leads, groups, gpStats }) {
+  const buckets = {
+    kvic_plan_change: sortClues(detectKvicPlanChanges(groups)).slice(0, 8),
+    gp_repeat: sortClues(detectRepeatGps(gpStats, groups)).slice(0, 8),
+    formation_gap: sortClues(detectFormationGaps(groups)).slice(0, 8),
+    cross_source: sortClues(detectCrossSourceSequences(leads).filter(strongCrossSourceClue)).slice(0, 6),
+    dart_change: selectDartClues(disclosures, 12),
+  };
+  const merged = Object.values(buckets).flat();
+  const seen = new Set();
+  const items = sortClues(merged).filter((clue) => {
+    if (!clue?.clue_id || seen.has(clue.clue_id)) return false;
+    seen.add(clue.clue_id);
+    return true;
+  }).slice(0, 40);
+  return { items, detector_candidates: Object.fromEntries(Object.entries(buckets).map(([key, rows]) => [key, rows.length])) };
+}
+
 async function buildClueResponse(req, res, days) {
   const collected = await collectReportingSignals({ days });
   const storage = await persistReportingLeads(collected.items);
@@ -64,7 +133,8 @@ async function buildClueResponse(req, res, days) {
   const notices = kvicNoticesFromLeads(leads);
   const groups = attachFormation(groupNotices(notices), funds.items || []);
   const gpStats = buildGpStats(groups, funds.items || []);
-  const clues = buildClues({ disclosures, leads, groups, gpStats });
+  const selected = balancedClues({ disclosures, leads, groups, gpStats });
+  const clues = selected.items;
 
   res.setHeader('Cache-Control', 's-maxage=180, stale-while-revalidate=300');
   return res.status(200).json({
@@ -88,6 +158,7 @@ async function buildClueResponse(req, res, days) {
       disclosure_ready: disclosureResult.status === 'fulfilled',
       fund_ready: Boolean(funds.ready),
       fund_error: funds.error || null,
+      detector_candidates: selected.detector_candidates,
     },
     policy: {
       article_score_used: false,
