@@ -17,8 +17,10 @@ for (const file of pages) {
   if (!next.includes('class="brand-home-row"')) {
     next = next.replace(
       '<h1>IB 취재 레이더</h1>',
-      '<div class="brand-home-row"><a class="brand-home-icon" href="/" aria-label="뉴스 홈으로 이동" title="뉴스 홈"><img src="/favicon.svg" alt=""></a><h1>IB 취재 레이더</h1></div>'
+      '<div class="brand-home-row"><a class="brand-home-icon" href="/" aria-label="뉴스 홈으로 이동" title="뉴스 홈"><img src="/radar-home.svg" alt=""></a><h1>IB 취재 레이더</h1></div>'
     );
+  } else {
+    next = next.replace(/(<a class="brand-home-icon"[\s\S]*?<img src=")\/favicon\.svg(" alt="">)/, '$1/radar-home.svg$2');
   }
 
   if (next !== original) fs.writeFileSync(target, next, 'utf8');
