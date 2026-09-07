@@ -9,6 +9,7 @@ const {
 const { LIST_URL, managerCandidates, parseDetailPage, parseListPage, preferredPdfAttachment, verifiedSelectionManagers } = require('../lib/kvic-notices');
 const { attachFormation, buildAccountStats, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 const { buildKstartupUrl, buildManagerUrl, parseKstartup, parseManagers } = require('../lib/policy-sources');
+const { buildListUrl: buildVcsListUrl, parseVcsListPage, mergeVcsItems } = require('../lib/vcs-notices');
 
 const KVIC_KEY = process.env.KVIC_API_KEY || '';
 const DATA_GO_KEY = process.env.DATA_GO_KR_SERVICE_KEY || '';
@@ -24,10 +25,10 @@ async function fetchText(url, timeoutMs = 15000) {
       signal: ctrl.signal,
       headers: {
         Accept: 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': 'Mozilla/5.0 (compatible; PEF-Monitor/3.1; +https://pef-monitor.vercel.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; PEF-Monitor/3.2; +https://pef-monitor.vercel.app)',
       },
     });
-    if (!response.ok) throw new Error(`KVIC page HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`page HTTP ${response.status}`);
     return await response.text();
   } finally { clearTimeout(timeout); }
 }
@@ -83,6 +84,43 @@ async function policy(req, res) {
   ]);
   const ok = sources.some(source => source.ready);
   return res.status(ok ? 200 : 502).json({ ok, sources, diagnostics:{ data_go_key:Boolean(DATA_GO_KEY), kstartup_key:Boolean(KSTARTUP_KEY) }, fetched_at:new Date().toISOString() });
+}
+
+async function collectVcsPage(page) {
+  const url = buildVcsListUrl(page,10);
+  try {
+    const html = await fetchText(url,12000);
+    const parsed = parseVcsListPage(html,page);
+    return { page, url, ok:parsed.items.length>0, ...parsed, error:null };
+  } catch (error) {
+    return { page, url, ok:false, total:0, items:[], error:String(error.message||error).slice(0,240) };
+  }
+}
+
+async function vcs(req,res) {
+  const requested = Math.max(1,Math.min(10,Number(req.query.pages||5)||5));
+  const pages=[];
+  for (let page=1; page<=requested; page+=1) pages.push(await collectVcsPage(page));
+  const items=mergeVcsItems(pages);
+  const total=pages.find(x=>x.total)?.total || items.length;
+  const organizations=[...new Set(items.map(x=>x.organization).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+  const errors=pages.filter(x=>x.error).map(x=>({page:x.page,error:x.error}));
+  const ok=items.length>0;
+  return res.status(ok?200:502).json({
+    ok,
+    mode:'vcs',
+    source:'VCS 벤처투자종합포털 출자공고',
+    source_url:buildVcsListUrl(1,10),
+    requested_pages:requested,
+    parsed_pages:pages.filter(x=>x.ok).length,
+    total,
+    count:items.length,
+    open_count:items.filter(x=>x.status==='open').length,
+    organizations,
+    items,
+    errors,
+    fetched_at:new Date().toISOString(),
+  });
 }
 
 function supabaseHeaders() {
@@ -272,9 +310,10 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
     const mode = String(req.query.mode || 'funds').toLowerCase();
-    res.setHeader('Cache-Control', mode === 'dashboard' ? 'no-store' : 's-maxage=1800, stale-while-revalidate=3600');
+    res.setHeader('Cache-Control', mode === 'dashboard' ? 'no-store' : mode === 'vcs' ? 's-maxage=900, stale-while-revalidate=3600' : 's-maxage=1800, stale-while-revalidate=3600');
     if (mode === 'dashboard') return dashboard(res);
     if (mode === 'policy') return policy(req, res);
+    if (mode === 'vcs') return vcs(req, res);
     if (!KVIC_KEY) return res.status(503).json({ ok:false, error:'Vercel 환경변수 KVIC_API_KEY가 필요합니다.' });
     if (mode === 'types') {
       const payload = await fetchJson(buildBusinessTypeUrl(KVIC_KEY, req.query));
