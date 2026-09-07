@@ -59,28 +59,33 @@ function relativeTime(value) {
   return `${Math.floor(hours / 24)}일 전`;
 }
 
+function tickerText(item) {
+  const source = cssString(item?.source_name || '뉴스');
+  const title = cssString(item?.title || '');
+  const time = cssString(relativeTime(item?.published_at));
+  return `최신뉴스  [${source}] ${title}${time ? `  ·  ${time}` : ''}`;
+}
+
 function tickerCss(items) {
   const rows = (items || []).slice(0, 10);
-  const fallback = '최신뉴스  ·  새 기사를 불러오는 중입니다.';
-  const duration = Math.max(5, rows.length * 5);
+  const fallback = '최신뉴스  새 기사를 불러오는 중입니다.';
+  const secondsPerItem = 2.8;
+  const duration = Math.max(secondsPerItem, rows.length * secondsPerItem);
   const frames = rows.length ? rows.map((item, index) => {
-    const start = (index * 100 / rows.length).toFixed(3);
-    const end = (((index + 1) * 100 / rows.length) - 0.001).toFixed(3);
-    const source = cssString(item.source_name || '뉴스');
-    const title = cssString(item.title || '');
-    const time = cssString(relativeTime(item.published_at));
-    const theme = cssString(item.theme_label || 'IB');
-    const text = `최신뉴스  ·  ${theme}  ·  [${source}] ${title}${time ? `  ·  ${time}` : ''}`;
-    return `${start}%,${end}%{content:"${cssString(text)}"}`;
-  }).join('') : `0%,100%{content:"${fallback}"}`;
-  const initial = rows.length
-    ? `최신뉴스  ·  ${cssString(rows[0].theme_label || 'IB')}  ·  [${cssString(rows[0].source_name || '뉴스')}] ${cssString(rows[0].title || '')}`
-    : fallback;
+    const unit = 100 / rows.length;
+    const start = index * unit;
+    const enter = start + unit * 0.14;
+    const hold = start + unit * 0.78;
+    const exit = start + unit - 0.001;
+    const text = cssString(tickerText(item));
+    return `${start.toFixed(3)}%{content:"${text}";text-indent:22px;color:rgba(255,255,255,0)}${enter.toFixed(3)}%{content:"${text}";text-indent:0;color:#fff}${hold.toFixed(3)}%{content:"${text}";text-indent:0;color:#fff}${exit.toFixed(3)}%{content:"${text}";text-indent:-34px;color:rgba(255,255,255,0)}`;
+  }).join('') : `0%,100%{content:"${fallback}";text-indent:0;color:#fff}`;
+  const initial = rows.length ? tickerText(rows[0]) : fallback;
 
   return `
-.topbar::before{content:"${cssString(initial)}";display:block;margin:-18px -26px 14px;padding:8px 26px;height:36px;line-height:20px;background:#f4f6f8;border-bottom:1px solid #e5e7eb;color:#334155;font-size:11px;font-weight:760;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:ibLatestTicker ${duration}s steps(1,end) infinite}
+.topbar::before{content:"${cssString(initial)}";display:block;margin:-18px -26px 7px;padding:3px 22px;height:27px;line-height:21px;background:#0a0a0a;border-bottom:1px solid #222;color:#fff;font-size:10.5px;font-weight:760;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:ibLatestTicker ${duration}s linear infinite;will-change:text-indent,color}
 @keyframes ibLatestTicker{${frames}}
-@media(max-width:760px){.topbar::before{margin:-18px -14px 12px;padding:7px 14px;height:34px;line-height:20px;font-size:10px}}
+@media(max-width:760px){.topbar::before{margin:-18px -14px 6px;padding:3px 14px;height:26px;line-height:20px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.topbar::before{animation:none!important}}
 `;
 }
@@ -88,7 +93,7 @@ function tickerCss(items) {
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const format = String(req.query.format || '').toLowerCase();
-  res.setHeader('Cache-Control', format === 'ticker-css' ? 's-maxage=180, stale-while-revalidate=300' : 's-maxage=600, stale-while-revalidate=1800');
+  res.setHeader('Cache-Control', format === 'ticker-css' ? 's-maxage=60, stale-while-revalidate=120' : 's-maxage=600, stale-while-revalidate=1800');
   try {
     const days = Math.min(Math.max(parseInt(req.query.days || '7', 10), 1), 14);
     const limit = Math.min(Math.max(parseInt(req.query.limit || '240', 10), 40), 500);
@@ -176,7 +181,7 @@ module.exports = async (req, res) => {
   } catch (error) {
     if (format === 'ticker-css') {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
-      return res.status(200).send('.topbar::before{content:"최신뉴스 · 불러오지 못했습니다";display:block;margin:-18px -26px 14px;padding:8px 26px;background:#f4f6f8;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:11px}');
+      return res.status(200).send('.topbar::before{content:"최신뉴스  불러오지 못했습니다";display:block;margin:-18px -26px 7px;padding:3px 22px;height:27px;line-height:21px;background:#0a0a0a;border-bottom:1px solid #222;color:#fff;font-size:10.5px;font-weight:760;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}');
     }
     return res.status(500).json({ ok: false, error:String(error.message||error) });
   }
