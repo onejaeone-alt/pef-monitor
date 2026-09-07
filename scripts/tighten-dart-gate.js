@@ -35,5 +35,6 @@ const newSelect = `function selectDartClues(disclosures, limit = 5) {
     .slice(0, limit);
 }`;
 if (next.includes(oldSelect)) next = next.replace(oldSelect, newSelect);
+next = next.replace('dart_change: selectDartClues(disclosures, 5),', 'dart_change: selectDartClues(disclosures, 3),');
 
 if (next !== original) fs.writeFileSync(target, next, 'utf8');
