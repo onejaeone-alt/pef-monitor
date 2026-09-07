@@ -68,11 +68,11 @@ function tickerText(item) {
 
 function tickerCss(items) {
   const rows = (items || []).slice(0, 10);
-  const fallback = '새 기사를 불러오는 중입니다.';
-  const separator = '                ';
+  const fallback = '[뉴스] 새 기사를 불러오는 중입니다.';
+  const separator = '                    ';
   const stream = rows.length ? rows.map(tickerText).join(separator) : fallback;
   const doubled = `${stream}${separator}${stream}${separator}`;
-  const duration = Math.max(36, rows.length * 6);
+  const duration = Math.max(40, rows.length * 6.5);
 
   return `
 .topbar{overflow-x:clip}
@@ -174,7 +174,7 @@ module.exports = async (req, res) => {
   } catch (error) {
     if (format === 'ticker-css') {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
-      return res.status(200).send('.topbar{overflow-x:clip}.topbar::before{content:"새 기사를 불러오지 못했습니다";display:flex;align-items:center;margin:-18px -26px 8px;padding:0 22px;height:24px;line-height:24px;background:#050505;color:#fff;font-size:10.5px;font-weight:760;white-space:nowrap}');
+      return res.status(200).send('.topbar{overflow-x:clip}.topbar::before{content:"[뉴스] 불러오지 못했습니다";display:flex;align-items:center;margin:-18px -26px 8px;padding:0 22px;height:24px;line-height:24px;background:#050505;color:#fff;font-size:10.5px;font-weight:760;white-space:nowrap}');
     }
     return res.status(500).json({ ok: false, error:String(error.message||error) });
   }
