@@ -39,9 +39,56 @@ function ageHours(value) {
   return Math.max(0, (Date.now() - time) / 3600000);
 }
 
+function cssString(value) {
+  return String(value || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function relativeTime(value) {
+  const time = new Date(value || '').getTime();
+  if (!Number.isFinite(time)) return '';
+  const minutes = Math.max(0, Math.floor((Date.now() - time) / 60000));
+  if (minutes < 1) return '방금';
+  if (minutes < 60) return `${minutes}분 전`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+  return `${Math.floor(hours / 24)}일 전`;
+}
+
+function tickerCss(items) {
+  const rows = (items || []).slice(0, 10);
+  const fallback = '최신뉴스  ·  새 기사를 불러오는 중입니다.';
+  const duration = Math.max(5, rows.length * 5);
+  const frames = rows.length ? rows.map((item, index) => {
+    const start = (index * 100 / rows.length).toFixed(3);
+    const end = (((index + 1) * 100 / rows.length) - 0.001).toFixed(3);
+    const source = cssString(item.source_name || '뉴스');
+    const title = cssString(item.title || '');
+    const time = cssString(relativeTime(item.published_at));
+    const theme = cssString(item.theme_label || 'IB');
+    const text = `최신뉴스  ·  ${theme}  ·  [${source}] ${title}${time ? `  ·  ${time}` : ''}`;
+    return `${start}%,${end}%{content:"${cssString(text)}"}`;
+  }).join('') : `0%,100%{content:"${fallback}"}`;
+  const initial = rows.length
+    ? `최신뉴스  ·  ${cssString(rows[0].theme_label || 'IB')}  ·  [${cssString(rows[0].source_name || '뉴스')}] ${cssString(rows[0].title || '')}`
+    : fallback;
+
+  return `
+.topbar::before{content:"${cssString(initial)}";display:block;margin:-18px -26px 14px;padding:8px 26px;height:36px;line-height:20px;background:#f4f6f8;border-bottom:1px solid #e5e7eb;color:#334155;font-size:11px;font-weight:760;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:ibLatestTicker ${duration}s steps(1,end) infinite}
+@keyframes ibLatestTicker{${frames}}
+@media(max-width:760px){.topbar::before{margin:-18px -14px 12px;padding:7px 14px;height:34px;line-height:20px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.topbar::before{animation:none!important}}
+`;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1800');
+  const format = String(req.query.format || '').toLowerCase();
+  res.setHeader('Cache-Control', format === 'ticker-css' ? 's-maxage=180, stale-while-revalidate=300' : 's-maxage=600, stale-while-revalidate=1800');
   try {
     const days = Math.min(Math.max(parseInt(req.query.days || '7', 10), 1), 14);
     const limit = Math.min(Math.max(parseInt(req.query.limit || '240', 10), 40), 500);
@@ -87,6 +134,12 @@ module.exports = async (req, res) => {
 
     items.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||'')));
     const limitedItems = items.slice(0,limit);
+
+    if (format === 'ticker-css') {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      return res.status(200).send(tickerCss(limitedItems));
+    }
+
     const issues = clusterIssues(limitedItems);
     const ongoing = issues.filter((issue)=>issue.ongoing).slice(0,30);
     const newIssues = issues.filter((issue)=>!issue.ongoing && ageHours(issue.latest_seen) <= 30).slice(0,40);
@@ -121,6 +174,10 @@ module.exports = async (req, res) => {
       fetched_at: new Date().toISOString(),
     });
   } catch (error) {
-    return res.status(500).json({ ok: false, error: String(error.message || error) });
+    if (format === 'ticker-css') {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      return res.status(200).send('.topbar::before{content:"최신뉴스 · 불러오지 못했습니다";display:block;margin:-18px -26px 14px;padding:8px 26px;background:#f4f6f8;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:11px}');
+    }
+    return res.status(500).json({ ok: false, error:String(error.message||error) });
   }
 };
