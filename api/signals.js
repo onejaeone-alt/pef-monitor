@@ -8,6 +8,7 @@ const {
   detectRepeatGps,
 } = require('../lib/clue-engine');
 const { fetchKvicFunds, kvicNoticesFromLeads, loadDisclosureHistory, loadReportingLeadHistory } = require('../lib/clue-data');
+const { buildCanonicalClues, SNAPSHOT_DATE } = require('../lib/canonical-clues');
 const { attachFormation, buildGpStats, groupNotices } = require('../lib/motae-monitor');
 
 function summary(items) {
@@ -70,7 +71,7 @@ function dartPriority(clue) {
   return score;
 }
 
-function selectDartClues(disclosures, limit = 12) {
+function selectDartClues(disclosures, limit = 10) {
   return detectDartChanges(disclosures)
     .filter((clue) => !/투자설명서\(집합투자증권\)|ETF|인덱스/.test((clue.confirmed_facts || []).join(' ')))
     .sort((a, b) => dartPriority(b) - dartPriority(a) || String(b.sort_date || '').localeCompare(String(a.sort_date || '')))
@@ -98,13 +99,29 @@ function strongCrossSourceClue(clue) {
   return true;
 }
 
+function canonicalCollisionKey(clue) {
+  const entities = (clue.entities || []).slice(0, 3).join('|');
+  if (clue.detector === 'gp_repeat') return `gp_repeat|${entities}`;
+  if (clue.detector === 'formation_gap') return `formation_gap|${entities}|${clue.previous_state || ''}`;
+  return null;
+}
+
 function balancedClues({ disclosures, leads, groups, gpStats }) {
+  const canonical = sortClues(buildCanonicalClues());
+  const canonicalKeys = new Set(canonical.map(canonicalCollisionKey).filter(Boolean));
+  const dynamicGp = sortClues(detectRepeatGps(gpStats, groups))
+    .filter((clue) => !canonicalKeys.has(canonicalCollisionKey(clue)))
+    .slice(0, 4);
+  const dynamicFormation = sortClues(detectFormationGaps(groups))
+    .filter((clue) => !canonicalKeys.has(canonicalCollisionKey(clue)))
+    .slice(0, 4);
   const buckets = {
-    kvic_plan_change: sortClues(detectKvicPlanChanges(groups)).slice(0, 8),
-    gp_repeat: sortClues(detectRepeatGps(gpStats, groups)).slice(0, 8),
-    formation_gap: sortClues(detectFormationGaps(groups)).slice(0, 8),
-    cross_source: sortClues(detectCrossSourceSequences(leads).filter(strongCrossSourceClue)).slice(0, 6),
-    dart_change: selectDartClues(disclosures, 12),
+    canonical,
+    kvic_plan_change: sortClues(detectKvicPlanChanges(groups)).slice(0, 6),
+    gp_repeat_dynamic: dynamicGp,
+    formation_gap_dynamic: dynamicFormation,
+    cross_source: sortClues(detectCrossSourceSequences(leads).filter(strongCrossSourceClue)).slice(0, 5),
+    dart_change: selectDartClues(disclosures, 10),
   };
   const merged = Object.values(buckets).flat();
   const seen = new Set();
@@ -113,7 +130,11 @@ function balancedClues({ disclosures, leads, groups, gpStats }) {
     seen.add(clue.clue_id);
     return true;
   }).slice(0, 40);
-  return { items, detector_candidates: Object.fromEntries(Object.entries(buckets).map(([key, rows]) => [key, rows.length])) };
+  return {
+    items,
+    detector_candidates: Object.fromEntries(Object.entries(buckets).map(([key, rows]) => [key, rows.length])),
+    canonical_count: canonical.length,
+  };
 }
 
 async function buildClueResponse(req, res, days) {
@@ -143,6 +164,7 @@ async function buildClueResponse(req, res, days) {
     items: clues,
     stats: clueStats(clues),
     source_counts: {
+      canonical_clues: selected.canonical_count,
       fresh_signals: collected.items.length,
       historical_signals: history.length,
       disclosures: disclosures.length,
@@ -159,12 +181,14 @@ async function buildClueResponse(req, res, days) {
       fund_ready: Boolean(funds.ready),
       fund_error: funds.error || null,
       detector_candidates: selected.detector_candidates,
+      canonical_snapshot_date: SNAPSHOT_DATE,
     },
     policy: {
       article_score_used: false,
       automatic_article_grade_used: false,
       default_judgment: '추가취재',
       principle: '새 자료 자체보다 이전 상태와 비교해 달라진 사실·반복 패턴·관계 연결을 먼저 찾습니다.',
+      canonical_rule: '통합 감시목록을 정본으로 사용하고 웹앱의 정본 기반 단서는 원본 셀 주소를 보존한 읽기 전용 파생 캐시입니다.',
     },
     range: { current_days: days, history_days: 730, disclosure_days: 365 },
     fetched_at: new Date().toISOString(),
