@@ -70,13 +70,6 @@ function addGlobalDossierSearch(html) {
   return next;
 }
 
-function addClueFilters(html, file) {
-  if (file !== 'leads.html' || html.includes('data-detector="gp_lp_shift"')) return html;
-  const anchor = '<button class="chip" data-detector="formation_gap">결성 미확인</button><button class="chip" data-detector="cross_source">자료 연결</button>';
-  const replacement = '<button class="chip" data-detector="formation_gap">결성 미확인</button><button class="chip" data-detector="gp_lp_shift">GP·LP 이동</button><button class="chip" data-detector="lp_rule_change">LP 기준 변화</button><button class="chip" data-detector="cross_source">자료 연결</button>';
-  return html.includes(anchor) ? html.replace(anchor, replacement) : html;
-}
-
 function removeLegacyWorkflow(html) {
   return html
     .replace(/<style id="reporting-role-style">[\s\S]*?<\/style>/g, '')
@@ -97,16 +90,46 @@ function addWorkflowMini(html, file) {
   return html.replace('<main class="page">', `<main class="page">${workflowMini(file)}`);
 }
 
+function tightenLeadUi(html) {
+  let next = html;
+
+  next = next.replace(
+    /<div class="chips" id="detectors">[\s\S]*?<\/div><\/section>/,
+    '<div class="chips" id="detectors"><button class="chip on" data-detector="ALL">전체</button><button class="chip" data-detector="DART">공시 실질변화</button><button class="chip" data-detector="POLICY">출자·LP 규칙</button><button class="chip" data-detector="FORMATION">결성·클로징</button><button class="chip" data-detector="PATTERN">시장패턴</button><button class="chip" data-detector="LINK">자료연결</button></div></section>'
+  );
+
+  next = next.replace(
+    /function matches\(x\)\{const q=query\.trim\(\)\.toLowerCase\(\);if\(detector!=='ALL'&&x\.detector!==detector\)return false;if\(!q\)return true;return `\$\{x\.headline\} \$\{x\.one_line_signal\} \$\{\(x\.entities\|\|\[\]\)\.join\(' '\)\} \$\{x\.previous_state\} \$\{x\.changed_fact\}`\.toLowerCase\(\)\.includes\(q\)\}/,
+    "function matches(x){const q=query.trim().toLowerCase();const groups={DART:['dart_change'],POLICY:['kvic_plan_change','lp_rule_change'],FORMATION:['formation_gap','formation_pattern'],PATTERN:['market_pattern'],LINK:['cross_source']};if(detector!=='ALL'&&!(groups[detector]||[detector]).includes(x.detector))return false;if(!q)return true;return `${x.headline} ${x.one_line_signal} ${(x.entities||[]).join(' ')} ${x.previous_state} ${x.changed_fact}`.toLowerCase().includes(q)}"
+  );
+
+  next = next.replace(
+    '${axes(x)}<div class="clue-actions">',
+    '<div class="clue-next"><b>지금 확인</b><span>${esc(x.next_action||\'원문부터 확인\')}</span></div><div class="clue-actions">'
+  );
+
+  next = next.replace(
+    '<div class="package" id="package-${i}" hidden><div class="package-grid">',
+    '<div class="package" id="package-${i}" hidden>${axes(x)}<div class="package-grid">'
+  );
+
+  next = next.replace(/<span>추가취재<\/span><strong id="sFollowup">—<\/strong>/g, '<span>선별 후 표시</span><strong>최대 10</strong>');
+  return next;
+}
+
 function simplifyLead(html, file) {
   if (file !== 'leads.html') return html;
   let next = html;
   next = next.replace(/<div class="policy-note">[\s\S]*?<\/div>/g, '');
   next = next.replace(/<h2>AI 취재단서<\/h2>/g, '<h2>AI 발견</h2>');
-  next = next.replace('발견함입니다. 공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 달라진 점과 확인할 질문만 찾습니다. 기사화 여부는 여기서 판단하지 않습니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
-  next = next.replace('이전 상태와 비교해 달라진 점만 보여줍니다. 취재할 건은 ‘내 취재’로 보냅니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
-  next = next.replace('공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 기자가 확인할 변화를 먼저 찾습니다.', 'AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.');
+  next = next.replace('발견함입니다. 공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 달라진 점과 확인할 질문만 찾습니다. 기사화 여부는 여기서 판단하지 않습니다.', '공식자료와 정본을 이전 상태와 비교해 실질적으로 달라진 것과 묶이는 패턴만 남깁니다.');
+  next = next.replace('이전 상태와 비교해 달라진 점만 보여줍니다. 취재할 건은 ‘내 취재’로 보냅니다.', '공식자료와 정본을 이전 상태와 비교해 실질적으로 달라진 것과 묶이는 패턴만 남깁니다.');
+  next = next.replace('공시·출자·GP·펀드·뉴스를 이전 상태와 비교해 기자가 확인할 변화를 먼저 찾습니다.', '공식자료와 정본을 이전 상태와 비교해 실질적으로 달라진 것과 묶이는 패턴만 남깁니다.');
+  next = next.replace('AI가 공시·출자·뉴스의 변화를 자동으로 찾는 곳입니다. 아직 취재 전 후보입니다.', '공식자료와 정본을 이전 상태와 비교해 실질적으로 달라진 것과 묶이는 패턴만 남깁니다.');
   next = next.replace(/내 취재로 보내기 →/g,'진행중 취재로 보내기 →');
   next = next.replace("$('#status').textContent=`단서 ${DATA.length}건 · 점수화 없음`", "$('#status').textContent=`단서 ${DATA.length}건`");
+  next = next.replace(/AI 취재단서는 기사 초안이 아닙니다\.[^<]*/g, 'AI 발견은 기사화 판단이 아닙니다. 단순 반복·백필 공백·근거 없는 연결은 숨기고, 실제로 확인할 변화만 보여줍니다.');
+  next = tightenLeadUi(next);
   return next;
 }
 
@@ -141,7 +164,6 @@ for (const file of pages) {
   let next = original;
   next = removeLegacyWorkflow(next);
   next = normalizeNav(next, file);
-  next = addClueFilters(next, file);
   next = simplifyLead(next, file);
   next = clarifyProject(next, file);
   next = clarifyJudgment(next, file);
