@@ -76,6 +76,7 @@ document.addEventListener('click',e=>{
 function addDossierSearchToMotae(html, file) {
   if (file !== 'motae.html' || html.includes('id="dossierQuickSearch"')) return html;
   let next = html;
+  next = next.replace('function dossierHref(name){return `/relations.html?name=${encodeURIComponent(name)}`}', 'function dossierHref(name){return `#dossier=${encodeURIComponent(name)}`}');
   if (!next.includes('/dossier-drawer.css')) next = next.replace('</head>', '<link rel="stylesheet" href="/dossier-drawer.css"><style id="dossier-quick-style">.dossier-quick{display:grid;grid-template-columns:auto minmax(260px,520px) auto;gap:8px;align-items:center;background:#fff;border:1px solid #dbe3ee;border-radius:11px;padding:9px 11px;margin:0 0 12px}.dossier-quick strong{font-size:10px;white-space:nowrap}.dossier-quick input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font:inherit;font-size:10.5px}.dossier-quick-results{grid-column:2/4;display:flex;gap:5px;flex-wrap:wrap}.dossier-quick-results[hidden]{display:none}.dossier-result{border:1px solid #e2e8f0;background:#f8fafc;border-radius:99px;padding:5px 8px;font-size:9px;font-weight:800;color:#334155;cursor:pointer}.dossier-result:hover{border-color:#93c5fd;color:#1d4ed8}@media(max-width:720px){.dossier-quick{grid-template-columns:1fr}.dossier-quick-results{grid-column:1}}</style></head>');
   const box = '<section class="dossier-quick"><strong>취재파일 검색</strong><input id="dossierQuickSearch" type="search" autocomplete="off" placeholder="기업·PEF·VC·AC·LP·펀드 검색"><button class="btn" id="dossierQuickButton" type="button">검색</button><div class="dossier-quick-results" id="dossierQuickResults" hidden></div></section>';
   next = next.replace('<div class="page-head">', box + '<div class="page-head">');
@@ -85,12 +86,14 @@ function addDossierSearchToMotae(html, file) {
  const input=document.getElementById('dossierQuickSearch'),button=document.getElementById('dossierQuickButton'),box=document.getElementById('dossierQuickResults');
  if(!input||!box)return;
  const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
- async function search(){
-   const q=input.value.trim();if(!q){box.hidden=true;box.innerHTML='';return}
-   box.hidden=false;box.innerHTML='<span class="small muted">검색 중…</span>';
-   try{const r=await fetch('/api/entity?action=search&q='+encodeURIComponent(q)+'&limit=10'),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'검색 실패');const rows=d.items||[];box.innerHTML=rows.length?rows.map(x=>'<button class="dossier-result" type="button" data-dossier-entity="'+esc(x.entity_key)+'">'+esc(x.canonical_name)+' · '+esc(x.type_label||'취재대상')+'</button>').join(''):'<span class="small muted">일치하는 취재파일이 없습니다.</span>'}catch(e){box.innerHTML='<span class="small muted">'+esc(e.message||e)+'</span>'}
+ async function find(q,show=true){
+   if(!q){if(show){box.hidden=true;box.innerHTML=''}return []}
+   if(show){box.hidden=false;box.innerHTML='<span class="small muted">검색 중…</span>'}
+   try{const r=await fetch('/api/entity?action=search&q='+encodeURIComponent(q)+'&limit=10'),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'검색 실패');const rows=d.items||[];if(show)box.innerHTML=rows.length?rows.map(x=>'<button class="dossier-result" type="button" data-dossier-entity="'+esc(x.entity_key)+'">'+esc(x.canonical_name)+' · '+esc(x.type_label||'취재대상')+'</button>').join(''):'<span class="small muted">일치하는 취재파일이 없습니다.</span>';return rows}catch(e){if(show)box.innerHTML='<span class="small muted">'+esc(e.message||e)+'</span>';return []}
  }
+ async function search(){return find(input.value.trim(),true)}
  button.addEventListener('click',search);input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search()}});let timer;input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(search,280)});
+ document.addEventListener('click',async e=>{const a=e.target.closest('a[href^="#dossier="]');if(!a)return;e.preventDefault();const name=decodeURIComponent((a.getAttribute('href')||'').replace('#dossier=',''));const rows=await find(name,false);if(rows[0]?.entity_key&&window.DossierDrawer)window.DossierDrawer.open(rows[0].entity_key)});
 })();
 </script>`;
   next = next.replace('</body>', `${script}</body>`);
