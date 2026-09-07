@@ -27,7 +27,7 @@ const newSelect = `function selectDartClues(disclosures, limit = 5) {
     .filter((clue) => {
       const entity = (clue.entities || [])[0] || String(clue.headline || '').split('·')[0].trim();
       const event = String(clue.headline || '').split('·').slice(1).join('·').trim() || clue.detector_label || 'DART';
-      const key = \\`${'${entity}'}|${'${event}'}\\`;
+      const key = entity + '|' + event;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
