@@ -13,5 +13,5 @@ function main(root=path.resolve(__dirname,'..')) {
     const before=fs.readFileSync(file,'utf8'),after=inject(before);if(after!==before)fs.writeFileSync(file,after,'utf8');
   }
 }
-if(require.main===module)main();
+if(require.main===module){main();require('./probe-public-readers');}
 module.exports={inject,main};
