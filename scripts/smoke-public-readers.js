@@ -1,0 +1,9 @@
+'use strict';
+// Opt-in smoke test for fixed public source URLs. Never logs cookies, signatures, credentials or notes.
+const fs=require('node:fs'),R=require('../lib/public-document-reader');
+(async()=>{const marker='/tmp/ib-reader-smoke-1';if(fs.existsSync(marker))return;fs.writeFileSync(marker,'run');const reader=R.createReader();const page='https://www.kvic.or.kr/notice/kvic-notice/investment-business-notice?id=4833';
+const p=await reader.read({url:page,title:'모태펀드 2026년 1차 정시 출자사업 선정 결과'},Date.now()+10000);const attachment=p.links?.find(l=>l.url.includes('boardDataNo=4833'));
+if(attachment){const d=await reader.read({...attachment,found_by:'official_attachment'},Date.now()+15000);console.log('READER_SMOKE '+JSON.stringify({kind:'kvic_attachment',ok:d.read_ok,format:d.format,error:d.read_error,pages:d.page_count,bytes:d.byte_length,filename:d.filename,gp_names_found:['뮤렉스파트너스','씨엔티테크','원익투자파트너스'].filter(n=>(d.text||'').replace(/\s/g,'').includes(n)),locations:(d.blocks||[]).map(b=>b.location)}));}else console.log('READER_SMOKE '+JSON.stringify({kind:'kvic_attachment',error:'LINK_NOT_FOUND',page_ok:p.read_ok,page_error:p.read_error}));
+const q='"씨엔티테크" "젠엑시스" "펀드"';const r=await reader.boundedFetch('https://news.google.com/rss/search?'+new URLSearchParams({q,hl:'ko',gl:'KR',ceid:'KR:ko'}),{deadline:Date.now()+8000});const items=require('../lib/context-sources').parseGoogleNewsRss(r.buffer.toString('utf8'),'domestic','ko');
+for(const x of items.slice(0,2)){const d=await reader.read({url:x.source_url,title:x.title},Date.now()+18000);console.log('READER_SMOKE '+JSON.stringify({kind:'news',title:x.title,ok:d.read_ok,url:d.url,error:d.read_error,extractor:d.extractor,characters:d.text?.length||0,attempts:d.attempts}));}
+})().catch(e=>console.log('READER_SMOKE '+JSON.stringify({error:e.message})));
