@@ -1,4 +1,8 @@
 'use strict';
-// Fixed public publisher lookup; report original URL and read status only.
 const fs=require('node:fs');
-(async()=>{const marker='/tmp/ib-publisher-smoke-2';if(fs.existsSync(marker))return;fs.writeFileSync(marker,'run');const tests=require('node:child_process').execFileSync(process.execPath,['--test','tests/publisher-lookup.test.js'],{encoding:'utf8'});console.log(tests);const S=require('../lib/preflight-sources');const title='젠엑시스, 모태펀드 ‘창업초기 소형’ 운용사 선정…씨엔티테크와 공동 운용';const d=await S.readDocument({url:'https://news.google.com/rss/articles/CBMiSEFVX3lxTE1kVi1VOHI2QlJMZUd0aEJoaGJ3T2xJcjVQaWczR1R3ZUZ6ekZ0QVRUc3hrN0ZMRkRYeDQteWVBOE96elZYZEJKbQ?oc=5',title,source_name:'플래텀(Platum)'},Date.now()+18000);console.log('PUBLISHER_SMOKE '+JSON.stringify({title,ok:d.read_ok,url:d.url,error:d.read_error,characters:d.text?.length,attempts:d.attempts}));})().catch(e=>console.log('PUBLISHER_SMOKE '+JSON.stringify({error:e.message})));
+(async()=>{const marker='/tmp/ib-publisher-smoke-3';if(fs.existsSync(marker))return;fs.writeFileSync(marker,'run');const S=require('../lib/preflight-sources');
+for(const q of ['젠엑시스 모태펀드 창업초기 운용사','젠엑시스 모태펀드']){
+const url='https://platum.kr/wp-json/wp/v2/posts?'+new URLSearchParams({search:q,per_page:'8',_fields:'link,title'});
+try{const r=await S.boundedFetch(url,{deadline:Date.now()+6000,maxBytes:150000});const data=JSON.parse(r.buffer.toString('utf8'));console.log('PUBLISHER_DIAGNOSTIC '+JSON.stringify({query:q,type:r.contentType,list:Array.isArray(data),items:Array.isArray(data)?data.map(p=>({link:p.link,title:p.title?.rendered})):null}));}catch(e){console.log('PUBLISHER_DIAGNOSTIC '+JSON.stringify({query:q,error:e.message}));}
+}
+})().catch(e=>console.log('PUBLISHER_DIAGNOSTIC '+JSON.stringify({error:e.message})));
