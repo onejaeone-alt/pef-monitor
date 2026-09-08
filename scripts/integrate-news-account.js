@@ -30,6 +30,7 @@ function reader(text){
  n=n.slice(0,as)+`const Accounts=A.create({core:C,onChange(next){
  const changed=S.mode!==next.mode||S.user?.id!==next.user?.id;
  if(changed){epoch++;undo=null;S.selected=null;$('#readerUndo').hidden=true;}
+ if(S.user&&S.user.id!==next.user?.id){if(dialog.open)dialog.close();S.query='';S.category='ALL';S.actor='ALL';$('#search').value='';}
  S.mode=next.mode;S.user=next.user;S.records=next.records;S.authReady=next.ready;render();
 }});
 let accountBusy=false;
