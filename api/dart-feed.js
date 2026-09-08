@@ -2,6 +2,7 @@
 const LIST_URL='https://opendart.fss.or.kr/api/list.json';
 function kstDate(offset=0,now=Date.now()){const d=new Date(now+9*3600000);d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10).replace(/-/g,'');}
 function boundedInt(v,def,min,max){const n=Number(v);return Number.isInteger(n)?Math.min(max,Math.max(min,n)):def;}
+function safeRecord(item){const out={};for(const k of ['rcept_no','rcept_dt','report_nm','corp_name','corp_code','corp_cls','stock_code','flr_nm','rm','group_id','group_label','is_correction'])if(item[k]!==undefined)out[k]=item[k];return out;}
 function createHandler(deps={}) {
   return async(req,res)=>{
     res.setHeader('Access-Control-Allow-Origin','*');
@@ -29,15 +30,15 @@ function createHandler(deps={}) {
         const results=await Promise.all(nums.map(async n=>{try{const d=await page(n);if(d.status!=='000'||!Array.isArray(d.list)){failed.push(n);return [];}pagesRead++;return d.list;}catch(_){failed.push(n);return [];}}));
         all.push(...results.flat());
       }
-      const seen=new Set(),items=[];
-      for(const raw of all){if(!/^\d{14}$/.test(raw?.rcept_no||'')||seen.has(raw.rcept_no))continue;seen.add(raw.rcept_no);const m=engine.toMonitoredItem(raw);if(monitor.shouldKeep(m))items.push(monitor.enrich(m));}
+      const seen=new Set(),items=[],q=String(req.query.q||'').trim().toLowerCase().slice(0,100);
+      for(const raw of all){if(!/^\d{14}$/.test(raw?.rcept_no||'')||seen.has(raw.rcept_no))continue;seen.add(raw.rcept_no);const m=engine.toMonitoredItem(raw);if(monitor.shouldKeep(m)){const item=safeRecord(monitor.enrich(m));if(!q||[item.corp_name,item.report_nm,item.flr_nm].join(' ').toLowerCase().includes(q))items.push(item);}}
       items.sort((a,b)=>String(b.rcept_no).localeCompare(String(a.rcept_no)));
-      const limitedItems=items.slice(0,limit),families=monitor.buildFamilies(limitedItems),counts=field=>limitedItems.reduce((a,x)=>{a[x[field]]=(a[x[field]]||0)+1;return a;},{});
+      const limitedItems=items.slice(0,limit),families=require('../dart-desk').buildGroups(limitedItems).map(g=>({latest:g.latest,items:g.items,notice_count:g.items.length,correction_count:g.items.filter(x=>/\[(?:기재정정|첨부정정|정정)\]/.test(x.report_nm||'')).length,grouping:'company_title_filer_only',transaction_verified:false})),counts=field=>limitedItems.reduce((a,x)=>{a[x[field]]=(a[x[field]]||0)+1;return a;},{});
       const complete=!failed.length&&!skipped.length&&reportedPages<=100;
-      return res.status(200).json({ok:true,items:limitedItems,families,scanned:seen.size,matched:items.length,group_counts:counts('group_id'),tier_counts:counts('tier'),family_count:families.length,correction_families:families.filter(x=>x.correction_count>0).length,
-        family_scope:'회사·공시명 기준의 검색 묶음입니다. 동일 거래로 검증한 사건 수가 아닙니다.',range:{bgn,end,days},fetched_at:new Date().toISOString(),
+      return res.status(200).json({ok:true,items:limitedItems,families,scanned:seen.size,matched:items.length,group_counts:counts('group_id'),family_count:families.length,correction_families:families.filter(x=>x.correction_count>0).length,
+        family_scope:'회사·공시명·제출자 기준의 검색 묶음입니다. 동일 거래로 검증한 사건 수가 아닙니다.',range:{bgn,end,days},fetched_at:new Date().toISOString(),
         coverage:{complete,reported_pages:reportedPages,read_pages:pagesRead,failed_pages:failed.sort((a,b)=>a-b),skipped_pages:skipped,scan_capped:reportedPages>100,display_limited:items.length>limit,matched_items:items.length,returned_items:limitedItems.length}});
     }catch(_){return res.status(502).json({ok:false,error:'DART 응답 지연 또는 조회 오류입니다. 잠시 후 다시 시도하세요.'});}
   };
 }
-module.exports=createHandler();module.exports.createHandler=createHandler;module.exports.kstDate=kstDate;
+module.exports=createHandler();module.exports.createHandler=createHandler;module.exports.kstDate=kstDate;module.exports.safeRecord=safeRecord;
