@@ -1,0 +1,60 @@
+/* A shared top-right account entry with dossier search directly below it. */
+.topbar[data-site-header] { padding: 12px 24px 0 !important; }
+.topbar[data-site-header] .brandrow { display:flex; align-items:flex-start !important; justify-content:space-between; gap:24px; padding-bottom:10px !important; }
+.topbar[data-site-header] .brand { flex:1; min-width:0; padding-top:3px; }
+.topbar[data-site-header] .brand-home-row { display:flex; align-items:center; gap:9px; }
+.topbar[data-site-header] .brand-home-icon { display:flex; flex:none; width:32px; height:32px; align-items:center; justify-content:center; }
+.topbar[data-site-header] .brand-home-icon img { display:block; width:30px; height:30px; }
+.topbar[data-site-header] .brand h1 { margin:0 !important; font-size:20px !important; line-height:1.45; letter-spacing:-.04em; }
+.topbar[data-site-header] .brand .eyebrow { margin-bottom:5px; font-size:9px !important; }
+.topbar[data-site-header] .brand p { display:none !important; }
+.topbar[data-site-header] .site-brand-home { color:inherit; text-decoration:none; border-radius:5px; }
+.topbar[data-site-header] .site-brand-home:hover { color:#ac3f70; }
+.topbar[data-site-header] .site-header-tools { display:flex; flex-direction:column; align-items:stretch; gap:9px; flex:0 1 350px; min-width:240px; margin-left:auto; }
+.topbar[data-site-header] .site-account-row { display:flex; justify-content:flex-end; align-items:center; min-height:34px; }
+.topbar[data-site-header] .site-login { display:inline-flex; align-items:center; justify-content:center; min-width:78px; min-height:34px; border:1px solid #e8d4de; border-radius:8px; padding:7px 17px; background:#f9ebf1; color:#a43c6c; font:inherit; font-size:12px; font-weight:750; line-height:1.4; cursor:pointer; white-space:nowrap; }
+.topbar[data-site-header] .site-login:hover { background:#f3dfe9; border-color:#d8adbf; }
+.topbar[data-site-header] .site-login[aria-busy="true"] { opacity:.72; }
+.topbar[data-site-header] .global-dossier-search { position:relative; width:100%; margin:0; order:initial; z-index:80; }
+.topbar[data-site-header] .global-dossier-box { display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #dedfd5; border-radius:9px; padding:8px 11px; }
+.topbar[data-site-header] .global-dossier-box>span { color:#8e9487; font-size:18px; line-height:1; }
+.topbar[data-site-header] .global-dossier-box input { width:100%; min-width:0; border:0; outline:0; background:transparent; font:inherit; font-size:12px; color:#30372d; }
+.topbar[data-site-header] .global-dossier-box:focus-within { border-color:#bd7998; box-shadow:0 0 0 2px #f7e9ef; }
+.topbar[data-site-header] .global-dossier-box input::placeholder { color:#989d92; }
+.topbar[data-site-header] .global-dossier-results { position:absolute; top:calc(100% + 7px); right:0; left:auto; width:100%; max-height:min(330px,60dvh); overflow:auto; padding:5px; background:#fff; border:1px solid #e1e4d8; border-radius:10px; box-shadow:0 12px 34px #26332324; }
+.topbar[data-site-header] .global-dossier-result { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; width:100%; border:0; border-radius:7px; padding:10px; background:#fff; text-align:left; cursor:pointer; }
+.topbar[data-site-header] .global-dossier-result:hover { background:#f6f7f0; }
+.topbar[data-site-header] .global-dossier-result b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#34402d; font-size:12px; }
+.topbar[data-site-header] .global-dossier-result span { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#939a89; font-size:10px; }
+.topbar[data-site-header] .global-dossier-empty { padding:13px; color:#89927d; text-align:center; font-size:12px; }
+.topbar[data-site-header] [hidden], .topbar[data-site-header] #status { display:none !important; }
+.topbar[data-site-header] :focus-visible, .site-account-dialog :focus-visible { outline:2px solid #b34c7c; outline-offset:3px; }
+.site-account-dialog { box-sizing:border-box; width:min(450px,calc(100vw - 28px)); max-height:85dvh; overflow:auto; padding:23px; border:1px solid #e0e4d8; border-radius:16px; background:#fffffb; color:#343c31; font-family:inherit; box-shadow:0 20px 80px #26321b33; }
+.site-account-dialog::backdrop { background:#222a2247; }
+.site-account-dialog header { display:flex; justify-content:space-between; align-items:center; gap:15px; }
+.site-account-dialog h2 { margin:0; font-size:19px; }
+.site-account-dialog .site-dialog-close { border:0; background:transparent; color:#818b76; font-size:23px; cursor:pointer; padding:0 4px; }
+.site-account-dialog p { font-size:13px; line-height:1.8; overflow-wrap:anywhere; }
+.site-account-dialog .site-account-note { margin-top:16px; font-size:11px; color:#869078; }
+.site-account-dialog label { display:block; margin:14px 0 5px; font-size:12px; color:#68745b; }
+.site-account-dialog input { box-sizing:border-box; width:100%; padding:11px; border:1px solid #dce1d2; border-radius:8px; background:#fff; font:inherit; font-size:14px; }
+.site-account-dialog .site-account-action { display:inline-block; margin:10px 6px 0 0; border:1px solid #dce1d2; border-radius:8px; padding:9px 13px; background:#fff; color:#546447; text-decoration:none; font:inherit; font-size:12px; cursor:pointer; }
+.site-account-dialog .site-account-primary { background:#b7497a; border-color:#b7497a; color:#fff; }
+.site-account-dialog .site-account-action:disabled { cursor:wait; opacity:.55; }
+.site-account-dialog [role="status"] { min-height:20px; color:#955074; font-size:12px; }
+@media(max-width:760px) {
+ .topbar[data-site-header] { padding:10px 13px 0 !important; }
+ .topbar[data-site-header] .brandrow { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px 12px; align-items:start !important; }
+ .topbar[data-site-header] .brand { grid-row:1; grid-column:1; padding-top:0; }
+ .topbar[data-site-header] .brand h1 { font-size:18px !important; }
+ .topbar[data-site-header] .brand .eyebrow { font-size:8px !important; margin-bottom:3px; }
+ .topbar[data-site-header] .brand-home-row { gap:6px; }
+ .topbar[data-site-header] .brand-home-icon { width:26px; height:26px; }
+ .topbar[data-site-header] .brand-home-icon img { width:25px; height:25px; }
+ .topbar[data-site-header] .site-header-tools { display:contents; }
+ .topbar[data-site-header] .site-account-row { grid-column:2; grid-row:1; align-self:start; }
+ .topbar[data-site-header] .site-login { min-width:69px; padding:8px 12px; font-size:12px; }
+ .topbar[data-site-header] .global-dossier-search { grid-column:1 / -1; grid-row:2; width:100%; }
+ .topbar[data-site-header] .global-dossier-results { left:0; right:0; width:100%; }
+ .site-account-dialog { padding:19px; }
+}
