@@ -1,0 +1,8 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');const {resolveFromPublisher,titleKey}=require('../lib/publisher-url-lookup');
+const meta={publisher:'플래텀(Platum)',title:'젠엑시스, 창업초기 펀드 운용사 선정…씨엔티테크와 공동 운용'};
+const transport=items=>async(url,opts)=>{assert.ok(url.startsWith('https://platum.kr/wp-json/wp/v2/posts?'));assert.ok(opts.maxBytes<=150000);return {buffer:Buffer.from(JSON.stringify(items))};};
+test('public publisher lookup requires exact normalized title',async()=>{const link='https://platum.kr/archives/123';const r=await resolveFromPublisher(meta,transport([{link,title:{rendered:meta.title}}]),Date.now()+10000);assert.equal(r,link);});
+test('similar different article is not substituted',async()=>{assert.equal(await resolveFromPublisher(meta,transport([{link:'https://platum.kr/archives/123',title:{rendered:'젠엑시스, 다른 펀드 운용사 선정'}}]),Date.now()+10000),null);});
+test('ambiguous duplicate matches and external URLs are rejected',async()=>{for(const links of [['https://evil.example/x'],['https://platum.kr/archives/1','https://platum.kr/archives/2']])assert.equal(await resolveFromPublisher(meta,transport(links.map(link=>({link,title:{rendered:meta.title}}))),Date.now()+10000),null);});
+test('unsupported publishers do not trigger network calls',async()=>{assert.equal(await resolveFromPublisher({...meta,publisher:'다른 매체'},async()=>{throw Error('unexpected');},Date.now()+10000),null);assert.equal(titleKey('기록 &amp; 자료 - Platum'),titleKey('기록 & 자료'));});
