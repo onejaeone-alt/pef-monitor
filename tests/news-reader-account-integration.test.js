@@ -1,0 +1,13 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const I=require('../scripts/integrate-news-account'),Base=require('../scripts/integrate-news-reader');
+const html=()=>I.page(Base.page(fs.readFileSync('index.html','utf8')));
+const reader=()=>I.reader(Base.reader(fs.readFileSync('news-reader.js','utf8')));
+const api=()=>I.api(Base.api(fs.readFileSync('api/news.js','utf8')));
+test('account client loads before reader without loading the legacy desk twice',()=>{const s=html();assert.ok(s.indexOf('/news-reader-account-client.js')<s.indexOf('/news-reader.js?v='));assert.ok(!/src="\/news-desk\.js/.test(s));});
+test('private API branch precedes public CORS and GET-only guard',()=>{const s=api();const branch=s.indexOf("hasOwnProperty.call(req.query,'reader')");assert.ok(branch>=0);assert.ok(branch<s.indexOf("res.setHeader('Access-Control-Allow-Origin'"));assert.ok(branch<s.indexOf("req.method !== 'GET'"));});
+test('actual built reader parses and initializes in checking mode',()=>{const s=reader();new vm.Script(s);assert.match(s,/mode:'checking'/);assert.ok(!s.includes('S.records=readGuest();render();load();'));});
+test('account records never enter legacy hydration localStorage',()=>{const s=reader();assert.match(s,/if\(S.mode==='guest'\)\{try\{localStorage.setItem\(STORE,JSON.stringify\(S.records\)\)/);assert.ok(!s.includes('localStorage.setItem(STORE,JSON.stringify(next))'));});
+test('all account transformations are idempotent on actual built source',()=>{for(const [text,transform]of [[html(),I.page],[reader(),I.reader],[api(),I.api]])assert.equal(transform(text),text);});
+test('original reader transformation is still idempotent after account integration',()=>{assert.equal(Base.page(html()),html());assert.equal(Base.reader(reader()),reader());assert.equal(Base.api(api()),api());});
+test('import requires explicit consent and existing guest keys are not removed',()=>{const s=reader();assert.match(s,/accountImportConsent/);assert.ok(!s.includes('localStorage.clear('));assert.ok(!s.includes('localStorage.removeItem(LEGACY'));});
+test('public reader keeps its own request parameters rather than account credentials',()=>{const s=reader();assert.match(s,/feed:'reader'/);assert.ok(!s.includes('access_token'));});
