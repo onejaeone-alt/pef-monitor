@@ -5,6 +5,8 @@ function inject(html) {
   let next=html;
   if(!next.includes('href="/preflight.css?v=1"'))next=next.replace('</head>','<link rel="stylesheet" href="/preflight.css?v=1"></head>');
   if(!next.includes('src="/preflight.js?v=1"'))next=next.replace('</body>','<script src="/preflight.js?v=1" defer></script></body>');
+  if(!next.includes('href="/preflight-question-evidence.css?v=1"'))next=next.replace('</head>','<link rel="stylesheet" href="/preflight-question-evidence.css?v=1"></head>');
+  if(!next.includes('src="/preflight-question-evidence.js?v=1"'))next=next.replace('</body>','<script src="/preflight-question-evidence.js?v=1" defer></script></body>');
   return next;
 }
 function main(root=path.resolve(__dirname,'..')) {
