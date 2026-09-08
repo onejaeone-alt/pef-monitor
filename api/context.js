@@ -7,6 +7,11 @@ function clean(value, maxLength = 160) {
 }
 
 module.exports = async (req, res) => {
+  // Public-source preflight shares this function; private notes and arbitrary URLs are not accepted.
+  if (["preflight", "preflight-catalog"].includes(String(req.query?.mode || ""))) {
+    try { return await require("../lib/preflight-api").handlePreflight(req, res); }
+    catch (_) { res.setHeader("Cache-Control", "no-store"); return res.status(500).json({ ok: false, error: "공개자료 사전조사를 시작하지 못했습니다. 기존 취재자료는 변경하지 않았습니다." }); }
+  }
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
 
