@@ -1,13 +1,14 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+// Keep old classifier regressions: the module is preserved, but no longer loaded by DART.
 const T=require('../dart-reporting-topics'),U=require('../dart-desk'),{inject}=require('../scripts/inject-dart-desk');
 const n='20260908000001',item=report_nm=>({rcept_no:n,report_nm,corp_name:'가온',flr_nm:'공시 제출자'});
 const e=(label,before,after,extra={})=>({evidence_id:'e'+label,label,before,after,source:{source_id:'dart:'+n,location:'원문 표 5 행 3'},...extra});
 const review=changes=>({ok:true,version:U.REVIEW_VERSION,rcept_no:n,changes,current_fields:[],questions:[],warnings:[]});
 const ids=(title,r)=>T.classify(item(title),r).map(x=>x.id);
 const sourcePath=file=>path.join(__dirname,'..',file);
-test('raw view is the sole initial mode',()=>{assert.equal(U.DEFAULT_VIEW,'raw');const h=fs.readFileSync(sourcePath('dart.html'),'utf8');assert.match(h,/<section id="deskView" hidden/);assert.match(h,/<section id="rawView">/);assert.ok(h.indexOf('data-view="raw"')<h.indexOf('data-view="desk"'));});
-test('opening the page never launches correction reads',()=>{const s=fs.readFileSync(sourcePath('dart-desk.js'),'utf8');assert.doesNotMatch(s,/load\(\)\.then\(.*batch/);assert.match(s,/\}\);render\(\);load\(\);/);assert.match(s,/if\(batching\|\|view!=='desk'\)return/);});
+test('raw view remains and the retired analysis view is absent',()=>{assert.equal(U.DEFAULT_VIEW,'raw');const h=fs.readFileSync(sourcePath('dart.html'),'utf8');assert.match(h,/<section id="rawView"/);assert.doesNotMatch(h,/id="deskView"|data-view=|reportingTopics/);});
+test('opening the page never launches correction reads',()=>{const s=fs.readFileSync(sourcePath('dart-desk.js'),'utf8');assert.doesNotMatch(s,/load\(\)\.then|batch\(/);assert.match(s,/\n  load\(\);/);});
 for(const [title,expected] of [
  ['주요사항보고서(유상증자결정)',['funding']],['전환사채권발행결정',['funding']],['신주인수권부사채권발행결정',['funding']],['만기전사채취득',['debt']],
  ['주식등의대량보유상황보고서(일반)',['control']],['임원ㆍ주요주주특정증권등소유상황보고서',['control']],['최대주주변경',['control']],
@@ -29,6 +30,6 @@ test('price/share questions use related original IDs and do not invent a money d
 test('multi-label counts do not duplicate an article or mutate records',()=>{const x=item('주식양수도계약해제'),r=review([e('납입일','a','b')]),before=JSON.stringify([x,r]);const counts=T.countTopics([x],{[n]:r});assert.equal(counts.control,1);assert.equal(counts.deal,1);assert.equal(counts.execution,1);assert.equal(JSON.stringify([x,r]),before);});
 test('reference material is not labeled an article candidate',()=>{const a=T.storyContext(item('사업보고서'));assert.equal(a.topic.id,'reference');assert.match(a.why,/자동으로 기사 후보로 취급하지 않습니다/);assert.equal(a.resolved,false);});
 test('title-only classification is disclosed, body extraction stays review pending',()=>{const a=T.classify(item('유상증자결정')),b=T.classify(item('유상증자결정'),review([e('발행가액','100','90')]));assert.match(a[0].basis_label,/공시명/);assert.match(b[0].basis_label,/검수 전/);});
-test('category controls and evidence escape untrusted strings',()=>{const x=item('유상증자결정'),r=review([e('신주 발행가액','<img src=x>','<script>bad()</script>')]);assert.doesNotMatch(U.storyHtml(x,r),/<img|<script/);assert.ok(U.evidenceHtml(r,x).includes('&lt;img'));});
-test('copy includes reporting lens and original evidence, never private notes',()=>{const x={...item('유상증자결정'),notes:'PRIVATE_NOTE_TEST'},r=review([e('발행가액','100','90')]);const text=U.brief(x,r);assert.match(text,/취재 쟁점/);assert.match(text,/대조할 자료/);assert.match(text,/원문 표 5 행 3/);assert.doesNotMatch(text,/PRIVATE_NOTE_TEST/);});
-test('asset integration is idempotent and places topics before desk without duplicates',()=>{const h='<head><link rel="stylesheet" href="/dart-desk.css?v=1"></head><body><script src="/news-reader-account-client.js"></script><script src="/dart-desk.js?v=1" defer></script></body>',a=inject(h);assert.equal(inject(a),a);assert.equal((a.match(/dart-desk\.js/g)||[]).length,1);assert.equal((a.match(/dart-reporting-topics\.js/g)||[]).length,1);assert.ok(a.indexOf('dart-reporting-topics.js')<a.indexOf('src="/dart-desk.js'));assert.match(a,/news-reader-account-client.js/);});
+test('evidence escapes untrusted strings without rendering a story template',()=>{const r=review([e('신주 발행가액','<img src=x>','<script>bad()</script>')]);const h=U.evidenceHtml(r);assert.doesNotMatch(h,/<img|<script|dd-story/);assert.ok(h.includes('&lt;img'));});
+test('copy contains original evidence, not a reporting lens or private notes',()=>{const x={...item('유상증자결정'),notes:'PRIVATE_NOTE_TEST'},r=review([e('발행가액','100','90')]);const text=U.brief(x,r);assert.match(text,/원문 표 5 행 3/);assert.doesNotMatch(text,/취재 쟁점|대조할 자료|PRIVATE_NOTE_TEST/);});
+test('asset integration stops loading the retired topics UI and stays idempotent',()=>{const h='<head><link rel="stylesheet" href="/dart-desk.css?v=1"></head><body><script src="/news-reader-account-client.js"></script><script src="/dart-reporting-topics.js?v=1"></script><script src="/dart-desk.js?v=1" defer></script></body>',a=inject(h);assert.equal(inject(a),a);assert.equal((a.match(/dart-desk\.js/g)||[]).length,1);assert.equal((a.match(/dart-reporting-topics\.js/g)||[]).length,0);assert.match(a,/news-reader-account-client.js/);});
