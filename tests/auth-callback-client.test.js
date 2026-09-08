@@ -1,0 +1,13 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const code=fs.readFileSync('auth/callback.js','utf8'),guard=fs.readFileSync('auth/return-guard.js','utf8');
+async function run({search='?code='+'a'.repeat(32),hash='',ok=true,network=false}={}){
+ const nodes={authTitle:{},authMessage:{}},events=[];
+ const ctx={window:{location:{search,hash,replace:u=>events.push({redirect:u})}},history:{replaceState:(a,b,u)=>events.push({scrub:u})},document:{readyState:'complete',getElementById:id=>nodes[id]},URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async(u,o)=>{events.push({url:u,options:o});if(network)throw Error('연결 오류');return {ok,json:async()=>ok?{ok:true,user:{id:'test-id'}}:{ok:false,error:'인증 메일을 요청한 브라우저에서 열어 주세요.'}};}};
+ vm.runInNewContext(code,ctx);await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));return {nodes,events};
+}
+test('callback scrubs code before POST and redirects only home',async()=>{const r=await run();assert.equal(r.events[0].scrub,'/auth/callback.html');assert.equal(r.events[1].url,'/api/news?reader=finish-link');assert.equal(r.events[1].options.credentials,'same-origin');assert.deepEqual(JSON.parse(r.events[1].options.body),{code:'a'.repeat(32)});assert.equal(r.events[2].redirect,'/');});
+test('missing, duplicate, or legacy tokens trigger no auth requests',async()=>{for(const c of [{search:''},{search:'?code='+'a'.repeat(32)+'&code='+'b'.repeat(32)},{search:'',hash:'#access_token=fixture&refresh_token=fixture'}]){const r=await run(c);assert.equal(r.events.length,1);assert.match(r.nodes.authTitle.textContent,/마치지/);}});
+test('failed authentication stays on callback with safe text',async()=>{const r=await run({ok:false});assert.ok(!r.events.some(x=>x.redirect));assert.match(r.nodes.authMessage.textContent,/브라우저/);});
+test('network failure is not success',async()=>{const r=await run({network:true});assert.ok(!r.events.some(x=>x.redirect));assert.match(r.nodes.authTitle.textContent,/마치지/);});
+test('fallback guard sends only code, strips untrusted next and fragment',()=>{const events=[];vm.runInNewContext(guard,{window:{location:{pathname:'/',search:'?code='+'a'.repeat(32)+'&next=https://evil.invalid',hash:'',replace:u=>events.push(u)}},history:{replaceState:(a,b,u)=>events.push('scrub:'+u)},URLSearchParams});assert.equal(events[0],'scrub:/');assert.equal(events[1],'/auth/callback.html?code='+'a'.repeat(32));});
+test('ordinary page loads remain unchanged',()=>{const events=[];vm.runInNewContext(guard,{window:{location:{pathname:'/',search:'?q=news',hash:'',replace:u=>events.push(u)}},history:{replaceState:()=>events.push('scrub')},URLSearchParams});assert.equal(events.length,0);});
