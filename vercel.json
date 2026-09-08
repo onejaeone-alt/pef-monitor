@@ -21,5 +21,15 @@
   "crons": [
     { "path": "/api/kvic-backfill?auto=historical&pages=3&fromYear=2020&pdf=selection", "schedule": "10 20 * * *" },
     { "path": "/api/enriched?days=1", "schedule": "50 21 * * *" }
-  ]
+  ],
+  "headers": [{
+    "source": "/auth/:path*",
+    "headers": [
+      {"key":"Cache-Control","value":"no-store, max-age=0"},
+      {"key":"Referrer-Policy","value":"no-referrer"},
+      {"key":"X-Content-Type-Options","value":"nosniff"},
+      {"key":"X-Frame-Options","value":"DENY"},
+      {"key":"Content-Security-Policy","value":"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"}
+    ]
+  }]
 }
