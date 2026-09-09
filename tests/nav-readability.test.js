@@ -27,7 +27,7 @@ test('long menu labels stay whole and the navigation scrolls rather than shrinki
 
 test('existing stylesheet links are refreshed once and repeated builds are idempotent', () => {
   const page = H.page(source);
-  assert.match(page, /href="\/site-header\.css\?v=20260909-nav-readable1"/);
+  assert.match(page, /href="\/site-header\.css\?v=20260909-nav-readable1(?:&[^"]*)?"/);
   assert.equal((page.match(/href="\/site-header\.css/g) || []).length, 1);
   assert.equal(H.page(page), page);
 });
@@ -48,7 +48,7 @@ test('all actual internal header pages use the larger navigation stylesheet', ()
     const source = fs.readFileSync(path.join(root, name), 'utf8');
     if (!/<header\b[^>]*class="[^"]*\btopbar\b/.test(source)) continue;
     const page = H.page(source);
-    assert.match(page, /href="\/site-header\.css\?v=20260909-nav-readable1"/, name);
+    assert.match(page, /href="\/site-header\.css\?v=20260909-nav-readable1(?:&[^"]*)?"/, name);
     checked++;
   }
   assert.ok(checked >= 8, 'Expected at least the existing eight internal header pages');
