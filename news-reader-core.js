@@ -78,7 +78,7 @@ function select(items,state,{view='unread',category='ALL',actor='ALL',query='',c
   if(view==='hidden'&&!state.hidden?.[k])return false;
   if(view==='saved'&&!state.bookmark?.[k])return false;
   const a=x.relevance||assess(x);
-  if(['unread','tracked'].includes(view)&&a.status!=='relevant'&&!includeReview)return false;
+  if(['latest','unread','tracked'].includes(view)&&a.status!=='relevant'&&!includeReview)return false;
   if(view==='review'&&a.status==='relevant')return false;
   if(view==='unread'&&!unread(x,state))return false;
   if(view==='tracked'&&!matchingWatches(x,state).length)return false;

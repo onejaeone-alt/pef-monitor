@@ -45,3 +45,13 @@ test('secondary subject is selectable but a personal classification remains auth
  assert.equal(C.select([item],state,options).length,0);
  assert.equal(C.select([item],state,{...options,category:'people'}).length,1);
 });
+test('latest news ignores old read markers while retaining relevance, hidden and exclusive filters',()=>{
+ const item=input('[단독] PEF 기업 매각 본입찰',901),noise=input('국민연금 기초연금 신청 안내',902);
+ const state=C.apply(C.empty(),[{kind:'read',key:C.key(item),value:{revision:C.revision(item)}}]);
+ assert.equal(C.select([item,noise],state,{view:'latest'}).length,1);
+ assert.equal(C.select([item],state,{view:'latest',exclusiveOnly:true}).length,1);
+ assert.equal(C.select([item],state,{view:'unread'}).length,0);
+ const hidden=C.apply(state,[{kind:'hidden',key:C.key(item),value:{article:item}}]);
+ assert.equal(C.select([item],hidden,{view:'latest'}).length,0);
+ assert.equal(hidden.read[C.key(item)].revision,C.revision(item));
+});
