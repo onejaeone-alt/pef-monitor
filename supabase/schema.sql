@@ -321,3 +321,14 @@ create table if not exists public.briefings (
 
 alter table public.reporting_leads enable row level security;
 alter table public.briefings enable row level security;
+create table if not exists public.news_translation_cache (
+ id text primary key check (id ~ '^[a-f0-9]{64}$'),
+ source_title text not null, source_snippet text not null default '',
+ model text not null, status text not null check(status in ('pending','ready','failed')),
+ title_ko text, snippet_ko text, response_id text, usage jsonb, error_code text,
+ created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+alter table public.news_translation_cache enable row level security;
+revoke all on public.news_translation_cache from public, anon, authenticated;
+grant select, insert, update on public.news_translation_cache to service_role;
+comment on table public.news_translation_cache is 'Public foreign-feed Korean translations; derived display cache, not canonical facts or personal records.';
