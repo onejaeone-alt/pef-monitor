@@ -10,3 +10,43 @@
 
 /* Scan individual headlines, combine subject and editorial-label filters. */
 .reader-exclusive-filter{margin-bottom:18px}.reader-exclusive-filter[hidden]{display:none}.reader-category{display:flex;justify-content:space-between;align-items:center;gap:8px}.reader-category-count{font-size:12px;font-variant-numeric:tabular-nums;color:#68725f}.reader-exclusive-badge{font-size:12px;font-weight:750;color:#a03766}.reader-row{grid-template-columns:minmax(0,1fr) 72px}.reader-row-actions{grid-template-columns:repeat(2,30px);justify-items:center;gap:2px;padding:12px 5px}.reader-row-actions .reader-original-link{grid-column:1/-1}.reader-original-link{font-size:14px;font-weight:650;white-space:nowrap;text-decoration:none;color:#4b603c;padding:7px 1px}.reader-original-link:hover{text-decoration:underline}.reader-original-link:focus-visible{outline:2px solid #a03766;outline-offset:2px}.reader-read-state:empty{display:none}.news-desk .nd-row-title{font-size:16px;line-height:1.6}.reader-tabs button,.reader-exclusive-filter .nd-side-item,.reader-category{font-size:14px}.reader-exclusive-filter button:focus-visible,.reader-category:focus-visible{outline:2px solid #a03766;outline-offset:2px}
+/* Shared type scale for the news controls; labels and options have equal size. */
+.news-desk{--reader-control-size:.875rem;--reader-meta-size:.75rem;--reader-control-ink:#4c515b;--reader-selected-bg:#f8ebf1;--reader-selected-ink:#96385f}
+.news-desk button,.news-desk input,.news-desk select{font-family:inherit;letter-spacing:normal}
+.news-desk .nd-side-label,.news-desk .reader-watches h4{display:block;font-size:var(--reader-control-size);line-height:1.5;font-weight:700;letter-spacing:normal;color:#343943;margin:0 11px 8px}
+.news-desk .nd-category-label{margin-top:20px}
+.news-desk .nd-side-item{justify-content:space-between;gap:8px;min-height:40px;padding:9px 11px;border-radius:7px;font-size:var(--reader-control-size);line-height:1.5;font-weight:500;color:var(--reader-control-ink);background:transparent}
+.news-desk .nd-side-item:hover{background:#f1f0eb}
+.news-desk .nd-side-item.is-active{font-weight:650;color:var(--reader-selected-ink);background:var(--reader-selected-bg);border-color:#ecd6df}
+.news-desk .reader-category-count{margin-left:auto;flex:none;font-size:var(--reader-meta-size);line-height:1.5;font-weight:500;font-variant-numeric:tabular-nums;color:#767b84}
+.news-desk .is-active .reader-category-count{color:var(--reader-selected-ink)}
+.news-desk .reader-exclusive-filter{display:grid;gap:4px;margin:20px 0 0}
+.news-desk .reader-exclusive-filter .nd-side-label{margin-bottom:4px}
+.news-desk .reader-watches{padding:16px 0 0;margin-top:20px}
+.news-desk .reader-scope-tabs{margin:0;padding:10px 18px;gap:6px;border-bottom:1px solid var(--nd-line)}
+.news-desk .reader-scope-tabs button,.news-desk .reader-tabs button,.news-desk .nd-filter,.news-desk .nd-segment button{font-size:var(--reader-control-size);line-height:1.5;font-weight:500;border:1px solid transparent;border-radius:7px;color:var(--reader-control-ink);background:#f5f5f2;padding:7px 10px}
+.news-desk .reader-scope-tabs button{padding:7px 20px}
+.news-desk .reader-scope-tabs button.is-active,.news-desk .reader-tabs button.is-active,.news-desk .nd-filter.is-active,.news-desk .nd-segment button.is-active{font-weight:650;background:var(--reader-selected-bg);color:var(--reader-selected-ink);border-color:#ecd6df;box-shadow:none}
+.news-desk .reader-top{padding:12px 18px 0}
+.news-desk .reader-tabs{flex-wrap:wrap;gap:6px}
+.news-desk .nd-search input,.news-desk .nd-button,.news-desk .nd-text-button,.news-desk .nd-more{font-size:var(--reader-control-size);line-height:1.5}
+.news-desk .nd-segment{padding:0;gap:3px;background:transparent}
+.news-desk .nd-list-heading{flex-wrap:wrap}
+.news-desk .nd-list-heading h3{font-size:1rem;font-weight:700;line-height:1.5}
+.news-desk .nd-list-heading #resultCount,.news-desk .reader-status,.news-desk .nd-row-meta,.news-desk .nd-source-note,.news-desk .reader-read-state,.news-desk .reader-review,.news-desk .nd-category-pill{font-size:var(--reader-meta-size);line-height:1.5}
+.news-desk .nd-row-meta,.news-desk .reader-status,.news-desk .nd-source-note{color:#737982}
+.news-desk .nd-row-title{font-size:1rem;font-weight:650;line-height:1.65;letter-spacing:-.015em}
+.news-desk .reader-original-link{font-weight:500;color:var(--reader-control-ink)}
+@media(max-width:760px){
+ .news-desk .nd-sidebar{margin-bottom:16px}
+ .news-desk .nd-side-label{margin-left:0}
+ .news-desk .nd-side-item{min-height:38px;padding:8px 10px}
+ .news-desk .reader-exclusive-filter{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px}
+ .news-desk .reader-exclusive-filter .nd-side-label{margin:0 6px 0 0}
+ .news-desk .nd-category-label{margin-top:14px}
+ .news-desk .reader-scope-tabs{padding:10px 12px}
+ .news-desk .reader-top{padding:10px 12px 0}
+ .news-desk .reader-tabs button{flex:0 1 auto}
+ .news-desk .nd-toolbar{flex-wrap:wrap}
+ .news-desk .nd-search{flex-basis:100%}
+}

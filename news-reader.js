@@ -116,11 +116,11 @@ function render(){
  headerAccount.setAttribute('aria-controls','readerDialog');
  headerAccount.setAttribute('aria-busy',String(S.mode==='checking'));
 
- $('#collections').replaceChildren(...[['saved','보관함'],['hidden','숨긴 기사'],['review','선별 검토']].map(([v,t])=>btn(t+' '+count(v),{'data-view':v,class:'nd-side-item'+(S.view===v?' is-active':'')})));
+ $('#collections').replaceChildren(...[['saved','보관함'],['hidden','숨긴 기사'],['review','선별 검토']].map(([v,t])=>el('button',{type:'button','data-view':v,'aria-pressed':S.view===v,class:'nd-side-item'+(S.view===v?' is-active':'')},el('span',{text:t}),el('span',{class:'reader-category-count',text:count(v)}))));
  const categoryCount=id=>C.select(S.items,S.records,{...options(),category:id}).length;
  const exclusiveCount=C.select(S.items,S.records,{...options(),exclusiveOnly:true}).length;
  exclusiveBox.hidden=S.newsScope!=='domestic';
- exclusiveBox.replaceChildren(el('div',{class:'nd-side-label',text:'보도 유형'}),btn('전체 기사',{'data-exclusive':'all',class:'nd-side-item'+(!S.exclusiveOnly?' is-active':''),'aria-pressed':!S.exclusiveOnly}),btn('단독 '+exclusiveCount,{'data-exclusive':'only',class:'nd-side-item'+(S.exclusiveOnly?' is-active':''),'aria-pressed':S.exclusiveOnly,title:'제목에 단독 표시가 있는 국내 기사'}));
+ exclusiveBox.replaceChildren(el('div',{class:'nd-side-label',text:'보도 유형'}),btn('전체 기사',{'data-exclusive':'all',class:'nd-side-item'+(!S.exclusiveOnly?' is-active':''),'aria-pressed':!S.exclusiveOnly}),el('button',{type:'button','data-exclusive':'only',class:'nd-side-item'+(S.exclusiveOnly?' is-active':''),'aria-pressed':S.exclusiveOnly,title:'제목에 단독 표시가 있는 국내 기사'},el('span',{text:'단독'}),el('span',{class:'reader-category-count',text:exclusiveCount})));
  $('#categories').replaceChildren(...[{id:'ALL',label:'주제 전체'},...T.categories].map(c=>el('button',{type:'button','data-category':c.id,'aria-pressed':S.category===c.id,class:'nd-side-item reader-category'+(S.category===c.id?' is-active':'')},el('span',{text:c.label}),el('span',{class:'reader-category-count',text:categoryCount(c.id)}))));
  $('#actorFilters').replaceChildren(...[{id:'ALL',label:'기관 전체'},...T.actors].map(a=>btn(a.label,{'data-actor':a.id,class:'nd-filter'+(S.actor===a.id?' is-active':'')})));
  $('#readerWatches').replaceChildren(el('h4',{text:'내 추적 검색'}),...Object.entries(S.records.watch).map(([k,w])=>el('div',{},btn(w.label,{'data-watch-filter':k,class:'nd-text-button'}),btn('×',{'data-watch-remove':k,'aria-label':w.label+' 추적 해제',class:'nd-text-button'}))));
