@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const VERSION = '20260908-topright1';
+const CSS_VERSION = '20260909-nav-readable1';
 const headerPattern = /<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[^>]*>[\s\S]*?<\/header>/;
 
 function divWithClass(html, className) {
@@ -50,6 +51,7 @@ function page(html) {
   if (!next.includes('/dossier-drawer.css')) next = next.replace('</head>', '<link rel="stylesheet" href="/dossier-drawer.css"></head>');
   if (!next.includes('/dossier-drawer.js')) next = next.replace('</body>', '<script src="/dossier-drawer.js"></script></body>');
   if (!next.includes('/site-header.css')) next = next.replace('</head>', '<link rel="stylesheet" href="/site-header.css?v=' + VERSION + '"></head>');
+  next = next.replace(/href="\/site-header\.css(?:\?[^"]*)?"/g, 'href="/site-header.css?v=' + CSS_VERSION + '"');
   if (!next.includes('/site-header.js')) next = next.replace('</body>', '<script src="/site-header.js?v=' + VERSION + '"></script></body>');
   next = next.replace(/src="(\/news-reader\.js\?[^"]*)"/g, (_, src) => 'src="' + src.replace(/&header=[^&"]*/g, '') + '&header=' + VERSION + '"');
   next = next.replace(/href="(\/site-header\.css[^"]*)"/g, (_, href) => 'href="' + href.replace(/&brand=[^&"]*/g, '') + '&brand=20260909-large1"');

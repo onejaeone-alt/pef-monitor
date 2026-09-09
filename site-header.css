@@ -58,3 +58,19 @@
  .topbar[data-site-header] .global-dossier-results { left:0; right:0; width:100%; }
  .site-account-dialog { padding:19px; }
 }
+
+/* NAV_READABILITY_V1: override the legacy 11px compact navigation, not page text. */
+.topbar[data-site-header] .nav {
+ gap:6px !important; min-width:0; max-width:100%; flex-wrap:nowrap;
+ overflow-x:auto; overflow-y:hidden; scroll-padding-inline:8px;
+}
+.topbar[data-site-header] .nav > a {
+ display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center;
+ font-size:1rem !important; font-weight:800; line-height:1.5;
+ min-height:48px; padding:11px 16px !important; white-space:nowrap;
+}
+.topbar[data-site-header] .nav > a:focus-visible { outline-offset:-3px; }
+@media(max-width:760px) {
+ .topbar[data-site-header] .nav { gap:4px !important; }
+ .topbar[data-site-header] .nav > a { min-height:44px; padding:9px 12px !important; }
+}
