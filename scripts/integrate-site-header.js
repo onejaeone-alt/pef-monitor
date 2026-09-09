@@ -52,6 +52,7 @@ function page(html) {
   if (!next.includes('/site-header.css')) next = next.replace('</head>', '<link rel="stylesheet" href="/site-header.css?v=' + VERSION + '"></head>');
   if (!next.includes('/site-header.js')) next = next.replace('</body>', '<script src="/site-header.js?v=' + VERSION + '"></script></body>');
   next = next.replace(/src="(\/news-reader\.js\?[^"]*)"/g, (_, src) => 'src="' + src.replace(/&header=[^&"]*/g, '') + '&header=' + VERSION + '"');
+  next = next.replace(/href="(\/site-header\.css[^"]*)"/g, (_, href) => 'href="' + href.replace(/&brand=[^&"]*/g, '') + '&brand=20260909-large1"');
   return next;
 }
 
