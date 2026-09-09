@@ -21,3 +21,27 @@ test('no executable or credential URLs accepted',()=>{assert.equal(C.url('javasc
 test('private state does not accept notes or arbitrary fields',()=>{const v=C.validate({kind:'bookmark',key:'https://example.com/a',value:{notes:'secret',article:{title:'test',source_url:'https://example.com/a',phone:'private'}}});assert.equal(JSON.stringify(v).includes('private'),false);assert.equal(JSON.stringify(v).includes('secret'),false);});
 test('prototype property cannot modify state prototype',()=>{const s=C.apply(C.empty(),[{kind:'watch',key:'__proto__',value:{query:'fund'}}]);assert.equal(Object.getPrototypeOf(s.watch),null);assert.equal(Object.prototype.query,undefined);});
 test('independent reader states never share changes',()=>{const a=input(relevant[0]),one=C.apply(C.empty(),[{kind:'bookmark',key:C.key(a),value:{article:a}}]),two=C.empty();assert.equal(C.select([],one,{view:'saved'}).length,1);assert.equal(C.select([],two,{view:'saved'}).length,0);});
+test('exclusive filter uses editorial markers and remains domestic-only',()=>{
+ const fixtures=[['[단독] A사 매각 추진',true],['【단독】 A사 인수',true],['단독: A사 투자 유치',true],['A사 단독 입찰',false],['단독주택 투자 확대',false],['A사 단독 대표 선임',false]];
+ for(const [title,expected] of fixtures)assert.equal(C.exclusive({title}),expected,title);
+ assert.equal(C.exclusive({title:'[단독] CVC 매각 검토',news_scope:'foreign'}),false);
+});
+test('exclusive and subject filters compose across live and saved articles',()=>{
+ const T=require('../news-taxonomy'),item={title:'[단독] PEF 인수금융 확보하고 A사 매각 추진',source_url:'https://example.com/exclusive',published_at:new Date().toISOString()};
+ const ordinary={...item,title:'PEF 인수금융 확보',source_url:'https://example.com/ordinary'};
+ let state=C.apply(C.empty(),[{kind:'bookmark',key:item.source_url,value:{article:item}}]);
+ const options={view:'all',newsScope:'domestic',exclusiveOnly:true,category:'deal',classify:T.classify};
+ assert.deepEqual(C.select([item,ordinary],state,options).map(C.key),[item.source_url]);
+ assert.equal(C.select([],state,{...options,view:'saved'}).length,1);
+ state=C.apply(state,[{kind:'hidden',key:item.source_url,value:{article:item}}]);
+ assert.equal(C.select([item],state,options).length,0);
+});
+test('secondary subject is selectable but a personal classification remains authoritative',()=>{
+ const T=require('../news-taxonomy'),item={title:'PEF 인수금융 확보하고 A사 매각 추진',source_url:'https://example.com/multiple'};
+ const options={view:'all',category:'deal',classify:T.classify};
+ assert.equal(T.classify(item).category_id,'credit');
+ assert.equal(C.select([item],C.empty(),options).length,1);
+ const state=C.apply(C.empty(),[{kind:'override',key:item.source_url,value:{category:'people'}}]);
+ assert.equal(C.select([item],state,options).length,0);
+ assert.equal(C.select([item],state,{...options,category:'people'}).length,1);
+});
