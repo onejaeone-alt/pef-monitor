@@ -9,6 +9,7 @@ const key=x=>url(x?.source_url);
 const revision=x=>clean(x?.title).slice(0,600)+'|'+(time(x?.published_at)?new Date(x.published_at).toISOString():'');
 function assess(item){
  const t=clean(item?.title||item?.headline),context=clean(item?.snippet);
+ if(scope(item)==='foreign')return {status:'relevant',reason:'해외 IB·투자업계 보도'};
  const business=t.replace(/예상\s*인수\s*결과|인수\s*결과|보험\s*인수|인수파출소|인수동|인수봉|인수인계|인수분해|인수위원회|인수위|인수단/g,'');
  const deal=/인수|매각|M&A|인수합병|경영권|공개매수|우선협상|본입찰|예비입찰|합병|의결권|주주행동|행동주의|주총|주주총회|지분\s*(?:투자|처분|인수)/i.test(business);
  const capital=/회사채|공모채|전환사채|교환사채|신주인수권부사채|신종자본증권|유상증자|인수금융|메자닌|리파이낸싱|차환|유동성\s*(?:위기|부족)|회생|워크아웃|파산|채무불이행|신용등급|환헤지|FX스와프|프로젝트\s*파이낸싱|\bPF\b/i.test(t);
@@ -28,9 +29,10 @@ function assess(item){
  if(industry)return {status:'relevant',reason:'운용업계 동향·해설'};
  return {status:'review',reason:context?'제목만으로 관련성 판단 어려움':'기관명 외에 취재 관련 표현 부족'};
 }
+function scope(x){return x?.news_scope==='foreign'||x?.source_type==='foreign_news'?'foreign':'domestic';}
 function snapshot(x){
  const u=key(x);if(!u)return null;
- return {source_url:u,title:clean(x.title||'제목 확인 필요').slice(0,600),source_name:clean(x.source_name).slice(0,100),published_at:time(x.published_at)?new Date(x.published_at).toISOString():null,
+ return {news_scope:scope(x),source_type:scope(x)==='foreign'?'foreign_news':'domestic_news',source_url:u,title:clean(x.title||'제목 확인 필요').slice(0,600),source_name:clean(x.source_name).slice(0,100),published_at:time(x.published_at)?new Date(x.published_at).toISOString():null,
  related_entities:(Array.isArray(x.related_entities)?x.related_entities:[]).filter(e=>e&&e.entity_key).slice(0,8).map(e=>({entity_key:clean(e.entity_key).slice(0,160),canonical_name:clean(e.canonical_name).slice(0,160),entity_type:clean(e.entity_type).slice(0,40),type_label:clean(e.type_label).slice(0,160)}))};
 }
 const empty=()=>Object.fromEntries(KINDS.map(k=>[k,Object.create(null)]));
@@ -65,9 +67,10 @@ function mergePool(items,state,view){
  const bucket=view==='saved'?state.bookmark:state.hidden,live=new Map((items||[]).map(x=>[key(x),x]));
  return Object.entries(bucket||{}).map(([k,v])=>live.get(k)||v.article||snapshot({source_url:k,title:'이전에 보관한 기사 · 원문에서 확인'})).filter(Boolean);
 }
-function select(items,state,{view='unread',category='ALL',actor='ALL',query='',classify=()=>({}),includeReview=false}={}){
+function select(items,state,{view='unread',category='ALL',actor='ALL',query='',classify=()=>({}),includeReview=false,newsScope=null}={}){
  return mergePool(items,state,view).filter(x=>{
   const k=key(x);if(!k)return false;
+  if(newsScope&&scope(x)!==newsScope)return false;
   if(view!=='hidden'&&state.hidden?.[k])return false;
   if(view==='hidden'&&!state.hidden?.[k])return false;
   if(view==='saved'&&!state.bookmark?.[k])return false;
@@ -84,5 +87,5 @@ function select(items,state,{view='unread',category='ALL',actor='ALL',query='',c
  }).sort((a,b)=>time(b.published_at)-time(a.published_at));
 }
 function legacy(value){const next=empty();for(const [k,at] of Object.entries(value?.saved||{})){if(url(k))next.bookmark[url(k)]={at:Number.isFinite(Number(at))&&Number(at)>0?new Date(Number(at)).toISOString():new Date().toISOString(),article:snapshot({source_url:k,title:'기존 보관 기사 · 원문에서 확인'})};}for(const [k,v] of Object.entries(value?.overrides||{})){if(url(k))next.override[url(k)]={category:clean(v).slice(0,50),at:new Date().toISOString()};}return next;}
-return {KINDS,clean,time,url,key,revision,assess,snapshot,empty,validate,apply,unread,watchMatches,matchingWatches,mergePool,select,legacy};
+return {KINDS,clean,time,url,key,scope,revision,assess,snapshot,empty,validate,apply,unread,watchMatches,matchingWatches,mergePool,select,legacy};
 });

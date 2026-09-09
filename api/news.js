@@ -1,7 +1,7 @@
 const { parseGoogleNewsRss } = require('../lib/context-sources');
 const { findWatchTarget, WATCH_TARGETS } = require('../lib/watch-config');
 const { matchDossiersInText } = require('../lib/drive-dossiers');
-const { fetchJakMembers } = require('../lib/jak-members');
+const { fetchJakMembers, isJakMemberSource } = require('../lib/jak-members'); // NEWS_READER_INTEGRATED
 const { clusterIssues, eventLabel, queries, shouldKeep, theme } = require('../lib/news-monitor');
 
 const GOOGLE_NEWS_URL = 'https://news.google.com/rss/search';
@@ -74,7 +74,13 @@ function boundedInt(value, fallback, min, max) {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 module.exports = async (req, res) => {
+  // NEWS_ACCOUNT_ROUTE_V1: personal routes must run BEFORE public CORS/cache/GET-only logic.
+  if (req.query && Object.prototype.hasOwnProperty.call(req.query,'reader')) return require('../lib/news-reader-account').handle(req,res);
+  const readerFeed = String(req.query?.feed || '') === 'reader';
+  const NewsReader = readerFeed ? require('../news-reader-core') : null;
+  if (req.method && req.method !== 'GET') return res.status(405).json({ok:false,error:'GET only'});
   res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.query.scope === 'foreign') return require('../lib/foreign-news').handle(req,res);
   const format = String(req.query.format || '').toLowerCase();
   const fresh = String(req.query.refresh || '') === '1';
   if (fresh) disableResponseCache(res);
@@ -105,7 +111,8 @@ module.exports = async (req, res) => {
       const text = `${item.title} ${item.snippet || ''}`;
       const target = findWatchTarget(text, WATCH_TARGETS);
       const relatedEntities = matchDossiersInText(text, 6);
-      if (!shouldKeep(item, target, jak.names)) continue;
+      const relevance = NewsReader ? NewsReader.assess({...item, target, related_entities:relatedEntities}) : null;
+      if (!shouldKeep(item, target, jak.names) && !(relevance?.status === 'relevant' && isJakMemberSource(item.source_name, jak.names))) continue;
       const [theme_id, theme_label] = theme(text);
       items.push({
         signal_id: `${Date.parse(item.published_at || 0)}-${items.length}`,
@@ -114,11 +121,15 @@ module.exports = async (req, res) => {
         source_url: item.source_url, snippet: item.snippet || '',
         target: target ? { id: target.id, name: target.name, category: target.category } : null,
         related_entities: relatedEntities, theme_id, theme_label,
-        event_label: eventLabel(text), jak_member: true,
+        event_label: eventLabel(text), jak_member: true, relevance,
       });
     }
     items.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||'')));
-    const limitedItems = items.slice(0,limit);
+    const inRange = items.filter(item => { const t=Date.parse(item.published_at); return !Number.isFinite(t) || (t>=Date.now()-days*86400000 && t<=Date.now()+300000); });
+    const eligible = inRange.filter(item => item.relevance?.status === 'relevant');
+    const review = inRange.filter(item => item.relevance?.status !== 'relevant');
+    const limitedItems = (readerFeed ? eligible : inRange).slice(0,limit);
+    const reviewItems = readerFeed ? review.slice(0,limit) : [];
     if (format === 'ticker-css') {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
       return res.status(200).send(tickerCss(limitedItems));
@@ -129,14 +140,14 @@ module.exports = async (req, res) => {
     const recentIssues = issues.filter(issue=>!ongoing.includes(issue) && !newIssues.includes(issue)).slice(0,80);
     const latest24h = limitedItems.filter(item=>ageHours(item.published_at) <= 24).length;
     return res.status(200).json({
-      ok: true, items: limitedItems, issues,
+      ok: true, items: limitedItems, review_items: reviewItems, issues,
       sections: { ongoing, new_issues: newIssues, recent: recentIssues },
       stats: { scanned: raw.length, kept: limitedItems.length, issue_count: issues.length,
         ongoing_count: ongoing.length, new_issue_count: newIssues.length, latest_24h: latest24h },
       source_policy: { name: '한국기자협회 회원사', member_count: jak.count, member_source: jak.source },
       queries: queryList.length,
       providers: { google_news_rss: succeeded > 0, jak_members: jak.source === 'official' },
-      collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded },
+      collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded, truncated:eligible.length>limit || review.length>limit, relevant_count:eligible.length, review_count:review.length },
       range: { days }, fetched_at: new Date().toISOString(),
     });
   } catch (error) {

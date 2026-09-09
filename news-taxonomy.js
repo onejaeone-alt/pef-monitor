@@ -35,6 +35,13 @@
     add('deal', /매물|M&A|인수합병|공개매수|경영권|우선협상|본입찰|예비입찰|주식매매계약|바이아웃|주주행동|행동주의|의결권|주주총회|주총|표대결|합병/i);
     if (/인수/.test(t.replace(/예상인수결과|인수결과|보험\s*인수|인수단|인수금융|인수인계|인수위(?:원회)?|인수증|인수\s*주선/g, ''))) out.push('deal');
     add('investment_exit', /투자\s*유치|투자\s*참여|투자\s*결정|신규\s*투자|후속\s*투자|투자한다|투자했다|시리즈\s*[A-F]|프리\s*A|시드\s*투자|IPO|상장|블록딜|세컨더리|회수|엑시트|사모투자|지분\s*(?:투자|처분)/i);
+    add('policy', /\b(?:regulat\w+|antitrust|legislation|tax rules)\b/i);
+    add('people', /\b(?:appoints?|appointed|hires?|hired|steps down|resigns?|depart\w+)\b|\bpartner\b.{0,25}\b(?:joins?|leaves?)\b/i);
+    add('credit', /\b(?:private credit|private debt|refinanc\w+|bankrupt\w+|default\w+|leveraged loans?|debt financing|acquisition financing)\b/i);
+    if(/\bfund\b/i.test(t)&&/\b(?:rais\w+|clos\w+|launch\w+|fundrais\w+|target\w+)\b/i.test(t))out.push('fund_formation');
+    add('lp_selection', /\b(?:commits?|commitments?|allocat\w+|manager selection)\b/i);
+    add('deal', /\b(?:acquir\w+|acquisition\w*|mergers?|buyouts?|takeovers?|take-private|buys?|sells?|sale|bids?|activist)\b/i);
+    add('investment_exit', /\b(?:funding|series [a-f]|seed round|IPO|initial public offering|secondar\w+|exits?|continuation fund)\b/i);
     const order = ['policy','people','credit','lp_selection','fund_formation','deal','investment_exit'];
     return [...new Set(out)].sort((a,b) => order.indexOf(a)-order.indexOf(b));
   }
@@ -50,11 +57,11 @@
     const entities = Array.isArray(item.related_entities) ? item.related_entities : [];
     const text = [title, snippet, item.target?.category || '', ...entities.map(x => x.type_label || x.entity_type || x.type || '')].join(' ');
     const actorIds = [];
-    if (/\bPEF?\b|사모펀드|프라이빗에쿼티|private equity|바이아웃/i.test(text)) actorIds.push('PEF');
-    if (/\bVC\b|\bCVC\b|벤처캐피탈|벤처투자|기업형\s*벤처/i.test(text)) actorIds.push('VC');
-    if (/\bAC\b|액셀러레이터|액셀러레이팅|창업기획자/i.test(text)) actorIds.push('AC');
-    if (/\bLP\b|모태펀드|한국벤처투자|한국성장금융|국민연금|공제회|연기금|출자기관/i.test(text)) actorIds.push('LP');
-    if (/증권|은행|투자은행|\bIB\b/i.test(text)) actorIds.push('IB');
+    if (/\bPEF?\b|사모펀드|프라이빗에쿼티|private equity|buyout|바이아웃/i.test(text)) actorIds.push('PEF');
+    if (/\bVC\b|\bCVC\b|venture capital|벤처캐피탈|벤처투자|기업형\s*벤처/i.test(text)) actorIds.push('VC');
+    if (/\bAC\b|accelerator|액셀러레이터|액셀러레이팅|창업기획자/i.test(text)) actorIds.push('AC');
+    if (/\bLP\b|limited partners?|pension fund|sovereign wealth|모태펀드|한국벤처투자|한국성장금융|국민연금|공제회|연기금|출자기관/i.test(text)) actorIds.push('LP');
+    if (/investment bank|증권|은행|투자은행|\bIB\b/i.test(text)) actorIds.push('IB');
     return { category_id: primary, category_label: definition(primary).label,
       secondary_categories: matches.slice(1), actor_ids: actorIds,
       classification_basis: found.length ? '제목의 사건 표현' : matches.length ? '수집 요약의 사건 표현' : '판단할 표현 부족' };
