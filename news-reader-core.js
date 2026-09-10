@@ -64,6 +64,55 @@ function watchMatches(item,watch){
  return terms.length>0&&terms.every(term=>/^\d+호$/.test(term)?new RegExp('(^|[^0-9])'+term+'(?![0-9])').test(text):text.includes(term));
 }
 function matchingWatches(item,state){return Object.values(state?.watch||{}).filter(w=>watchMatches(item,w));}
+// A review queue based on explicit headline signals, not an article-value or fact-change score.
+function focusReasons(item,state){
+ const t=clean(item?.title), reasons=[];
+ if(assess(item).status!=='relevant')return reasons;
+ const add=(id,label,pattern,priority)=>{const match=t.match(pattern);if(match)reasons.push({id,label,evidence:match[0],priority});};
+ // Do not promote columns, price roundups, personal property or hypothetical outcomes.
+ if(/\[(?:기고|칼럼|사설|열린세상|모닝 리포트|홍콩 특징주)\]|아파트|단독주택|노인\s*일자리|노인일자리|보장\s*매각\s*프로그램|\b(?:opinion|explainer)\b/i.test(t))return reasons;
+ if(exclusive(item)||scope(item)==='foreign'&&/^exclusive\s*[:：-]/i.test(t))reasons.push({id:'exclusive',label:'단독 보도',evidence:scope(item)==='foreign'?'Exclusive':'단독',priority:5});
+ const speculative=/(?:가능성|전망|관측|되나|할까|할\s*수|한다면|사실무근|부인|\?|？)|\b(?:could|might|may|if|denies?|not)\b/i.test(t);
+ if(!speculative){
+  add('risk','거래·자금 차질',/(?:인수|매각|합병|투자|상장|펀드|출자|차환|조달).{0,22}(?:무산|철회|결렬|중단|실패)|(?:회생|파산)\s*(?:신청|절차|개시)|채무불이행|디폴트|신용등급.{0,12}하향|\b(?:files? for bankruptcy|defaults? on|deal collapses|terminates? (?:the )?(?:merger|deal))\b/i,5);
+  add('bid','입찰·공개매수',/본입찰|예비입찰|우선협상(?:대상자)?|공개매수|\btender offer\b|\bpreferred bidder\b/i,4);
+  add('lp','출자·운용사 선정',/출자\s*(?:사업|공고).{0,18}(?:개시|공고|모집|접수|마감|선정)|출자\s*공고|(?:위탁운용사|운용사|GP).{0,12}(?:선정|모집)|\b(?:GP selection|manager selection)\b/i,4);
+  add('dispute','경영권·법적 쟁점',/경영권.{0,20}(?:분쟁|승소|패소|수성)|(?:경영권|인수|매각|주총|주주총회).{0,20}(?:가처분|소송)|(?:인수|합병|M&A|공개매수|사모펀드).{0,18}(?:입법|법안\s*통과|규제\s*강화)|\b(?:proxy fight|antitrust (?:probe|approval|lawsuit))\b/i,4);
+  add('closing','거래 계약·완료',/(?:인수|매각|합병).{0,12}(?:계약\s*체결|완료|종결)|(?:주식매매|주식양수도)\s*계약|\b(?:completes?|closes?)\b.{0,35}\b(?:acquisition|merger|buyout)\b|\b(?:agrees? to (?:buy|acquire)|definitive agreement)\b/i,3);
+  add('fund','펀드 결성·연장',/(?:펀드|조합).{0,18}(?:결성(?:\s*(?:완료|성공)|[.…·,]|$)|최종\s*클로징|만기\s*연장|결성기한\s*연장)|\bfinal close\b/i,3);
+  if(/입찰|공개매수|출자|청약|주총|주주총회|\btender\b|\bbid\b/i.test(t))add('schedule','일정 확인',/오늘|내일|D-[0-7](?!\d)|접수\s*마감|청약\s*마감|\btomorrow\b/i,4);
+ }
+ if(reasons.length){const matches=matchingWatches(item,state);if(matches.length)reasons.unshift({id:'watch',label:'관심 검색어 일치',evidence:matches.map(w=>w.label||w.query||w.entity_key).join(' · '),priority:0});}
+ return reasons;
+}
+function focus(rows,state,{now=Date.now(),days=7,limit=5,related=new Map()}={}){
+ const candidates=[];
+ for(const row of rows||[]){
+  const item=row.lead,k=key(item),published=time(item?.published_at);
+  if(!k||state.hidden?.[k]||!published||published>now+300000||published<now-days*86400000)continue;
+  const reasons=focusReasons(item,state).filter(r=>r.id!=='schedule'||now-published<=86400000);
+  if(!reasons.some(r=>r.id!=='watch'))continue;
+  const priority=Math.max(...reasons.map(r=>r.priority))+(reasons.some(r=>r.id==='watch')?2:0)-Math.floor(Math.max(0,now-published)/86400000)*0.5;
+  candidates.push({rowId:row.id,item,reasons,priority,published});
+ }
+ candidates.sort((a,b)=>b.priority-a.priority||b.published-a.published||key(a.item).localeCompare(key(b.item)));
+ const selected=[],seen=new Set(),titles=new Set(),types=new Map(),deferred=[];
+ const take=c=>{
+  const k=key(c.item),title=clean(c.item.title).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
+  if(seen.has(k)||titles.has(title))return;
+  selected.push(c);titles.add(title);seen.add(k);
+  for(const item of related.get(k)||[])seen.add(key(item));
+ };
+ // Keep the first screen varied; a run of routine closings should not fill every place.
+ for(const c of candidates){
+  const type=c.reasons.find(r=>r.id!=='watch').id;
+  if((types.get(type)||0)>=2){deferred.push(c);continue;}
+  const before=selected.length;take(c);if(selected.length>before)types.set(type,(types.get(type)||0)+1);
+  if(selected.length>=limit)break;
+ }
+ for(const c of deferred){if(selected.length>=limit)break;take(c);}
+ return selected.slice(0,Math.max(0,limit)).map(({priority,published,...entry})=>entry);
+}
 function mergePool(items,state,view){
  if(view!=='saved'&&view!=='hidden')return items||[];
  const bucket=view==='saved'?state.bookmark:state.hidden,live=new Map((items||[]).map(x=>[key(x),x]));
@@ -91,5 +140,5 @@ function select(items,state,{view='unread',category='ALL',actor='ALL',query='',c
  }).sort((a,b)=>time(b.published_at)-time(a.published_at));
 }
 function legacy(value){const next=empty();for(const [k,at] of Object.entries(value?.saved||{})){if(url(k))next.bookmark[url(k)]={at:Number.isFinite(Number(at))&&Number(at)>0?new Date(Number(at)).toISOString():new Date().toISOString(),article:snapshot({source_url:k,title:'기존 보관 기사 · 원문에서 확인'})};}for(const [k,v] of Object.entries(value?.overrides||{})){if(url(k))next.override[url(k)]={category:clean(v).slice(0,50),at:new Date().toISOString()};}return next;}
-return {KINDS,clean,time,url,key,scope,exclusive,revision,assess,snapshot,empty,validate,apply,unread,watchMatches,matchingWatches,mergePool,select,legacy};
+return {KINDS,clean,time,url,key,scope,exclusive,revision,assess,snapshot,empty,validate,apply,unread,watchMatches,matchingWatches,focusReasons,focus,mergePool,select,legacy};
 });

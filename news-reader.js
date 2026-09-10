@@ -49,6 +49,7 @@ function switchScope(value){
 $('.nd-list-heading').append(btn('되돌리기',{id:'readerUndo',class:'nd-text-button',hidden:true}));
 const status=el('div',{id:'readerStatus',class:'reader-status',role:'status','aria-live':'polite',text:'뉴스를 불러오는 중…'});$('.nd-toolbar').after(status);
 const pendingButton=btn('새 보도 적용',{id:'readerPending',class:'reader-pending',hidden:true});status.after(pendingButton);
+const focusBox=el('section',{id:'readerFocus',class:'reader-focus',hidden:true,'aria-labelledby':'readerFocusTitle'});$('.nd-list-heading').before(focusBox);
 const period=el('div',{class:'nd-actor-filters',role:'group','aria-label':'조회 기간'},[[1,'24시간'],[3,'3일'],[7,'7일'],[14,'14일']].map(([n,t])=>btn(t,{class:'nd-filter','data-days':n})));
 $('#period').closest('label').hidden=true;$('#period').closest('label').after(period);
 const exclusiveBox=btn('단독만 보기',{id:'readerExclusive',class:'nd-filter','data-exclusive':'toggle','aria-pressed':false});$('#actorFilters').after(exclusiveBox);
@@ -127,6 +128,7 @@ function render(){
  S.related=new Map();
  const relatedPool=C.select(S.items,S.records,{view:'all',newsScope:S.newsScope,classify});
  for(const group of T.buildRows(relatedPool,S.issues,{mode:'issues',days:S.days,overrides}))for(const item of group.items)S.related.set(C.key(item),group.items);
+ renderFocus();
  S.visible=S.rows.slice(0,S.limit);if(!S.rows.some(x=>x.id===S.selected))S.selected=null;
  $('#listTitle').textContent=({latest:'최신 뉴스',tracked:'관심 뉴스',all:'수집 기사 전체',saved:'보관함 · 기간 제한 없음',hidden:'숨긴 기사',review:'선별 검토'})[S.view];
  $('#resultCount').textContent=(S.listMode==='articles'?pool().length+'건 · 최신순':S.rows.length+'개 묶음 · '+pool().length+'건')+(S.exclusiveOnly?' · 단독':'')+(S.category!=='ALL'?' · '+T.definition(S.category).short:'')+(S.actor!=='ALL'?' · '+T.actors.find(a=>a.id===S.actor)?.label:'');
@@ -142,6 +144,22 @@ function render(){
  $('.nd-local-note').textContent=S.mode==='account'?'뉴스 개인 기록은 로그인한 계정에 저장합니다. 기존 브라우저 기록·취재 메모는 자동으로 옮기지 않습니다.':S.mode==='guest'?'브라우저 저장을 사용 중입니다. 같은 브라우저 프로필을 공유하면 기록을 서로 볼 수 있습니다.':'보관·관심 검색어 기록은 로그인 후 사용할 수 있습니다. 기존 브라우저 기록은 로그인 메뉴에서 별도로 선택하세요.';
  const row=selectedItem();if(row)detail(row);else{$('#detailPanel').classList.remove('is-open');$('#detailPanel').replaceChildren(el('div',{class:'nd-detail-placeholder'},el('h3',{text:'뉴스를 선택하세요'}),el('p',{text:'제목을 누르면 관련 보도를 함께 볼 수 있습니다.'})));}
 }
+function renderFocus(){
+ const entries=C.focus(S.rows,S.records,{days:S.days,related:S.related});
+ focusBox.hidden=!S.loaded||!['latest','tracked','all'].includes(S.view);
+ if(focusBox.hidden){focusBox.replaceChildren();return;}
+ const criteriaOpen=focusBox.querySelector('details')?.open||false;
+ const criteria=el('details',{class:'reader-focus-criteria'},el('summary',{text:'선정 기준'}),el('p',{text:'현재 기간·검색·분류에 맞는 기사 중 제목에 단독, 입찰, 거래 차질, 출자·운용사 선정 등의 표현이 있는 보도를 최대 5건 추립니다. 관심 검색어 일치와 최근 보도를 우선하고, 연결된 유사 보도는 한 번만 표시합니다. 제목 기준 후보이므로 새 사실과 일정은 원문에서 확인하세요.'}));criteria.open=criteriaOpen;
+ focusBox.replaceChildren(el('div',{class:'reader-focus-heading'},el('h3',{id:'readerFocusTitle',text:'먼저 볼 뉴스'}),el('span',{class:'reader-focus-count',text:entries.length+'건 · 후속 확인 후보'})),criteria,
+  entries.length?el('ol',{class:'reader-focus-list'},entries.map(entry=>{
+   const row=S.rows.find(r=>r.id===entry.rowId),x=entry.item,related=S.related.get(C.key(x))||row.items,kept=row.items.some(i=>S.records.bookmark[C.key(i)]);
+   return el('li',{class:'reader-focus-row'+(S.selected===row.id?' is-selected':'')},el('button',{type:'button',class:'reader-focus-open','data-open':row.id},
+    el('span',{class:'reader-focus-reason',text:entry.reasons.filter(r=>r.id!=='watch').slice(0,2).map(r=>r.label).join(' · ')}),
+    el('span',{class:'reader-focus-title',text:headline(x)}),
+    el('span',{class:'reader-focus-meta',text:(x.source_name||'출처 확인 필요')+' · '+fmt(x.published_at)+(related.length>1?' · 관련 '+(related.length-1)+'건':'')+(entry.reasons.some(r=>r.id==='watch')?' · 관심 검색어 일치':'')})),
+    el('div',{class:'reader-focus-actions'},btn(kept?'★ 보관됨':'☆ 보관',{'data-save':row.id,'aria-pressed':kept,'aria-label':headline(x)+(kept?' 보관 해제':' 보관'),class:'nd-text-button'}),btn('관심 등록',{'data-follow':row.id,'aria-label':headline(x)+' 관심 검색어 등록',class:'nd-text-button'})));
+  })):el('p',{class:'reader-focus-empty',text:'현재 조건에서 뚜렷한 후속 확인 후보가 없습니다. 아래 최신 뉴스를 확인하세요.'}));
+}
 function rowNode(row){
  const x=row.lead,related=S.related.get(C.key(row.lead))||row.items,kept=row.items.some(i=>S.records.bookmark[C.key(i)]),a=x.relevance||C.assess(x),watched=row.items.some(i=>C.matchingWatches(i,S.records).length),def=T.definition(row.category_id);
  const badges=el('span',{class:'nd-row-top'},el('span',{class:'nd-category-pill','data-category':def.id,text:def.short}),watched?el('span',{class:'reader-watch-match',text:'관심 검색어 일치'}):null);
@@ -152,8 +170,9 @@ function rowNode(row){
 function section(title,...children){return el('section',{class:'nd-detail-section'},el('h4',{text:title}),children);}
 function detail(row){
  const related=(S.related.get(C.key(row.lead))||row.items).filter(i=>C.key(i)!==C.key(row.lead)),kept=row.items.some(i=>S.records.bookmark[C.key(i)]),hidden=row.items.some(i=>S.records.hidden[C.key(i)]),def=T.definition(row.category_id);
+ const reasons=C.focusReasons(row.lead,S.records);
  const classify=el('select',{id:'readerReclassify',class:'nd-reclassify','aria-label':'개인 분류 변경'},el('option',{value:'AUTO',text:'자동 분류로 보기'}),...T.categories.map(c=>el('option',{value:c.id,text:c.label})));classify.value=S.records.override[C.key(row.lead)]?.category||'AUTO';
- $('#detailPanel').replaceChildren(el('div',{class:'nd-detail-head'},el('span',{text:'보도 확인'}),btn('×',{'data-close':'',class:'nd-close','aria-label':'상세 닫기'})),el('div',{class:'nd-detail-body'},el('span',{class:'nd-category-pill',text:def.label}),el('h3',{text:headline(row.lead)}),translationDetail(row.lead),el('p',{class:'reader-fine',text:(row.lead.source_name||'출처')+' · '+fmt(row.latest)}),original(row.lead,'기사 원문 ↗','nd-original'),el('div',{class:'reader-detail-actions'},btn(kept?'★ 보관 해제':'☆ 보관',{'data-save':row.id,class:'nd-button'}),btn('관심 검색어 등록',{'data-follow':row.id,class:'nd-button'}),btn(hidden?'숨김 해제':'숨기기',{'data-hide':row.id,class:'nd-button'})),related.length?section('관련 보도 '+related.length+'건',el('ol',{class:'nd-timeline'},related.map(i=>el('li',{},el('small',{text:(i.source_name||'출처')+' · '+fmt(i.published_at)}),original(i,headline(i)))))):null,section('연결된 취재파일',el('div',{class:'nd-related'},row.related_entities.length?row.related_entities.map(e=>btn(e.canonical_name+' ↗',{'data-dossier-entity':e.entity_key,class:'nd-entity'})):el('p',{text:'상단 취재파일 검색에서 확인할 수 있습니다.'}))),el('details',{class:'reader-detail-options'},el('summary',{text:'분류 수정'}),classify),related.length?el('p',{class:'reader-fine',text:'제목을 기준으로 연결한 보도입니다. 세부 내용은 원문에서 확인하세요.'}):null));
+ $('#detailPanel').replaceChildren(el('div',{class:'nd-detail-head'},el('span',{text:'보도 확인'}),btn('×',{'data-close':'',class:'nd-close','aria-label':'상세 닫기'})),el('div',{class:'nd-detail-body'},el('span',{class:'nd-category-pill',text:def.label}),el('h3',{text:headline(row.lead)}),translationDetail(row.lead),el('p',{class:'reader-fine',text:(row.lead.source_name||'출처')+' · '+fmt(row.latest)}),original(row.lead,'기사 원문 ↗','nd-original'),reasons.length?section('후속 확인 근거',...reasons.map(r=>el('p',{class:'reader-focus-evidence',text:r.label+' · “'+r.evidence+'”'}))):null,el('div',{class:'reader-detail-actions'},btn(kept?'★ 보관 해제':'☆ 보관',{'data-save':row.id,class:'nd-button'}),btn('관심 검색어 등록',{'data-follow':row.id,class:'nd-button'}),btn(hidden?'숨김 해제':'숨기기',{'data-hide':row.id,class:'nd-button'})),related.length?section('관련 보도 '+related.length+'건',el('ol',{class:'nd-timeline'},related.map(i=>el('li',{},el('small',{text:(i.source_name||'출처')+' · '+fmt(i.published_at)}),original(i,headline(i)))))):null,section('연결된 취재파일',el('div',{class:'nd-related'},row.related_entities.length?row.related_entities.map(e=>btn(e.canonical_name+' ↗',{'data-dossier-entity':e.entity_key,class:'nd-entity'})):el('p',{text:'상단 취재파일 검색에서 확인할 수 있습니다.'}))),el('details',{class:'reader-detail-options'},el('summary',{text:'분류 수정'}),classify),related.length?el('p',{class:'reader-fine',text:'제목을 기준으로 연결한 보도입니다. 세부 내용은 원문에서 확인하세요.'}):null));
 }
 function accept(data,days){const all=[...(data.items||[]),...(data.review_items||[])];S.items=[...new Map(all.map(x=>[C.key(x),x])).values()];for(const item of S.items){const k=C.key(item),old=S.records.bookmark[k];if(S.mode==='guest'&&old&&/^(기존 보관 기사|이전에 보관한 기사)/.test(old.article?.title||'')){old.article=C.snapshot(item);}}if(S.mode==='guest'){try{localStorage.setItem(STORE,JSON.stringify(S.records));}catch{}}S.issues=data.issues||[];S.days=days;S.loaded=true;S.pending=null;$('#readerPending').hidden=true;S.limit=Math.max(30,S.limit);render();$('#status').textContent='뉴스 '+S.items.length+'건';const review=S.items.filter(x=>(x.relevance||C.assess(x)).status!=='relevant').length;$('#sourceNote').textContent=(S.newsScope==='foreign'?'외신 · 한국어 번역 · 영문 원제 함께 제공 · ':'국내 · 한국기자협회 회원사 · ')+'[보도] · 선별 검토 '+review+'건 · 현재 수집 범위 기준'+(data.collection_status?.partial?' · 일부 검색 실패: 누락 가능':'')+(data.collection_status?.truncated?' · 수집 상한 도달: 전체 보도가 아닙니다.':'')+(data.source_policy?.member_source==='fallback'?' · 매체 기준은 저장된 목록 사용':'')+(data.translation?.failed?' · 번역 재시도 필요 '+data.translation.failed+'건':'');}
 async function load({fresh=false,days=S.days,hold=false}={}){
