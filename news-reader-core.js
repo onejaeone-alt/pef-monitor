@@ -13,7 +13,7 @@ function assess(item){
  const business=t.replace(/예상\s*인수\s*결과|인수\s*결과|보험\s*인수|인수파출소|인수동|인수봉|인수인계|인수분해|인수위원회|인수위|인수단/g,'');
  const deal=/인수|매각|M&A|인수합병|경영권|공개매수|우선협상|본입찰|예비입찰|합병|의결권|주주행동|행동주의|주총|주주총회|지분\s*(?:투자|처분|인수)/i.test(business);
  const capital=/회사채|공모채|전환사채|교환사채|신주인수권부사채|신종자본증권|유상증자|인수금융|메자닌|리파이낸싱|차환|유동성\s*(?:위기|부족)|회생|워크아웃|파산|채무불이행|신용등급|환헤지|FX스와프|프로젝트\s*파이낸싱|\bPF\b/i.test(t);
- const fund=/출자\s*(?:사업|공고|계획|기준|약정|확약|규모|요청|액)|(?:GP|운용사|위탁운용사).{0,16}(?:선정|모집)|(?:펀드|조합).{0,25}(?:결성|조성|클로징|연장|무산)|펀드레이징|LP\s*확약|주목적\s*투자/i.test(t);
+ const fund=/출자\s*(?:사업|공고|계획|기준|약정|확약|규모|요청|액)|(?:GP|운용사|위탁운용사).{0,16}(?:선정|모집)|(?:펀드|조합).{0,25}(?:결성|조성|클로징|연장|무산|(?:목표액|목표\s*규모|관리보수|성과보수).{0,8}(?:축소|하향|변경|인하))|펀드레이징|LP\s*확약|주목적\s*투자/i.test(t);
  const investment=/투자\s*유치|후속\s*투자|신규\s*투자|투자\s*결정|시리즈\s*[A-F]|시드\s*투자|세컨더리|엑시트|\bIPO\b|상장\s*(?:추진|예비|심사|철회)|벤처투자.{0,20}(?:회복|증가|감소|조원|억원)|사모투자/i.test(t);
  const industry=/PEF|사모펀드|벤처캐피탈|벤처투자|운용사|운용역|운용인력|심사역|기금운용|\bVC\b|\bCVC\b|액셀러레이터|창업기획자|투자은행/i.test(t);
  const institution=industry||!!item?.target||!!item?.related_entities?.length||/공제회|국민연금|한국벤처투자|한국성장금융|산업은행/.test(t);
@@ -75,12 +75,13 @@ function focusReasons(item,state){
  const speculative=/(?:가능성|전망|관측|되나|할까|할\s*수|한다면|사실무근|부인|\?|？)|\b(?:could|might|may|if|denies?|not)\b/i.test(t);
  if(!speculative){
   add('risk','거래·자금 차질',/(?:인수|매각|합병|투자|상장|펀드|출자|차환|조달).{0,22}(?:무산|철회|결렬|중단|실패)|(?:회생|파산)\s*(?:신청|절차|개시)|채무불이행|디폴트|신용등급.{0,12}하향|\b(?:files? for bankruptcy|defaults? on|deal collapses|terminates? (?:the )?(?:merger|deal))\b/i,5);
-  add('bid','입찰·공개매수',/본입찰|예비입찰|우선협상(?:대상자)?|공개매수|\btender offer\b|\bpreferred bidder\b/i,4);
-  add('lp','출자·운용사 선정',/출자\s*(?:사업|공고).{0,18}(?:개시|공고|모집|접수|마감|선정)|출자\s*공고|(?:위탁운용사|운용사|GP).{0,12}(?:선정|모집)|\b(?:GP selection|manager selection)\b/i,4);
+  // A notice, successful closing or routine selection is not an editorial lead by itself.
+  // Require a reported departure from the ordinary process; never infer one from size or recency.
+  add('bid','입찰 경쟁·조건 변경',/(?:인수|매각|입찰|공개매수).{0,18}(?:가격|조건|매수가|매각가).{0,8}(?:변경|인상|인하|상향|하향)|(?:공개매수|본입찰|예비입찰).{0,18}(?:맞불|경쟁\s*격화|반발|불참|유찰|재입찰)|\b(?:raises?|increases?|cuts?)\b.{0,18}\b(?:takeover bid|offer price)\b|\brival (?:takeover )?bid\b/i,4);
+  add('lp','출자 조건·선정 절차 변경',/(?:출자|선정|운용사|GP).{0,12}(?:조건|기준|비율|보수|의무|요건).{0,12}(?:변경|완화|강화|축소|상향|하향|폐지)|(?:출자\s*사업|운용사\s*선정|GP\s*선정).{0,12}(?:취소|중단|연기|재공고|유찰|번복)|(?:출자|운용사|GP).{0,18}(?:특혜|이해충돌)|\b(?:GP|manager) selection\b.{0,18}\b(?:cancelled|delayed|conflict of interest)\b/i,4);
   add('dispute','경영권·법적 쟁점',/경영권.{0,20}(?:분쟁|승소|패소|수성)|(?:경영권|인수|매각|주총|주주총회).{0,20}(?:가처분|소송)|(?:인수|합병|M&A|공개매수|사모펀드).{0,18}(?:입법|법안\s*통과|규제\s*강화)|\b(?:proxy fight|antitrust (?:probe|approval|lawsuit))\b/i,4);
-  add('closing','거래 계약·완료',/(?:인수|매각|합병).{0,12}(?:계약\s*체결|완료|종결)|(?:주식매매|주식양수도)\s*계약|\b(?:completes?|closes?)\b.{0,35}\b(?:acquisition|merger|buyout)\b|\b(?:agrees? to (?:buy|acquire)|definitive agreement)\b/i,3);
-  add('fund','펀드 결성·연장',/(?:펀드|조합).{0,18}(?:결성(?:\s*(?:완료|성공)|[.…·,]|$)|최종\s*클로징|만기\s*연장|결성기한\s*연장)|\bfinal close\b/i,3);
-  if(/입찰|공개매수|출자|청약|주총|주주총회|\btender\b|\bbid\b/i.test(t))add('schedule','일정 확인',/오늘|내일|D-[0-7](?!\d)|접수\s*마감|청약\s*마감|\btomorrow\b/i,4);
+  add('fund','펀드 기한·조건 변경',/(?:펀드|조합).{0,18}(?:만기|결성기한|결성시한).{0,8}연장|(?:펀드|조합).{0,18}(?:목표액|목표\s*규모|관리보수|성과보수).{0,8}(?:축소|하향|변경|인하)|\bfund\b.{0,25}\b(?:extends? (?:its )?(?:term|fundraising deadline)|cuts? (?:its )?target)\b/i,4);
+  if(reasons.length&&/입찰|공개매수|출자|청약|주총|주주총회|\btender\b|\bbid\b/i.test(t))add('schedule','일정 확인',/오늘|내일|D-[0-7](?!\d)|접수\s*마감|청약\s*마감|\btomorrow\b/i,0);
  }
  if(reasons.length){const matches=matchingWatches(item,state);if(matches.length)reasons.unshift({id:'watch',label:'관심 검색어 일치',evidence:matches.map(w=>w.label||w.query||w.entity_key).join(' · '),priority:0});}
  return reasons;
@@ -103,7 +104,7 @@ function focus(rows,state,{now=Date.now(),days=7,limit=5,related=new Map()}={}){
   selected.push(c);titles.add(title);seen.add(k);
   for(const item of related.get(k)||[])seen.add(key(item));
  };
- // Keep the first screen varied; a run of routine closings should not fill every place.
+ // Keep the first screen varied without relaxing the editorial eligibility rules.
  for(const c of candidates){
   const type=c.reasons.find(r=>r.id!=='watch').id;
   if((types.get(type)||0)>=2){deferred.push(c);continue;}

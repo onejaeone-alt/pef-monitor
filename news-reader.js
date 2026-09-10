@@ -149,7 +149,7 @@ function renderFocus(){
  focusBox.hidden=!S.loaded||!['latest','tracked','all'].includes(S.view);
  if(focusBox.hidden){focusBox.replaceChildren();return;}
  const criteriaOpen=focusBox.querySelector('details')?.open||false;
- const criteria=el('details',{class:'reader-focus-criteria'},el('summary',{text:'선정 기준'}),el('p',{text:'현재 기간·검색·분류에 맞는 기사 중 제목에 단독, 입찰, 거래 차질, 출자·운용사 선정 등의 표현이 있는 보도를 최대 5건 추립니다. 관심 검색어 일치와 최근 보도를 우선하고, 연결된 유사 보도는 한 번만 표시합니다. 제목 기준 후보이므로 새 사실과 일정은 원문에서 확인하세요.'}));criteria.open=criteriaOpen;
+ const criteria=el('details',{class:'reader-focus-criteria'},el('summary',{text:'선정 기준'}),el('p',{text:'단독 보도와 거래 차질·조건 변경·경영권 분쟁 등 추가 확인할 쟁점이 제목에 드러난 기사를 최대 5건 추립니다. 공고·모집·선정·펀드 결성·계약 체결·인수 완료·마감 일정만으로는 올리지 않습니다. 관심 검색어는 후보의 순서에만 반영합니다. 현재 검색·분류·기간 안에서 추리며, 본문을 분석해 기사 가치를 판단한 결과는 아닙니다.'}));criteria.open=criteriaOpen;
  focusBox.replaceChildren(el('div',{class:'reader-focus-heading'},el('h3',{id:'readerFocusTitle',text:'먼저 볼 뉴스'}),el('span',{class:'reader-focus-count',text:entries.length+'건 · 후속 확인 후보'})),criteria,
   entries.length?el('ol',{class:'reader-focus-list'},entries.map(entry=>{
    const row=S.rows.find(r=>r.id===entry.rowId),x=entry.item,related=S.related.get(C.key(x))||row.items,kept=row.items.some(i=>S.records.bookmark[C.key(i)]);
