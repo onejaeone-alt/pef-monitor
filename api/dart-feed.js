@@ -1,8 +1,22 @@
 'use strict';
 const LIST_URL='https://opendart.fss.or.kr/api/list.json';
+const DISPLAY_EVENT_IDS=new Set(['control_change','equity_acquisition','equity_disposal','merger_restructuring','distress_legal','capital_raise','capital_reduction','mezzanine','financing_support','related_party_equity','related_party_funding','bond_retirement','ownership_report','fund_change','performance_risk','group_disclosure','periodic']);
+const DISPLAY_TIERS=new Set(['core','change','followup','reference','other']);
 function kstDate(offset=0,now=Date.now()){const d=new Date(now+9*3600000);d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10).replace(/-/g,'');}
 function boundedInt(v,def,min,max){const n=Number(v);return Number.isInteger(n)?Math.min(max,Math.max(min,n)):def;}
-function safeRecord(item){const out={};for(const k of ['rcept_no','rcept_dt','report_nm','corp_name','corp_code','corp_cls','stock_code','flr_nm','rm','group_id','group_label','is_correction'])if(item[k]!==undefined)out[k]=item[k];return out;}
+function safeRecord(item){
+  const out={};
+  for(const k of ['rcept_no','rcept_dt','report_nm','corp_name','corp_code','corp_cls','stock_code','flr_nm','rm','group_id','group_label','is_correction'])if(item[k]!==undefined)out[k]=item[k];
+  const analysis=item&&typeof item.analysis==='object'&&!Array.isArray(item.analysis)?item.analysis:null;
+  const eventId=analysis&&typeof analysis.event_id==='string'?analysis.event_id:'';
+  if(DISPLAY_EVENT_IDS.has(eventId)){
+    for(const k of ['family_id','base_report_nm','tier_label','monitor_reason','next_check'])if(typeof item[k]==='string'&&item[k])out[k]=item[k];
+    if(typeof item.tier==='string'&&DISPLAY_TIERS.has(item.tier))out.tier=item.tier;
+    out.event_id=eventId;
+    if(typeof analysis.event_label==='string'&&analysis.event_label)out.event_label=analysis.event_label;
+  }
+  return out;
+}
 function createHandler(deps={}) {
   return async(req,res)=>{
     res.setHeader('Access-Control-Allow-Origin','*');
