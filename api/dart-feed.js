@@ -2,7 +2,7 @@
 const LIST_URL='https://opendart.fss.or.kr/api/list.json';
 function kstDate(offset=0,now=Date.now()){const d=new Date(now+9*3600000);d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10).replace(/-/g,'');}
 function boundedInt(v,def,min,max){const n=Number(v);return Number.isInteger(n)?Math.min(max,Math.max(min,n)):def;}
-function safeRecord(item){const out={};for(const k of ['rcept_no','rcept_dt','report_nm','corp_name','corp_code','corp_cls','stock_code','flr_nm','rm','group_id','group_label','is_correction'])if(item[k]!==undefined)out[k]=item[k];return out;}
+function safeRecord(item){const out={};for(const k of ['rcept_no','rcept_dt','report_nm','corp_name','corp_code','corp_cls','stock_code','flr_nm','rm','group_id','group_label','is_correction','family_id','base_report_nm','tier','tier_label','monitor_reason','next_check'])if(item[k]!==undefined)out[k]=item[k];if(item?.analysis?.event_id)out.event_id=item.analysis.event_id;if(item?.analysis?.event_label)out.event_label=item.analysis.event_label;return out;}
 function createHandler(deps={}) {
   return async(req,res)=>{
     res.setHeader('Access-Control-Allow-Origin','*');
