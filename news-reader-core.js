@@ -88,9 +88,11 @@ function focusReasons(item,state){
 }
 function focus(rows,state,{now=Date.now(),days=7,limit=5,related=new Map()}={}){
  const candidates=[];
+ // Korea calendar day (UTC+9), independent of the browser's timezone or list period.
+ const seoulDay=ms=>Math.floor((ms+9*3600000)/86400000),today=seoulDay(now);
  for(const row of rows||[]){
   const item=row.lead,k=key(item),published=time(item?.published_at);
-  if(!k||state.hidden?.[k]||!published||published>now+300000||published<now-days*86400000)continue;
+  if(!k||state.hidden?.[k]||!published||published>now+300000||published<now-days*86400000||seoulDay(published)!==today)continue;
   const reasons=focusReasons(item,state).filter(r=>r.id!=='schedule'||now-published<=86400000);
   if(!reasons.some(r=>r.id!=='watch'))continue;
   const priority=Math.max(...reasons.map(r=>r.priority))+(reasons.some(r=>r.id==='watch')?2:0)-Math.floor(Math.max(0,now-published)/86400000)*0.5;

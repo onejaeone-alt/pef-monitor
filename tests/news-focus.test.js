@@ -4,6 +4,22 @@ const now=Date.parse('2026-09-10T08:00:00Z');
 const item=(title,id,extra={})=>({title,source_url:'https://example.com/'+id,published_at:new Date(now-3600000).toISOString(),...extra});
 const rows=items=>T.buildRows(items,[],{mode:'articles',days:14,now});
 const pick=(items,state=C.empty(),options={})=>C.focus(rows(items),state,{now,...options});
+test('focus uses the Korean calendar date, not a rolling 24 hours or the selected list period',()=>{
+ const yesterday=item('[단독] 어제 기업 인수',1,{published_at:'2026-09-09T14:59:59Z'});
+ const midnight=item('[단독] 오늘 기업 인수',2,{published_at:'2026-09-09T15:00:00Z'});
+ const morning=item('[단독] 아침 기업 인수',3,{published_at:'2026-09-10T01:00:00+09:00'});
+ for(const days of [1,3,7,14])assert.deepEqual(pick([yesterday,midnight,morning],C.empty(),{days}).map(x=>C.key(x.item)).sort(),[C.key(midnight),C.key(morning)].sort());
+ assert.deepEqual(pick([yesterday]),[]);
+ assert.equal(rows([yesterday,midnight,morning]).length,3);
+});
+test('the previous shortlist expires at Korean midnight with no fallback to yesterday',()=>{
+ const a=item('[단독] A기업 인수',1,{published_at:'2026-09-10T23:59:00+09:00'});
+ const input=[{id:'a',lead:a,items:[a]}];
+ assert.equal(C.focus(input,C.empty(),{now:Date.parse('2026-09-10T23:59:59+09:00')}).length,1);
+ assert.deepEqual(C.focus(input,C.empty(),{now:Date.parse('2026-09-11T00:00:00+09:00')}),[]);
+ const future=item('[단독] 미래 기업 인수',2,{published_at:'2026-09-11T00:00:00+09:00'});
+ assert.deepEqual(C.focus([{id:'future',lead:future}],C.empty(),{now:Date.parse('2026-09-10T23:59:59+09:00')}),[]);
+});
 test('IBK notice stays in news and watched news without becoming a follow-up candidate',()=>{
  const a=item('IBK기업은행, ‘정책금융기관 글로벌 스케일업 협력펀드’ 출자사업 공고','ibk');
  const state=C.apply(C.empty(),[{kind:'watch',key:'ibk',value:{query:'IBK기업은행'}}]);
@@ -84,7 +100,7 @@ test('stale relative schedules are not presented as a reason to follow up today'
  const disputed={...fresh,title:'고려아연 경영권 분쟁, 주총 D-1'};
  assert.ok(pick([disputed])[0].reasons.some(r=>r.id==='schedule'));
  const stale={...disputed,published_at:old.published_at};
- assert.ok(pick([stale])[0].reasons.every(r=>r.id!=='schedule'));
+ assert.deepEqual(pick([stale]),[]);
 });
 test('shortlist stays within current search, topic and scope, including articles beyond the first page',()=>{
  const all=[item('[단독] A기업 인수',1),item('A기업 펀드 결성 완료',2),item('A기업 completes acquisition',3,{news_scope:'foreign'})];

@@ -8,7 +8,7 @@ const STORE='ib-news-reader-v2',LEGACY='ib-news-desk-v1',API='/api/news';
 function el(tag,props={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='text')n.textContent=v;else if(k==='class')n.className=v;else n.setAttribute(k,String(v));}children.flat().forEach(x=>{if(x!=null)n.append(x);});return n;}
 const btn=(text,props={})=>el('button',{type:'button',text,...props});
 const S={records:C.empty(),mode:'checking',user:null,authReady:false,view:'latest',newsScope:new URLSearchParams(location.search).get('scope')==='foreign'?'foreign':'domestic',category:'ALL',actor:'ALL',exclusiveOnly:false,listMode:'articles',query:'',days:7,items:[],issues:[],rows:[],related:new Map(),visible:[],selected:null,limit:30,loaded:false,pending:null,saving:false};
-let controller,sequence=0,lastCheck=0,undo=null,toastTimer,epoch=0;
+let controller,sequence=0,lastCheck=0,undo=null,toastTimer,focusDayTimer,epoch=0;
 function notify(text){$('#toast').replaceChildren(document.createTextNode(text));$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('#toast').hidden=true;},6000);}
 function readGuest(){let value=C.empty();try{const raw=localStorage.getItem(STORE);if(raw){const parsed=JSON.parse(raw);for(const kind of C.KINDS)for(const[key,v]of Object.entries(parsed[kind]||{})){try{value=C.apply(value,[{kind,key,value:v}]);}catch{}}}else value=C.legacy(JSON.parse(localStorage.getItem(LEGACY)||'{}'));}catch{notify('브라우저 기록을 읽지 못했습니다. 기존 기록은 지우지 않았습니다.');}return value;}
 
@@ -145,12 +145,15 @@ function render(){
  const row=selectedItem();if(row)detail(row);else{$('#detailPanel').classList.remove('is-open');$('#detailPanel').replaceChildren(el('div',{class:'nd-detail-placeholder'},el('h3',{text:'뉴스를 선택하세요'}),el('p',{text:'제목을 누르면 관련 보도를 함께 볼 수 있습니다.'})));}
 }
 function renderFocus(){
+ clearTimeout(focusDayTimer);
+ const now=Date.now(),nextDay=(Math.floor((now+9*3600000)/86400000)+1)*86400000-9*3600000;
+ focusDayTimer=setTimeout(renderFocus,Math.max(1000,nextDay-now+100));
  const entries=C.focus(S.rows,S.records,{days:S.days,related:S.related});
  focusBox.hidden=!S.loaded||!['latest','tracked','all'].includes(S.view);
  if(focusBox.hidden){focusBox.replaceChildren();return;}
  const criteriaOpen=focusBox.querySelector('details')?.open||false;
- const criteria=el('details',{class:'reader-focus-criteria'},el('summary',{text:'선정 기준'}),el('p',{text:'단독 보도와 거래 차질·조건 변경·경영권 분쟁 등 추가 확인할 쟁점이 제목에 드러난 기사를 최대 5건 추립니다. 공고·모집·선정·펀드 결성·계약 체결·인수 완료·마감 일정만으로는 올리지 않습니다. 관심 검색어는 후보의 순서에만 반영합니다. 현재 검색·분류·기간 안에서 추리며, 본문을 분석해 기사 가치를 판단한 결과는 아닙니다.'}));criteria.open=criteriaOpen;
- focusBox.replaceChildren(el('div',{class:'reader-focus-heading'},el('h3',{id:'readerFocusTitle',text:'먼저 볼 뉴스'}),el('span',{class:'reader-focus-count',text:entries.length+'건 · 후속 확인 후보'})),criteria,
+ const criteria=el('details',{class:'reader-focus-criteria'},el('summary',{text:'선정 기준'}),el('p',{text:'한국 시간 기준 오늘 발행된 기사 중 단독 보도와 거래 차질·조건 변경·경영권 분쟁 등 추가 확인할 쟁점이 제목에 드러난 기사를 최대 5건 추립니다. 공고·모집·선정·펀드 결성·계약 체결·인수 완료·마감 일정만으로는 올리지 않습니다. 관심 검색어는 후보의 순서에만 반영합니다. 현재 검색·분류를 적용하며, 본문을 분석해 기사 가치를 판단한 결과는 아닙니다.'}));criteria.open=criteriaOpen;
+ focusBox.replaceChildren(el('div',{class:'reader-focus-heading'},el('h3',{id:'readerFocusTitle',text:'먼저 볼 뉴스'}),el('span',{class:'reader-focus-count',text:'오늘 '+entries.length+'건 · 후속 확인 후보'})),criteria,
   entries.length?el('ol',{class:'reader-focus-list'},entries.map(entry=>{
    const row=S.rows.find(r=>r.id===entry.rowId),x=entry.item,related=S.related.get(C.key(x))||row.items,kept=row.items.some(i=>S.records.bookmark[C.key(i)]);
    return el('li',{class:'reader-focus-row'+(S.selected===row.id?' is-selected':'')},el('button',{type:'button',class:'reader-focus-open','data-open':row.id},
@@ -158,7 +161,7 @@ function renderFocus(){
     el('span',{class:'reader-focus-title',text:headline(x)}),
     el('span',{class:'reader-focus-meta',text:(x.source_name||'출처 확인 필요')+' · '+fmt(x.published_at)+(related.length>1?' · 관련 '+(related.length-1)+'건':'')+(entry.reasons.some(r=>r.id==='watch')?' · 관심 검색어 일치':'')})),
     el('div',{class:'reader-focus-actions'},btn(kept?'★ 보관됨':'☆ 보관',{'data-save':row.id,'aria-pressed':kept,'aria-label':headline(x)+(kept?' 보관 해제':' 보관'),class:'nd-text-button'}),btn('관심 등록',{'data-follow':row.id,'aria-label':headline(x)+' 관심 검색어 등록',class:'nd-text-button'})));
-  })):el('p',{class:'reader-focus-empty',text:'현재 조건에서 뚜렷한 후속 확인 후보가 없습니다. 아래 최신 뉴스를 확인하세요.'}));
+  })):el('p',{class:'reader-focus-empty',text:'오늘 발행된 기사 중 현재 조건에 맞는 후속 확인 후보가 없습니다.'}));
 }
 function rowNode(row){
  const x=row.lead,related=S.related.get(C.key(row.lead))||row.items,kept=row.items.some(i=>S.records.bookmark[C.key(i)]),a=x.relevance||C.assess(x),watched=row.items.some(i=>C.matchingWatches(i,S.records).length),def=T.definition(row.category_id);
@@ -221,7 +224,7 @@ document.addEventListener('click',action);
 $('#refresh').onclick=()=>load({fresh:true});$('#search').oninput=e=>{S.query=e.target.value;S.limit=30;S.selected=null;render();};$('#more').onclick=()=>{S.limit+=30;render();};$('#reset').onclick=()=>{S.query='';S.actor='ALL';S.category='ALL';S.exclusiveOnly=false;S.limit=30;S.selected=null;$('#search').value='';render();};
 $('#detailPanel').addEventListener('change',e=>{if(e.target.id!=='readerReclassify')return;const row=selectedItem();if(row)write(row.items.map(i=>({kind:'override',key:C.key(i),value:e.target.value==='AUTO'?null:{category:e.target.value}})));});
 document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'')||dialog.open||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key==='/'){e.preventDefault();$('#search').focus();}else if(['j','k'].includes(e.key)){e.preventDefault();let i=S.visible.findIndex(x=>x.id===S.selected);i=Math.max(0,Math.min(S.visible.length-1,i+(e.key==='j'?1:-1)));if(S.visible[i]){S.selected=S.visible[i].id;render();$('#detailPanel').classList.add('is-open');}}else if(e.key==='s'&&selectedItem()){const x=selectedItem();write(bookmarkChanges(x.items,!x.items.some(i=>S.records.bookmark[C.key(i)])));}else if(e.key==='Escape'){S.selected=null;render();}});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.loaded&&Date.now()-lastCheck>120000)load({hold:true});});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderFocus();if(S.loaded&&Date.now()-lastCheck>120000)load({hold:true});}});
 window.addEventListener('storage',e=>{if(e.key===STORE&&S.mode==='guest'&&!S.saving){Accounts.refreshGuest();}});
 const offset=()=>$('.news-desk').style.setProperty('--nd-header-offset',Math.ceil($('.topbar').getBoundingClientRect().height+15)+'px');if(window.ResizeObserver)new ResizeObserver(offset).observe($('.topbar'));offset();
 render();load();Accounts.sync().catch(e=>notify(e.message));
