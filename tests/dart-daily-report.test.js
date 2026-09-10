@@ -21,7 +21,7 @@ test('같은 접수번호의 현재 추출값만 목록 변화로 표시한다',
 });
 test('돈·거래·지배력·위험·일정·희석은 설명 대신 짧은 축 태그로 쓴다',()=>{
  assert.deepEqual(U.axisTags(item(),review()),['돈','일정','희석']);
- const control=item({group_id:'deal',event_id:'control_change',report_nm:'최대주주 변경을 수반하는 주식양수도계약'});
+ const control=item({group_id:'deal',event_id:'control_change',event_label:'경영권·최대주주 변동',report_nm:'최대주주 변경을 수반하는 주식양수도계약'});
  assert.deepEqual(U.axisTags(control,null).slice(0,2),['거래','지배력']);
 });
 test('이어볼 항목과 일보 확인 문장은 기존 DART 모니터 표현을 우선한다',()=>{
