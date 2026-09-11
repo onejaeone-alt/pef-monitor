@@ -41,6 +41,15 @@ test('canonical reporting targets and portfolio companies stay in scope', () => 
   assert.equal(shouldKeep(mbk),true);
 });
 
+test('an entity name alone is not enough when its watch reason is unrelated', () => {
+  const collateral=item({corp_name:'현대건설',flr_nm:'현대건설',report_nm:'특수관계인에대한담보제공',analysis:{event_id:'financing_support',event_label:'담보·보증·차입',entity_strength:0}});
+  const fund=item({corp_name:'현대건설',flr_nm:'현대건설',report_nm:'기관전용사모집합투자기구 출자 변경',analysis:{event_id:'fund_change',event_label:'펀드·조합 변동',entity_strength:0}});
+  assert.equal(inReportingScope(collateral),false);
+  assert.equal(shouldKeep(collateral),false);
+  assert.equal(inReportingScope(fund),true);
+  assert.equal(shouldKeep(fund),true);
+});
+
 test('story-engine house flag can keep a newly identified PEF or VC filer', () => {
   assert.equal(shouldKeep(item({corp_name:'신규PEF하우스',flr_nm:'신규PEF하우스',corp_cls:'E',pef_entity:true,analysis:{event_id:'mezzanine',entity_strength:2}})),true);
 });
