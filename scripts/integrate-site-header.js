@@ -62,6 +62,10 @@ function page(html) {
   if (!next.includes('class="site-owner-credit"')) {
     next = next.replace('</body>', '<footer class="site-owner-credit" aria-label="사이트 제작자">Made by <strong>원기자</strong></footer></body>');
   }
+  // Keep one font request and apply shared typography after page-specific styles.
+  next = next.replace(/<link\b[^>]*href="https:\/\/cdn\.jsdelivr\.net\/gh\/(?:orioncactus\/pretendard|sun-typeface\/SUIT)[^"]*"[^>]*>/g, '');
+  next = next.replace(/<link\b[^>]*href="\/typography\.css(?:\?[^"]*)?"[^>]*>/g, '');
+  next = next.replace('</head>', '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"><link rel="stylesheet" href="/typography.css?v=20260911-suit1"></head>');
   return next;
 }
 
