@@ -39,3 +39,11 @@ test('LP news fallback stays visibly separate from an unavailable official board
   assert.equal(result.stats.coverage,'news_only');assert.equal(result.stats.official_ok,false);assert.equal(result.events[0].status,'published');assert.equal(result.events[0].date_basis,'news_publication');assert.equal(result.events[0].date,H.kstDay());
  }finally{for(const [i,key] of ['NAVER_CLIENT_ID','NAVER_CLIENT_SECRET'].entries())if(before[i]===undefined)delete process.env[key];else process.env[key]=before[i];}
 });
+
+test('public RSS keeps LP monitoring available without a Naver integration',async()=>{
+ const before=[process.env.NAVER_CLIENT_ID,process.env.NAVER_CLIENT_SECRET];delete process.env.NAVER_CLIENT_ID;delete process.env.NAVER_CLIENT_SECRET;
+ try{let requested='';const reader={boundedFetch:async url=>{requested=url;return {buffer:Buffer.from('<rss><channel></channel></rss>')};}};
+ const result=await require('../lib/reporting-calendar-lp-news').collectNews(apfs,reader,Date.now()+1000,H);
+ assert.match(requested,/^https:\/\/news\.google\.com\/rss\/search/);assert.equal(result.stats.news_provider,'google_rss');assert.equal(result.stats.news_ok,true);
+ }finally{for(const [i,key] of ['NAVER_CLIENT_ID','NAVER_CLIENT_SECRET'].entries())if(before[i]===undefined)delete process.env[key];else process.env[key]=before[i];}
+});
