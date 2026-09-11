@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {parseRss,FEEDS}=require('../lib/domestic-publisher-feeds');
+const {parseRss,parseSitemap,kstDays,sitemapUrl,FEEDS}=require('../lib/domestic-publisher-feeds');
 const M=require('../lib/news-monitor');
 
 test('한국경제 공식 RSS 항목을 원문 주소와 발행시각으로 읽는다',()=>{
@@ -8,6 +8,16 @@ test('한국경제 공식 RSS 항목을 원문 주소와 발행시각으로 읽�
  const [x]=parseRss(xml,'한국경제신문','hankyung-all');
  assert.equal(x.source_url,'https://www.hankyung.com/article/2026091074211');
  assert.equal(x.source_name,'한국경제신문');assert.equal(x.provider,'publisher_rss');assert.ok(x.published_at);
+});
+test('한국경제 날짜별 사이트맵에서 RSS 밖 기사도 원문 주소로 읽는다',()=>{
+ const html='<main><a href="/article/2026091072941"><span>PEF가 보유한 기업 매각 본입찰</span></a><a href="/section/finance">증권</a></main>';
+ const rows=parseSitemap(html,'2026-09-10');assert.equal(rows.length,1);
+ assert.equal(rows[0].source_url,'https://www.hankyung.com/article/2026091072941');assert.equal(rows[0].provider,'publisher_sitemap');
+ assert.match(rows[0].title,/기업 매각/);assert.equal(rows[0].published_at,'2026-09-09T15:00:00.000Z');
+});
+test('사이트맵은 최근 날짜를 한국시간 기준으로 만든다',()=>{
+ assert.deepEqual(kstDays(3,Date.parse('2026-09-11T00:00:00Z')),['2026-09-11','2026-09-10','2026-09-09']);
+ assert.equal(sitemapUrl('2026-09-10'),'https://www.hankyung.com/sitemap/2026/09/10');
 });
 test('공식 RSS 주소는 전체·증권·경제·부동산을 함께 본다',()=>{
  assert.deepEqual(FEEDS.map(x=>x.url),['https://www.hankyung.com/feed/all-news','https://www.hankyung.com/feed/finance','https://www.hankyung.com/feed/economy','https://www.hankyung.com/feed/realestate']);
