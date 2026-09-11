@@ -37,8 +37,9 @@ test('API는 기존 모니터의 검토 단서만 공개하고 내부 analysis �
  assert.equal(out.analysis,undefined);assert.equal(out.private_note,undefined);assert.equal(JSON.stringify(out).includes('NO'),false);
 });
 test('화면은 회사·공시·달라진 것·이어볼 것 네 칸과 세 모아보기만 둔다',()=>{
- const h=fs.readFileSync('dart.html','utf8');for(const t of ['회사·일자','공시','달라진 것','이어볼 것','먼저 확인','정정 변화','내 범위 전체'])assert.match(h,new RegExp(t));
- assert.match(h,/감시목록·취재파일과 직접 연결된 공시만/);
+ const h=fs.readFileSync('dart.html','utf8');for(const t of ['회사·일자','공시','달라진 것','이어볼 것','먼저 확인','정정 변화','관련 공시 전체'])assert.match(h,new RegExp(t));
+ assert.match(h,/내 취재선과 연결된 공시를 우선하고/);
+ assert.match(h,/새 M&A·구조조정 신호/);
  assert.equal((h.match(/data-feed=/g)||[]).length,3);assert.doesNotMatch(h,/기사감|기사점수|article score|가설|반증 조건/);
 });
 test('내용 확인 한 건만 원문을 읽고 첫 화면에서 일괄 분석하지 않는다',()=>{
