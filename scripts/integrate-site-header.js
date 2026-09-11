@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const VERSION = '20260908-topright1';
-const CSS_VERSION = '20260909-nav-readable1';
+const CSS_VERSION = '20260911-header-design1';
 const headerPattern = /<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[^>]*>[\s\S]*?<\/header>/;
 
 function divWithClass(html, className) {
@@ -31,7 +31,8 @@ function brandHome(brand) {
       return open + '<a class="site-brand-home" href="/" aria-label="IB 취재 레이더 · 뉴스 홈">' + title + '</a>' + close;
     });
   }
-  return brand;
+  return brand.replace(/(<a class="site-brand-home"[^>]*>)IB 취재 레이더(<\/a>)/,
+    '$1<span class="site-brand-initials">IB</span> <span class="site-brand-name">취재 레이더</span>$2');
 }
 
 const searchMarkup = '<div class="global-dossier-search" role="search" aria-label="취재파일 검색"><div class="global-dossier-box"><span aria-hidden="true">⌕</span><input id="globalDossierSearch" type="search" autocomplete="off" placeholder="취재파일 검색 · 기업·GP·LP·펀드" aria-label="취재파일 검색" aria-controls="globalDossierResults" aria-expanded="false"></div><div class="global-dossier-results" id="globalDossierResults" hidden></div></div>';

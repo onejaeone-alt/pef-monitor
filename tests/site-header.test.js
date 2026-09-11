@@ -15,7 +15,9 @@ test('account top right precedes search; header counts are not displayed', () =>
   assert.doesNotMatch(top, /뉴스 183건/);
 });
 test('both icon and title are normal same-origin home links', () => {
-  assert.match(top, /class="site-brand-home" href="\/"[^>]*>IB 취재 레이더<\/a>/);
+  const title = top.match(/<a class="site-brand-home" href="\/"[^>]*>([\s\S]*?)<\/a>/);
+  assert.ok(title);
+  assert.equal(title[1].replace(/<[^>]*>/g, ''), 'IB 취재 레이더');
   assert.match(top, /class="brand-home-icon" href="\/"/);
   let depth=0;for(const m of top.matchAll(/<\/?a\b[^>]*>/g)){depth+=m[0].startsWith('</')?-1:1;assert.ok(depth>=0&&depth<=1,'no nested anchors');}assert.equal(depth,0);
 });

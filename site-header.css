@@ -5,10 +5,12 @@
 .topbar[data-site-header] .brand-home-row { display:flex; align-items:center; gap:11px; }
 .topbar[data-site-header] .brand-home-icon { display:flex; flex:none; width:48px; height:48px; align-items:center; justify-content:center; }
 .topbar[data-site-header] .brand-home-icon img { display:block; width:46px; height:46px; }
-.topbar[data-site-header] .brand h1 { margin:0 !important; font-size:32px !important; line-height:1.2; letter-spacing:-.04em; }
-.topbar[data-site-header] .brand .eyebrow { margin-bottom:4px; font-size:10px !important; }
+.topbar[data-site-header] .brand h1 { margin:0 !important; font-size:32px !important; font-weight:700; line-height:1.25; letter-spacing:-.025em; color:#202938; }
+.topbar[data-site-header] .brand .eyebrow { margin-bottom:4px; font-size:10px !important; font-weight:600; letter-spacing:.14em; color:#a53d6c; }
 .topbar[data-site-header] .brand p { display:none !important; }
-.topbar[data-site-header] .site-brand-home { color:inherit; text-decoration:none; border-radius:5px; }
+.topbar[data-site-header] .site-brand-home { display:inline-flex; align-items:baseline; flex-wrap:wrap; column-gap:.24em; color:inherit; text-decoration:none; border-radius:5px; }
+.topbar[data-site-header] .site-brand-initials { color:#b83c77; font-weight:800; letter-spacing:-.035em; }
+.topbar[data-site-header] .site-brand-name { font-weight:650; white-space:nowrap; }
 .topbar[data-site-header] .site-brand-home:hover { color:#ac3f70; }
 .topbar[data-site-header] .site-header-tools { display:flex; flex-direction:column; align-items:stretch; gap:6px; flex:0 1 350px; min-width:240px; margin-left:auto; }
 .topbar[data-site-header] .site-account-row { display:flex; justify-content:flex-end; align-items:center; min-height:34px; }
@@ -59,16 +61,26 @@
  .site-account-dialog { padding:19px; }
 }
 
-/* NAV_READABILITY_V1: override the legacy 11px compact navigation, not page text. */
+/* HEADER_DESIGN_V2: a compact wordmark and clear, readable navigation. */
 .topbar[data-site-header] .nav {
- gap:6px !important; min-width:0; max-width:100%; flex-wrap:nowrap;
+ gap:5px !important; min-width:0; max-width:100%; flex-wrap:nowrap;
+ align-items:center; padding:0 0 7px;
  overflow-x:auto; overflow-y:hidden; scroll-padding-inline:8px;
 }
 .topbar[data-site-header] .nav > a {
  display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center;
- font-size:1rem !important; font-weight:800; line-height:1.5;
+ font-size:1rem !important; font-weight:650; line-height:1.5; letter-spacing:-.01em;
  min-height:48px; padding:11px 16px !important; white-space:nowrap;
+ color:#465166; background:transparent; border:1px solid transparent; border-radius:8px;
 }
+.topbar[data-site-header] .nav > a:hover { color:#922e5c; background:#fbf0f5; }
+.topbar[data-site-header] .nav > a.on,
+.topbar[data-site-header] .nav > a[aria-current="page"] {
+ color:#922e5c; background:#f8e8f0; border-color:#edd2df; font-weight:700;
+}
+.topbar[data-site-header] .nav > a.on::after { content:none; }
+.topbar[data-site-header] .nav > a.engine-link { background:#e84691; color:#fff; border-color:#e84691; }
+.topbar[data-site-header] .nav > a.engine-link:hover { background:#cc337c; border-color:#cc337c; }
 .topbar[data-site-header] .nav > a:focus-visible { outline-offset:-3px; }
 @media(max-width:760px) {
  .topbar[data-site-header] .nav { gap:4px !important; }
