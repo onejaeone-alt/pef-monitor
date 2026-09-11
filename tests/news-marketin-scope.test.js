@@ -15,7 +15,7 @@ function loadPatchedMonitor(){
   return m.exports;
 }
 
-const JAK=new Set(['한국경제','매일경제','연합뉴스']);
+const JAK=['한국경제','매일경제','연합뉴스'];
 const item=(title,source='한국경제',snippet='')=>({title,source_name:source,snippet});
 
 test('KIC 한국판 국부펀드 전략은 LP 정책자금 범위에 남긴다',()=>{
