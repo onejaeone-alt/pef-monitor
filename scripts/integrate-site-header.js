@@ -2,8 +2,8 @@
 // Run after the existing page/account integrations. Source pages and older assets stay intact.
 const fs = require('node:fs');
 const path = require('node:path');
-const VERSION = '20260908-topright1';
-const CSS_VERSION = '20260909-nav-readable1';
+const VERSION = '20260911-owner-credit1';
+const CSS_VERSION = '20260911-owner-credit1';
 const headerPattern = /<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[^>]*>[\s\S]*?<\/header>/;
 
 function divWithClass(html, className) {
@@ -59,6 +59,9 @@ function page(html) {
   if (!next.includes('/site-header.js')) next = next.replace('</body>', '<script src="/site-header.js?v=' + VERSION + '"></script></body>');
   next = next.replace(/src="(\/news-reader\.js\?[^"]*)"/g, (_, src) => 'src="' + src.replace(/&header=[^&"]*/g, '') + '&header=' + VERSION + '"');
   next = next.replace(/href="(\/site-header\.css[^"]*)"/g, (_, href) => 'href="' + href.replace(/&brand=[^&"]*/g, '') + '&brand=20260909-large1"');
+  if (!next.includes('class="site-owner-credit"')) {
+    next = next.replace('</body>', '<footer class="site-owner-credit" aria-label="사이트 제작자">Made by <strong>원기자</strong></footer></body>');
+  }
   return next;
 }
 
