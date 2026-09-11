@@ -31,9 +31,16 @@ test('단순 자사주 소각 주가 급등 기사는 제외한다',()=>{
   assert.equal(M.shouldKeep(item('[특징주] 샘표, 자사주 소각 결정에 강세'),null,JAK),false);
 });
 
-test('행동주의 분쟁과 결합한 자본배분 변화는 남긴다',()=>{
+test('단독 자사주 매입·소각 홍보성 기사는 제외한다',()=>{
+  const M=loadPatchedMonitor();
+  assert.equal(M.shouldKeep(item('하나투어 대표, 취임 직후 자사주 매입'),null,JAK),false);
+  assert.equal(M.shouldKeep(item('A사, 300억원 규모 자사주 소각 결정'),null,JAK),false);
+});
+
+test('자사주가 경영권·행동주의 또는 자금조달 사건과 결합하면 남긴다',()=>{
   const M=loadPatchedMonitor();
   assert.equal(M.shouldKeep(item('행동주의 압박에 A사 자사주 소각·이사회 개편 결정'),null,JAK),true);
+  assert.equal(M.shouldKeep(item('BKV, 4억 달러 전환사채 발행·자사주 매입 병행'),null,JAK),true);
 });
 
 test('한국 연결 없는 해외 국부펀드 일반 기사는 국내 레이더에서 제외한다',()=>{
