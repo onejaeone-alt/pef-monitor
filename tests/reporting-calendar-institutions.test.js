@@ -22,3 +22,20 @@ test('discovery follows same-host literal public paths, not arbitrary script exe
  const html='<a href="javascript:void(0)" onclick="move(\'/front/board/list.do?boardId=1\')">보도자료</a><a href="https://example.com/list.do">공지사항</a>';
  const links=I.boardLinks(html,apfs.url);assert.equal(links.length,1);assert.equal(links[0].url,'https://www.apfs.kr/front/board/list.do?boardId=1');
 });
+
+test('NPS public form navigation resolves real articles and rejects navigation labels',()=>{
+ const html=`<script>function fnc_goBbsDetail(pstId,hmpgBbsCd){form.pstId.value=pstId;form.action="/impa/nscvrgdatadtl/getOHEF0014M0.do";}</script>
+ <tr><td>361</td><td><a href="javascript:fnc_goBbsDetail('ZZ202600000000000940', 'BS20240174');">[보도자료] 국민연금, 「2026 전북국제금융콘퍼런스(JIFIC)」 개최</a></td><td>2026/08/25</td></tr>`;
+ const rows=I.items(html,'https://fund.nps.or.kr/impa/nscvrgdatalist/getOHEF0013M0.do',I.INSTITUTIONS.find(x=>x.id==='lp-nps'),H);
+ assert.equal(rows.length,1);assert.equal(rows[0].published_at,'2026-08-25');assert.equal(new URL(rows[0].url).searchParams.get('pstId'),'ZZ202600000000000940');
+ assert.equal(I.candidate('기금운용위원회 회의결과',{},H),false);
+});
+
+test('LP news fallback stays visibly separate from an unavailable official board',async()=>{
+ const before=[process.env.NAVER_CLIENT_ID,process.env.NAVER_CLIENT_SECRET];process.env.NAVER_CLIENT_ID='fixture';process.env.NAVER_CLIENT_SECRET='fixture';
+ try{
+  const reader={boundedFetch:async url=>{if(!url.startsWith('https://openapi.naver.com/'))throw Error('SOURCE_TIMEOUT');return {buffer:Buffer.from(JSON.stringify({items:[{title:'국민연금 자산배분 계획 발표',originallink:'https://www.yna.co.kr/view/fixture',pubDate:new Date().toUTCString()}]}))};},read:async meta=>({read_ok:true,url:meta.url,text:'국민연금은 자산배분 계획을 발표했다. 투자 시행일: 2026년 12월 1일.'})};
+  const result=await I.collect(I.INSTITUTIONS.find(x=>x.id==='lp-nps'),reader,Date.now()+3000,null,H);
+  assert.equal(result.stats.coverage,'news_only');assert.equal(result.stats.official_ok,false);assert.equal(result.events[0].status,'published');assert.equal(result.events[0].date_basis,'news_publication');assert.equal(result.events[0].date,H.kstDay());
+ }finally{for(const [i,key] of ['NAVER_CLIENT_ID','NAVER_CLIENT_SECRET'].entries())if(before[i]===undefined)delete process.env[key];else process.env[key]=before[i];}
+});
