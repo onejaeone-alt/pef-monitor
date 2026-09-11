@@ -69,3 +69,28 @@ test('undated attachments stay visible and receive an explicit failure reason',a
  const reader={boundedFetch:async url=>({buffer:Buffer.from(url.includes('notice_view')?body:list),contentType:'text/html'}),read:async()=>({read_ok:false,read_error:'SCANNED_OR_EMPTY_DOCUMENT'})};
  const out=await S.collect(source,reader,Date.now()+10000,null,H);assert.equal(out.events.length,0);assert.equal(out.pending.length,1);assert.equal(out.pending[0].reason,'SCANNED_OR_EMPTY_DOCUMENT');
 });
+
+test('MUST Round accepts a two-digit year without an apostrophe',()=>{
+ const e=C.makeEvent({title:'제27회 MUST Round 참가 투자자 모집',url:'https://www.kvca.or.kr/7349',published_at:'2026-08-28'},'[행사개요] □ 일시 : 26.9.16(수), 15:00~17:00\n□ 장소 : 부산 센텀기술창업타운 1층 창업카페');
+ assert.equal(e.date,'2026-09-16');assert.equal(e.time,'15:00–17:00');assert.match(e.venue,/부산/);
+});
+test('parenthesized compact LP-GP and scaleup IR labels retain date and venue',()=>{
+ const e=C.makeEvent({title:'2026 벤처캐피탈 LP-GP 교류회 개최',url:'https://www.kvca.or.kr/7335',published_at:'2026-08-07'},'[행사 개요]- (주 최) 한국벤처캐피탈협회- (일 시) 2026. 9. 8.(화), 09:30 ~ 13:00 (오찬 포함)- (장 소) 양재 엘타워 5층 오르체홀');
+ assert.equal(e.date,'2026-09-08');assert.match(e.venue,/양재/);assert.equal(e.time,'09:30–13:00');
+ const ir=C.makeEvent({title:'서울시-금융투자협회 공동 스케일업 IR',url:'https://www.kvca.or.kr/7346',published_at:'2026-08-26'},'ㅇ (일시) ‘26.9.9일(수), 10:00~12:10\nㅇ (장소) 동대문디자인플라자 컨퍼런스홀');
+ assert.equal(ir.date,'2026-09-09');assert.match(ir.venue,/동대문/);
+});
+test('an overseas region label is retained as venue for domestic filtering',()=>{
+ const e=C.makeEvent({title:'Super Return Asia 참가 안내',url:'https://www.kvca.or.kr/7316',published_at:'2026-07-14'},'일시:2026년9월28일~10월1일\nㅇ 지역 : 싱가포르 마리나베이샌즈 컨벤션 센터');assert.match(e.venue,/싱가포르/);
+});
+test('the same named event in an official notice and a news story appears once',()=>{
+ const a={id:'official',date:'2026-11-26',title:'성장금융 핀테크 투자밋업 안내',evidence:"'핀테크 스타트업 1:1 투자밋업'을 개최한다.",time:''};
+ const b={...a,id:'news',title:'성장금융, 투자밋업 11월 개최'};
+ assert.equal(C.mergeEvents([],[a,b],Date.parse(reference)).length,1);
+});
+test('weekly policy collection still excludes plain LP deadlines',()=>{
+ const out=C.parseWeekly('◇9월 14일(월)\n▲벤처펀드 위탁운용사 선정결과 발표\n▲벤처펀드 출자사업 설명회(14:00)',{url:'https://news.test/weekly',published_at:reference});assert.equal(out.length,1);assert.match(out[0].title,/설명회/);
+});
+test('an IR recruitment deadline in the title never supplies the event date',()=>{
+ for(const title of ['벤처투자 IR 참가기업 모집(~9/14)','벤처투자 설명회 개최 참가기업 모집(9/14)'])assert.equal(C.makeEvent({title,source_id:'kvca',url:'https://www.kvca.or.kr/test',published_at:reference},'행사 안내 포스터'),null);
+});
