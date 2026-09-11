@@ -1,4 +1,5 @@
 'use strict';
+const fs=require('node:fs'),path=require('node:path');
 const test=require('node:test'),assert=require('node:assert/strict');
 const M=require('../lib/news-monitor');
 const item=(title,source_name='한국경제신문',snippet='')=>({title,snippet,source_name});
@@ -7,6 +8,7 @@ test('박일영 한국판 국부펀드·인내자본 기사는 일반 레이더�
  const title='박일영 사장 "한국판 국부펀드, 초장기 인내자본으로 키울 것"';
  assert.equal(M.theme(title)[0],'lp');
  assert.equal(M.shouldKeep(item(title)),true);
+ assert.equal(M.hardExcludeFromRadar(item(title)),false);
 });
 
 test('KIC 전략투자계정과 앵커 역할의 구체 변화는 정책 LP 흐름으로 잡는다',()=>{
@@ -27,23 +29,48 @@ test('KIC 검색은 별도 쿼리로 넓히되 일반 국부펀드 전체를 검
  assert.doesNotMatch(joined,/OR 국부펀드 OR/);
 });
 
-test('샘표처럼 주가 반응이 제목인 자사주 기사는 제외한다',()=>{
- assert.equal(M.shouldKeep(item("샘표, 370억 규모 자사주 소각 소식에 연이틀 '급등'")),false);
- assert.equal(M.shouldKeep(item('[특징주] 샘표, 자사주 소각 발표에 강세')),false);
- assert.equal(M.shouldKeep(item('샘표, 자사주 30% 소각 결정에 상한가')),false);
+test('샘표처럼 주가 반응이 제목인 자사주 기사는 수집 단계에서 제외한다',()=>{
+ for(const title of [
+  "샘표, 370억 규모 자사주 소각 소식에 연이틀 '급등'",
+  '[특징주] 샘표, 자사주 소각 발표에 강세',
+  '샘표, 자사주 30% 소각 결정에 상한가'
+ ]){
+  assert.equal(M.hardExcludeFromRadar(item(title)),true,title);
+  assert.equal(M.shouldKeep(item(title)),false,title);
+ }
 });
 
 test('주가 반응이 아니라 실제 자사주 의사결정 자체가 제목이면 남긴다',()=>{
- assert.equal(M.shouldKeep(item('샘표, 370억원 규모 자사주 소각 결정')),true);
+ const row=item('샘표, 370억원 규모 자사주 소각 결정');
+ assert.equal(M.hardExcludeFromRadar(row),false);
+ assert.equal(M.shouldKeep(row),true);
+});
+
+test('API hard gate가 reader 판정과 직접 검색 우회보다 먼저 실행된다',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'../api/news.js'),'utf8');
+ assert.match(source,/hardExcludeFromRadar/);
+ const gate=source.indexOf('if (hardExcludeFromRadar(item)) continue;');
+ const assess=source.indexOf('NewsReader.assess');
+ const direct=source.indexOf('const directProbe');
+ assert.ok(gate>=0,'hard gate missing');
+ assert.ok(assess>gate,'reader relevance must run after hard gate');
+ assert.ok(direct>gate,'explicit query probe must run after hard gate');
 });
 
 test('국부펀드라는 단어만으로 해외 거래를 정책 LP 뉴스로 끌어오지 않는다',()=>{
- assert.equal(M.shouldKeep(item('사우디 국부펀드, EA·새비 게임즈 합병 검토','지디넷코리아')),false);
- assert.equal(M.shouldKeep(item('아부다비 국부펀드, 中루이싱커피에 1조3천억원 투자','연합뉴스')),false);
+ for(const row of [
+  item('사우디 국부펀드, EA·새비 게임즈 합병 검토','지디넷코리아'),
+  item('아부다비 국부펀드, 中루이싱커피에 1조3천억원 투자','연합뉴스')
+ ]){
+  assert.equal(M.hardExcludeFromRadar(row),true);
+  assert.equal(M.shouldKeep(row),false);
+ }
 });
 
 test('해외 국부펀드라도 한국 기업 거래가 직접 걸리면 M&A 신호로 남긴다',()=>{
- assert.equal(M.shouldKeep(item('사우디 국부펀드, 한국 A사 경영권 인수 추진','연합뉴스')),true);
+ const row=item('사우디 국부펀드, 한국 A사 경영권 인수 추진','연합뉴스');
+ assert.equal(M.hardExcludeFromRadar(row),false);
+ assert.equal(M.shouldKeep(row),true);
 });
 
 test('IB 키워드만 있고 구체 변화가 없는 전망·해설은 제외한다',()=>{
