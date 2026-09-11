@@ -2,8 +2,8 @@
 // Run after the existing page/account integrations. Source pages and older assets stay intact.
 const fs = require('node:fs');
 const path = require('node:path');
-const VERSION = '20260911-owner-credit1';
-const CSS_VERSION = '20260911-owner-credit1';
+const VERSION = '20260908-topright1';
+const CSS_VERSION = '20260909-nav-readable1';
 const headerPattern = /<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[^>]*>[\s\S]*?<\/header>/;
 
 function divWithClass(html, className) {
