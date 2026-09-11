@@ -47,3 +47,11 @@ test('public RSS keeps LP monitoring available without a Naver integration',asyn
  assert.match(requested,/^https:\/\/news\.google\.com\/rss\/search/);assert.equal(result.stats.news_provider,'google_rss');assert.equal(result.stats.news_ok,true);
  }finally{for(const [i,key] of ['NAVER_CLIENT_ID','NAVER_CLIENT_SECRET'].entries())if(before[i]===undefined)delete process.env[key];else process.env[key]=before[i];}
 });
+
+test('LP search does not promote general investment opinions into important announcements',()=>{
+ const {isNewsAnnouncement}=require('../lib/reporting-calendar-lp-news');
+ assert.equal(isNewsAnnouncement('퇴직연금, 저축 아닌 투자로 수익률 높여야… 국민연금 참여 반대'),false);
+ assert.equal(isNewsAnnouncement('이소영 코스닥·자본시장 규제 부처에 할 말 하는 장관 되겠다'),false);
+ assert.equal(isNewsAnnouncement('삼성증권 8호 발행어음 사업자 됐다…금융위 정례회의 의결'),true);
+ assert.equal(isNewsAnnouncement('국민연금 자산배분 계획 발표'),true);
+});
