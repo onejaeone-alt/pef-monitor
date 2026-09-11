@@ -13,7 +13,7 @@ async function run(query, failures = 0) {
     '../lib/drive-dossiers': { matchDossiersInText: () => [] },
     '../lib/jak-members': { fetchJakMembers: async () => ({ names: [], count: 1, source: 'official' }), isJakMemberSource: () => true },
     '../lib/news-monitor': { queries: days => [`first when:${days}d`, `second when:${days}d`],
-      clusterIssues: () => [], eventLabel: () => '투자', theme: () => ['vc','VC'], shouldKeep: () => true },
+      clusterIssues: () => [], eventLabel: () => '투자', hardExcludeFromRadar: () => false, theme: () => ['vc','VC'], shouldKeep: () => true },
   };
   const sandbox = { module: { exports: {} }, require: name => {
     assert.ok(Object.hasOwn(dependencies,name)); return dependencies[name];
