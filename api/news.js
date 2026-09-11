@@ -73,6 +73,12 @@ function boundedInt(value, fallback, min, max) {
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
+function searchMatch(item, q) {
+  if (!q) return true;
+  const hay = [item.source_url,item.title,item.source_name,item.snippet,item.theme_label,item.event_label]
+    .map(value=>String(value||'').toLowerCase()).join(' ');
+  return q.split(/\s+/).filter(Boolean).every(term=>hay.includes(term));
+}
 module.exports = async (req, res) => {
   if (req.query && Object.prototype.hasOwnProperty.call(req.query,'reader')) return require('../lib/news-reader-account').handle(req,res);
   const readerFeed = String(req.query?.feed || '') === 'reader';
@@ -89,11 +95,12 @@ module.exports = async (req, res) => {
   try {
     const days = boundedInt(req.query.days, 7, 1, 14);
     const limit = boundedInt(req.query.limit, 240, 40, 500);
+    const q = String(req.query.q || '').trim().toLowerCase().slice(0,180);
     const queryList = queries(days);
     const [jak, settled, publisher] = await Promise.all([
       fetchJakMembers(),
-      Promise.allSettled(queryList.map(async (q) => {
-        const xml = await fetchText(googleNewsUrl(q), 12000, fresh);
+      Promise.allSettled(queryList.map(async (query) => {
+        const xml = await fetchText(googleNewsUrl(query), 12000, fresh);
         return parseGoogleNewsRss(xml, 'domestic', 'ko');
       })),
       fetchPublisherFeeds({fresh}),
@@ -134,8 +141,11 @@ module.exports = async (req, res) => {
     const inRange = items.filter(item => { const t=Date.parse(item.published_at); return !Number.isFinite(t) || (t>=Date.now()-days*86400000 && t<=Date.now()+300000); });
     const eligible = inRange.filter(item => item.relevance?.status === 'relevant');
     const review = inRange.filter(item => item.relevance?.status !== 'relevant');
-    const limitedItems = (readerFeed ? eligible : inRange).slice(0,limit);
-    const reviewItems = readerFeed ? review.slice(0,limit) : [];
+    const filteredEligible = q ? eligible.filter(item=>searchMatch(item,q)) : eligible;
+    const filteredReview = q ? review.filter(item=>searchMatch(item,q)) : review;
+    const filteredRange = q ? inRange.filter(item=>searchMatch(item,q)) : inRange;
+    const limitedItems = (readerFeed ? filteredEligible : filteredRange).slice(0,limit);
+    const reviewItems = readerFeed ? filteredReview.slice(0,limit) : [];
     if (format === 'ticker-css') {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
       return res.status(200).send(tickerCss(limitedItems));
