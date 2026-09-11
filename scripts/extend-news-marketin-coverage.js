@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
 const MARK='// MARKETIN_EVENT_FIRST_COVERAGE_V2';
+const API_MARK='// MARKETIN_HARD_SCOPE_READER_V1';
 
 function replaceOnce(source,from,to,label){
   if(!source.includes(from)) throw Error(`MarketIN coverage: ${label} anchor changed`);
@@ -37,10 +38,20 @@ function patch(source){
   return MARK+'\n'+s;
 }
 
+function patchApi(source){
+  if(source.includes(API_MARK)) return source;
+  const old="      if (!shouldKeep(item, target, jak.names) && !(relevance?.status === 'relevant' && isJakMemberSource(item.source_name, jak.names)) && !directProbe) continue;";
+  const next="      const inScope = shouldKeep(item, target, jak.names);\n      // The reader relevance layer may rank an in-scope story, but it must never\n      // reopen a story rejected by the MarketIN reporting-scope gate. A q= manual\n      // probe remains available for diagnostics without polluting the normal feed.\n      if (!inScope && !directProbe) continue;";
+  return API_MARK+'\n'+replaceOnce(source,old,next,'reader hard scope');
+}
+
 function main(root=path.resolve(__dirname,'..')){
-  const file=path.join(root,'lib/news-monitor.js');
-  const before=fs.readFileSync(file,'utf8'),after=patch(before);
-  if(after!==before)fs.writeFileSync(file,after);
+  const monitorFile=path.join(root,'lib/news-monitor.js');
+  const monitorBefore=fs.readFileSync(monitorFile,'utf8'),monitorAfter=patch(monitorBefore);
+  if(monitorAfter!==monitorBefore)fs.writeFileSync(monitorFile,monitorAfter);
+  const apiFile=path.join(root,'api/news.js');
+  const apiBefore=fs.readFileSync(apiFile,'utf8'),apiAfter=patchApi(apiBefore);
+  if(apiAfter!==apiBefore)fs.writeFileSync(apiFile,apiAfter);
 }
 if(require.main===module)main();
-module.exports={patch,main};
+module.exports={patch,patchApi,main};
