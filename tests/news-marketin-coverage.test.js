@@ -33,8 +33,14 @@ test('샘표처럼 주가 반응이 제목인 자사주 기사는 제외한다',
  assert.equal(M.shouldKeep(item('샘표, 자사주 30% 소각 결정에 상한가')),false);
 });
 
-test('주가 반응이 아니라 실제 자사주 의사결정 자체가 제목이면 남긴다',()=>{
- assert.equal(M.shouldKeep(item('샘표, 370억원 규모 자사주 소각 결정')),true);
+test('단독 자사주 매입·소각도 마켓인 취재 맥락이 없으면 제외한다',()=>{
+ assert.equal(M.shouldKeep(item('샘표, 370억원 규모 자사주 소각 결정')),false);
+ assert.equal(M.shouldKeep(item('하나투어 대표, 취임 직후 자사주 매입')),false);
+});
+
+test('자사주가 경영권·행동주의·자금조달 사건과 결합하면 남긴다',()=>{
+ assert.equal(M.shouldKeep(item('행동주의 압박에 A사 자사주 소각·이사회 개편 결정')),true);
+ assert.equal(M.shouldKeep(item('BKV, 4억 달러 전환사채 발행·자사주 매입 병행')),true);
 });
 
 test('국부펀드라는 단어만으로 해외 거래를 정책 LP 뉴스로 끌어오지 않는다',()=>{
