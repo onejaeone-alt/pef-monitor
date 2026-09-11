@@ -15,3 +15,5 @@ test('official event title supplies date when the notice body is a poster',()=>{
 test('official seminar programme accepts its theme as title',()=>{const e=C.makeEvent({title:'혁신과 성장을 견인하는 자본시장 – 생산적 금융 전환 과제',url:'https://www.kcmi.re.kr/seminar/seminar_program?eno=317',source_id:'kcmi'},'일시 :2026년 09월 18일 (금), 09:30~12:00\n주최 :자본시장연구원');assert.equal(e.date,'2026-09-18');});
 
 test('multi-day conferences retain their final day',()=>{assert.equal(C.endDate('10/7~8, 부산','2026-10-07'),'2026-10-08');assert.equal(C.endDate('9월 29일(화) ~ 30일(수)','2026-09-29'),'2026-09-30');});
+
+test('seminar date metadata outside the programme body is retained',()=>{const html='<main><h2>혁신과 성장을 견인하는 자본시장</h2><ul><li>일시 :2026년 09월 18일 (금), 09:30~12:00</li></ul><div class="view_content">주제발표와 토론 프로그램</div></main>';const e=C.makeEvent({title:'혁신과 성장을 견인하는 자본시장',url:'https://www.kcmi.re.kr/seminar/seminar_program?eno=317',source_id:'kcmi'},C.pageText(html));assert.equal(e.date,'2026-09-18');});
