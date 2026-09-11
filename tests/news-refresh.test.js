@@ -8,9 +8,10 @@ async function run(query, failures = 0) {
   const requests = [];
   const dependencies = {
     '../lib/context-sources': { parseGoogleNewsRss: value => JSON.parse(value) },
+    '../lib/domestic-publisher-feeds': { fetchPublisherFeeds: async () => ({ items: [], succeeded: 0, failed: 0, total: 4 }) },
     '../lib/watch-config': { findWatchTarget: () => null, WATCH_TARGETS: [] },
     '../lib/drive-dossiers': { matchDossiersInText: () => [] },
-    '../lib/jak-members': { fetchJakMembers: async () => ({ names: [], count: 1, source: 'official' }) },
+    '../lib/jak-members': { fetchJakMembers: async () => ({ names: [], count: 1, source: 'official' }), isJakMemberSource: () => true },
     '../lib/news-monitor': { queries: days => [`first when:${days}d`, `second when:${days}d`],
       clusterIssues: () => [], eventLabel: () => '투자', theme: () => ['vc','VC'], shouldKeep: () => true },
   };
