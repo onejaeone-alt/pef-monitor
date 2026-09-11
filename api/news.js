@@ -1,4 +1,5 @@
 const { parseGoogleNewsRss } = require('../lib/context-sources');
+const { fetchPublisherFeeds } = require('../lib/domestic-publisher-feeds');
 const { findWatchTarget, WATCH_TARGETS } = require('../lib/watch-config');
 const { matchDossiersInText } = require('../lib/drive-dossiers');
 const { fetchJakMembers, isJakMemberSource } = require('../lib/jak-members'); // NEWS_READER_INTEGRATED
@@ -13,7 +14,7 @@ async function fetchText(url, timeoutMs = 12000, fresh = false) {
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const headers = { 'User-Agent': 'IB-News-Monitor/5.1' };
+    const headers = { 'User-Agent': 'IB-News-Monitor/5.2' };
     if (fresh) headers['Cache-Control'] = 'no-cache';
     const response = await fetch(url, { signal: ctrl.signal, cache: fresh ? 'no-store' : 'default', headers });
     if (!response.ok) throw new Error(`News HTTP ${response.status}`);
@@ -64,7 +65,6 @@ function tickerCss(items) {
 `;
 }
 function disableResponseCache(res) {
-  // Explicit refresh must not be answered from any shared response cache.
   res.setHeader('Cache-Control', 'no-store, max-age=0');
   res.setHeader('CDN-Cache-Control', 'no-store');
   res.setHeader('Vercel-CDN-Cache-Control', 'no-store');
@@ -74,7 +74,6 @@ function boundedInt(value, fallback, min, max) {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 module.exports = async (req, res) => {
-  // NEWS_ACCOUNT_ROUTE_V1: personal routes must run BEFORE public CORS/cache/GET-only logic.
   if (req.query && Object.prototype.hasOwnProperty.call(req.query,'reader')) return require('../lib/news-reader-account').handle(req,res);
   const readerFeed = String(req.query?.feed || '') === 'reader';
   const NewsReader = readerFeed ? require('../news-reader-core') : null;
@@ -90,18 +89,22 @@ module.exports = async (req, res) => {
     const days = boundedInt(req.query.days, 7, 1, 14);
     const limit = boundedInt(req.query.limit, 240, 40, 500);
     const queryList = queries(days);
-    const [jak, settled] = await Promise.all([
+    const [jak, settled, publisher] = await Promise.all([
       fetchJakMembers(),
       Promise.allSettled(queryList.map(async (q) => {
         const xml = await fetchText(googleNewsUrl(q), 12000, fresh);
         return parseGoogleNewsRss(xml, 'domestic', 'ko');
       })),
+      fetchPublisherFeeds({fresh}),
     ]);
     const succeeded = settled.filter(result => result.status === 'fulfilled').length;
-    if (!succeeded) throw new Error('뉴스 수집원에 연결하지 못했습니다.');
-    const partial = succeeded < queryList.length;
+    if (!succeeded && !publisher.succeeded) throw new Error('뉴스 수집원에 연결하지 못했습니다.');
+    const partial = succeeded < queryList.length || publisher.failed > 0;
     if (partial) disableResponseCache(res);
-    const raw = settled.flatMap(result => result.status === 'fulfilled' ? result.value : []);
+    const raw = [
+      ...settled.flatMap(result => result.status === 'fulfilled' ? result.value : []),
+      ...publisher.items,
+    ];
     const seenUrl = new Set(), seenTitle = new Set(), items = [];
     for (const item of raw) {
       const cleanUrl = String(item.source_url || '').replace(/[?#].*$/,'');
@@ -111,14 +114,16 @@ module.exports = async (req, res) => {
       const text = `${item.title} ${item.snippet || ''}`;
       const target = findWatchTarget(text, WATCH_TARGETS);
       const relatedEntities = matchDossiersInText(text, 6);
-      const relevance = NewsReader ? NewsReader.assess({...item, target, related_entities:relatedEntities}) : null;
-      if (!shouldKeep(item, target, jak.names) && !(relevance?.status === 'relevant' && isJakMemberSource(item.source_name, jak.names))) continue;
       const [theme_id, theme_label] = theme(text);
+      const assessed = NewsReader ? NewsReader.assess({...item, target, related_entities:relatedEntities}) : null;
+      const relevance = assessed && assessed.status !== 'relevant' && theme_id !== 'other'
+        ? {status:'relevant',reason:'마켓인 공통 레이더 범위'} : assessed;
+      if (!shouldKeep(item, target, jak.names) && !(relevance?.status === 'relevant' && isJakMemberSource(item.source_name, jak.names))) continue;
       items.push({
         signal_id: `${Date.parse(item.published_at || 0)}-${items.length}`,
         published_at: item.published_at,
         source_type: 'domestic_news', source_name: item.source_name, title: item.title,
-        source_url: item.source_url, snippet: item.snippet || '',
+        source_url: item.source_url, snippet: item.snippet || '', provider:item.provider || 'google_news_rss',
         target: target ? { id: target.id, name: target.name, category: target.category } : null,
         related_entities: relatedEntities, theme_id, theme_label,
         event_label: eventLabel(text), jak_member: true, relevance,
@@ -146,8 +151,10 @@ module.exports = async (req, res) => {
         ongoing_count: ongoing.length, new_issue_count: newIssues.length, latest_24h: latest24h },
       source_policy: { name: '한국기자협회 회원사', member_count: jak.count, member_source: jak.source },
       queries: queryList.length,
-      providers: { google_news_rss: succeeded > 0, jak_members: jak.source === 'official' },
-      collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded, truncated:eligible.length>limit || review.length>limit, relevant_count:eligible.length, review_count:review.length },
+      providers: { google_news_rss: succeeded > 0, publisher_rss: publisher.succeeded > 0, publisher_feeds:publisher.succeeded, jak_members: jak.source === 'official' },
+      collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded,
+        publisher_succeeded:publisher.succeeded,publisher_failed:publisher.failed,
+        truncated:eligible.length>limit || review.length>limit, relevant_count:eligible.length, review_count:review.length },
       range: { days }, fetched_at: new Date().toISOString(),
     });
   } catch (error) {
