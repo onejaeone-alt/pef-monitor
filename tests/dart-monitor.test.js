@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildFamilies, enrich, inReportingScope, refineEvent, shouldKeep } = require('../lib/dart-monitor');
+const { buildFamilies, enrich, inReportingScope, isMarketDiscovery, refineEvent, shouldKeep } = require('../lib/dart-monitor');
 
 function item(overrides={}) {
   return {
@@ -27,9 +27,28 @@ test('keeps private-market fund formation signals but not generic fund words', (
   assert.equal(shouldKeep(item({ report_nm:'일반 펀드 변경 안내', analysis:{event_id:'fund_change',entity_strength:2} })), false);
 });
 
-test('generic listed-company events stay out of the reporter desk', () => {
-  assert.equal(shouldKeep(item({corp_name:'엠젠솔루션',flr_nm:'엠젠솔루션',report_nm:'[기재정정]경영권변경등에관한계약체결',analysis:{event_id:'control_change',event_label:'경영권·최대주주 변동',stage:'조건·내용 변경',entity_strength:0}})),false);
-  assert.equal(shouldKeep(item({corp_name:'SGC에너지',flr_nm:'SGC에너지',report_nm:'타법인주식및출자증권취득결정',analysis:{event_id:'equity_acquisition',event_label:'지분 취득·인수',stage:'의사결정',entity_strength:0}})),false);
+test('reopens only a narrow market-discovery lane outside the watchlist', () => {
+  const kospiAcquisition=item({corp_cls:'Y',corp_name:'SGC에너지',flr_nm:'SGC에너지',report_nm:'타법인주식및출자증권취득결정',analysis:{event_id:'equity_acquisition',event_label:'지분 취득·인수',stage:'의사결정',entity_strength:0,is_correction:false}});
+  const kosdaqCorrection=item({corp_cls:'K',corp_name:'엠젠솔루션',flr_nm:'엠젠솔루션',report_nm:'[기재정정]경영권변경등에관한계약체결',analysis:{event_id:'control_change',event_label:'경영권·최대주주 변동',stage:'조건·내용 변경',entity_strength:0,is_correction:true}});
+  const genericCb=item({corp_cls:'Y',corp_name:'일반상장사',flr_nm:'일반상장사',report_nm:'주요사항보고서(전환사채권발행결정)',analysis:{event_id:'mezzanine',entity_strength:0,is_correction:false}});
+  assert.equal(isMarketDiscovery(kospiAcquisition),true);
+  assert.equal(shouldKeep(kospiAcquisition),true);
+  assert.equal(isMarketDiscovery(kosdaqCorrection),false);
+  assert.equal(shouldKeep(kosdaqCorrection),false);
+  assert.equal(isMarketDiscovery(genericCb),false);
+  assert.equal(shouldKeep(genericCb),false);
+});
+
+test('public tender offers stay discoverable on KOSPI and KOSDAQ', () => {
+  const tender=item({corp_cls:'K',corp_name:'신규대상',flr_nm:'신규대상',report_nm:'공개매수신고서',analysis:{event_id:'control_change',event_label:'경영권·최대주주 변동',stage:'의사결정',entity_strength:0,is_correction:false}});
+  assert.equal(isMarketDiscovery(tender),true);
+  assert.equal(shouldKeep(tender),true);
+});
+
+test('market discovery does not reopen corrected KOSPI transactions', () => {
+  const correction=item({corp_cls:'Y',corp_name:'일반상장사',flr_nm:'일반상장사',report_nm:'[기재정정]타법인주식및출자증권취득결정',analysis:{event_id:'equity_acquisition',event_label:'지분 취득·인수',stage:'조건·내용 변경',entity_strength:0,is_correction:true}});
+  assert.equal(isMarketDiscovery(correction),false);
+  assert.equal(shouldKeep(correction),false);
 });
 
 test('canonical reporting targets and portfolio companies stay in scope', () => {
