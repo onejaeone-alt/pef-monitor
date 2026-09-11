@@ -34,7 +34,8 @@ test('existing stylesheet links are refreshed once and repeated builds are idemp
 
 test('menu text, destinations, current header controls and page body are preserved', () => {
   const page = H.page(source);
-  assert.ok(page.includes(nav));
+  for (const item of nav.match(/<a\b[^>]*>[\s\S]*?<\/a>/g)) assert.ok(page.includes(item));
+  assert.ok(page.includes('/calendar.html'));
   assert.ok(page.includes('<main>UNCHANGED</main>'));
   assert.equal((page.match(/id="readerAccount"/g) || []).length, 1);
   assert.ok(page.indexOf('id="readerAccount"') < page.indexOf('id="globalDossierSearch"'));

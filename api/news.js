@@ -78,6 +78,7 @@ module.exports = async (req, res) => {
   const readerFeed = String(req.query?.feed || '') === 'reader';
   const NewsReader = readerFeed ? require('../news-reader-core') : null;
   if (req.method && req.method !== 'GET') return res.status(405).json({ok:false,error:'GET only'});
+  if (String(req.query?.feed || '') === 'calendar') return require('../lib/reporting-calendar').handle(req, res);
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.query.scope === 'foreign') return require('../lib/foreign-news').handle(req,res);
   const format = String(req.query.format || '').toLowerCase();

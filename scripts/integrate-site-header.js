@@ -41,6 +41,10 @@ function page(html) {
   if (!old) return html; // Redirect-only news.html has no screen to change.
   const nav = old[0].match(/<nav\b[^>]*class="nav"[^>]*>[\s\S]*?<\/nav>/);
   if (!nav) throw Error('Shared header: missing navigation');
+  if (!nav[0].includes('/calendar.html')) {
+    const item = '<a href="/calendar.html">취재 일정</a>';
+    nav[0] = nav[0].includes('/motae.html') ? nav[0].replace(/(<a\b[^>]*href="\/motae\.html"[^>]*>[\s\S]*?<\/a>)/, '$1' + item) : nav[0].replace('</nav>', item + '</nav>');
+  }
   const brand = brandHome(divWithClass(old[0], 'brand'));
   const header = '<header class="topbar" data-site-header="' + VERSION + '"><div class="brandrow">' + brand +
     '<div class="site-header-tools"><div class="site-account-row"><button type="button" id="readerAccount" class="site-login" aria-haspopup="dialog">로그인</button></div>' + searchMarkup + '</div>' +

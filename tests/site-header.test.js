@@ -20,7 +20,7 @@ test('both icon and title are normal same-origin home links', () => {
   let depth=0;for(const m of top.matchAll(/<\/?a\b[^>]*>/g)){depth+=m[0].startsWith('</')?-1:1;assert.ok(depth>=0&&depth<=1,'no nested anchors');}assert.equal(depth,0);
 });
 test('preserve navigation, page body, text areas and status target', () => {
-  assert.ok(html.includes('<nav class="nav"><a href="/">뉴스</a><a href="/dart.html">DART 공시</a></nav>'));
+  assert.ok(html.includes('<nav class="nav"><a href="/">뉴스</a><a href="/dart.html">DART 공시</a><a href="/calendar.html">취재 일정</a></nav>'));
   assert.ok(html.includes('<main><textarea id="notes">keep me</textarea></main>'));
   assert.ok(html.includes('document.getElementById("status").textContent="뉴스 200건";'));
 });
