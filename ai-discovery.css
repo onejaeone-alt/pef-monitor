@@ -13,9 +13,7 @@
 #discoveryDesk h3{font-size:19px;line-height:1.45;font-weight:650;letter-spacing:-.035em;color:#202b3c;margin:14px 0 8px;word-break:keep-all;overflow-wrap:anywhere}
 #discoveryDesk .discovery-fact{font-size:14px;line-height:1.7;color:#344155;margin:0 0 9px;overflow-wrap:anywhere}
 #discoveryDesk .discovery-reason{font-size:12px;line-height:1.6;color:#7a8491;margin:0 0 15px}
-#discoveryDesk .discovery-question{border-left:3px solid #e6a1c2;padding:9px 12px;background:#fdf8fa;border-radius:0 7px 7px 0;margin-top:auto}
-#discoveryDesk .discovery-question b{font-size:11px;font-weight:650;color:#a83669}#discoveryDesk .discovery-question p{font-size:14px;line-height:1.6;margin:5px 0;color:#273548}#discoveryDesk .discovery-question span{font-size:12px;color:#748092;overflow-wrap:anywhere}
-#discoveryDesk .discovery-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0}
+#discoveryDesk .discovery-actions{margin-top:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0}
 #discoveryDesk a{font-size:12px;color:#45627c;text-decoration:none;overflow-wrap:anywhere}#discoveryDesk a:hover{text-decoration:underline}
 #discoveryDesk .discovery-actions button{margin-left:auto;background:#283346;color:white;border:0;border-radius:7px;padding:9px 12px;font-size:12px;cursor:pointer;min-height:36px}
 #discoveryDesk details{margin:0 -22px;border-top:1px solid #edf0f2;padding:0 22px}#discoveryDesk summary{font-size:12px;color:#657487;cursor:pointer;padding:12px 0}
