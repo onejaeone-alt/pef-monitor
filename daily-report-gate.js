@@ -20,9 +20,7 @@ function until(date,now=Date.now()){
   return Math.round((Date.parse(date+'T00:00:00Z')-Date.parse(kstDay(now)+'T00:00:00Z'))/DAY);
 }
 function basisFacts(angle,analysis){const ids=new Set(angle?.basis_ids||[]);return (analysis?.facts||[]).filter(f=>ids.has(f.id));}
-function hardFact(facts){
-  return [...facts].sort((a,b)=>Number(/\d/.test(b.text))-Number(/\d/.test(a.text))||String(b.date||'').localeCompare(String(a.date||''))).find(f=>HARD.test(f.text))||null;
-}
+function hardFact(facts){return [...facts].sort((a,b)=>Number(/\d/.test(b.text))-Number(/\d/.test(a.text))||String(b.date||'').localeCompare(String(a.date||''))).find(f=>HARD.test(f.text))||null;}
 function imminent(clue,now=Date.now()){const d=until(clue?.event_date,now);return Number.isFinite(d)&&d>=0&&d<=3;}
 function evaluate(clue,result,now=Date.now()){
   const a=result?.analysis;if(result?.status!=='ready'||!a?.angles?.length)return null;
@@ -34,8 +32,6 @@ function evaluate(clue,result,now=Date.now()){
     const actionable=first.length>=12&&ACTION.test(first)&&missing.length>=8;
     const compared=(a.already_covered||[]).length>0&&Array.isArray(angle.coverage_ids)&&angle.coverage_ids.length>0;
     const evidence=facts.length>=2&&new Set(facts.map(f=>f.source_id)).size>=2;
-    // A daily report item needs a dated trigger or imminent event, a hard title/deck nugget,
-    // explicit novelty against MarketIN coverage, and one action that can be closed today.
     if(!evidence||!compared||!specificHeadline||!specificNovel||!actionable||!hardWhy)continue;
     if(!timing&&(!recent||!hard))continue;
     const nugget=hard?.text||(facts.find(f=>HARD.test(f.text))?.text)||'';
@@ -45,34 +41,33 @@ function evaluate(clue,result,now=Date.now()){
 }
 function cloneResult(result,daily){
   if(!result?.analysis)return result;
-  const original=result.analysis.angles||[];
-  const selected=daily?original.filter(a=>clean(a.direction_key)===daily.direction_key).slice(0,1):[];
+  const original=result.analysis.angles||[],selected=daily?original.filter(a=>clean(a.direction_key)===daily.direction_key).slice(0,1):[];
   return {...result,daily_pitch:daily,watch_angles:daily?original.filter(a=>!selected.includes(a)):original,analysis:{...result.analysis,angles:selected},story_timeline:daily?result.story_timeline:undefined};
 }
 function renderDaily(d){
   if(!d)return '';
   return `<section class="daily-report-pitch" aria-label="일보 후보"><b>일보 후보 · 오늘 바로 확인</b><p class="daily-report-headline">${esc(d.headline)}</p><p><strong>오늘인 이유</strong> ${esc(d.today_reason)}</p>${d.hard_nugget?`<p><strong>제목에 박을 근거</strong> ${esc(d.hard_nugget)}</p>`:''}<p><strong>기보도보다 더 볼 것</strong> ${esc(d.new_information)}</p><p><strong>오늘 한 번 더 따야 할 것</strong> ${esc(d.missing)}</p><p class="daily-report-action"><strong>첫 취재</strong> ${esc(d.first_action)}</p></section>`;
 }
-function renderWatch(rows){
-  if(!rows?.length)return '';
-  return `<h4>일보 문턱에는 못 미친 취재 방향</h4><ul>${rows.slice(0,3).map(a=>`<li>${esc(a.headline)}${a.new_information?` — ${esc(a.new_information)}`:''}</li>`).join('')}</ul>`;
+function renderWatch(rows){if(!rows?.length)return '';return `<h4>일보 문턱에는 못 미친 취재 방향</h4><ul>${rows.slice(0,3).map(a=>`<li>${esc(a.headline)}${a.new_information?` — ${esc(a.new_information)}`:''}</li>`).join('')}</ul>`;}
+function relabel(root){
+  const doc=root?.document;if(!doc)return;
+  for(const el of doc.querySelectorAll('.discovery-section-title')){const n=el.firstChild;if(n&&/^발제 후보/.test(n.textContent||''))n.textContent=(n.textContent||'').replace('발제 후보','일보 후보');}
+  for(const el of doc.querySelectorAll('.discovery-proposal .discovery-meta span:first-child'))if(el.textContent==='발제 후보')el.textContent='일보 후보';
+  const counts=doc.querySelector('#discoveryCounts');if(counts&&/^발제 후보/.test(counts.textContent||''))counts.textContent=counts.textContent.replace('발제 후보','일보 후보');
 }
 function install(root){
   const B=root?.MarketInStoryBrief;if(!B||B.__dailyReportGateInstalled)return false;
-  const originalAttach=B.attach,originalRender=B.renderBriefHtml,originalDetails=B.renderDetails;
-  if(typeof originalAttach!=='function'||typeof originalRender!=='function')return false;
+  const originalAttach=B.attach,originalRender=B.renderBriefHtml,originalDetails=B.renderDetails;if(typeof originalAttach!=='function'||typeof originalRender!=='function')return false;
   B.attach=function(clue,result){
     const attached=originalAttach.call(B,clue,result);if(!attached||result?.status!=='ready'||!result.analysis)return attached;
-    const daily=evaluate(attached,result),filtered=cloneResult(attached.research||result,daily);
-    const brief=filtered?.analysis||attached.article_brief;
+    const daily=evaluate(attached,result),filtered=cloneResult(attached.research||result,daily),brief=filtered?.analysis||attached.article_brief;
     return {...attached,research:filtered,article_brief:brief,article_pitch:daily?.headline,daily_pitch:daily,article_timeline:daily?attached.article_timeline:undefined};
   };
-  B.renderBriefHtml=function(result,clueId){
-    if(result?.headline_in_card&&result?.daily_pitch)return renderDaily(result.daily_pitch);
-    return originalRender.call(B,result,clueId);
-  };
+  B.renderBriefHtml=function(result,clueId){if(result?.headline_in_card&&result?.daily_pitch)return renderDaily(result.daily_pitch);return originalRender.call(B,result,clueId);};
   if(typeof originalDetails==='function')B.renderDetails=function(result,clueId){return originalDetails.call(B,result,clueId)+renderWatch(result?.watch_angles);};
-  B.dailyPitch=evaluate;B.__dailyReportGateInstalled=true;return true;
+  B.dailyPitch=evaluate;B.__dailyReportGateInstalled=true;
+  if(root.document&&typeof root.MutationObserver==='function'){const target=root.document.querySelector('#discoveryDesk')||root.document.body;if(target){const observer=new root.MutationObserver(()=>relabel(root));observer.observe(target,{childList:true,subtree:true});relabel(root);}}
+  return true;
 }
-return {HARD,GENERIC,ACTION,kstDay,dayDiff,until,basisFacts,hardFact,imminent,evaluate,cloneResult,renderDaily,renderWatch,install};
+return {HARD,GENERIC,ACTION,kstDay,dayDiff,until,basisFacts,hardFact,imminent,evaluate,cloneResult,renderDaily,renderWatch,relabel,install};
 });
