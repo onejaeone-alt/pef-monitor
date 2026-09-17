@@ -43,3 +43,5 @@
 #discoveryDesk .marketin-story-ready{font-size:11px;line-height:1.55;color:#667382;border-top:1px dashed #dfe3df;margin:10px 0 0;padding-top:9px}
 #discoveryDesk .marketin-story-ready b{color:#455267}
 @media(max-width:850px){#discoveryDesk .discovery-grid{grid-template-columns:1fr}#discoveryDesk .discovery-card{padding:17px 17px 0}#discoveryDesk details{margin:0 -17px;padding:0 17px}#discoveryDesk .discovery-toolbar{align-items:stretch}#discoverySearch{width:100%;min-width:0}#discoveryDesk h3{font-size:18px}#discoveryDesk .discovery-tabs button{font-size:13px;padding:10px 12px}#discoveryDesk .marketin-story-grid{grid-template-columns:1fr;gap:9px}}
+
+#discoveryDesk #discoveryUpdates{background:#faeaf2;color:#a82e63;border-color:#e8c6d7;margin:6px 0;position:sticky;top:12px;z-index:2}#discoveryDesk #discoveryAutoStatus{color:#537969}

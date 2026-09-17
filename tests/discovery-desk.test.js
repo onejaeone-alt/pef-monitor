@@ -8,7 +8,7 @@ test('independent feeds render progressively; failures stay visible; shared DART
  storage.set('ib_dart_reviews_v1',JSON.stringify({[items[0].rcept_no]:review(items[0])}));
  let active=0,max=0,resolveCalendar;
  const calendar=new Promise(r=>{resolveCalendar=r;});
- const context={IBDiscovery:C,document:{querySelector:node,querySelectorAll:()=>[]},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{},AbortController,URL,console,fetch:async url=>{
+ const context={IBDiscovery:C,document:{querySelector:node,querySelectorAll:()=>[],addEventListener(){}},addEventListener(){},setTimeout:(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{},AbortController,URL,console,fetch:async url=>{
   requests.push(url);let body;
   if(url.includes('action=review')){active++;max=Math.max(max,active);await new Promise(r=>setTimeout(r,1));active--;const n=new URL(url,'https://example.com').searchParams.get('rcept_no');body=review(items.find(x=>x.rcept_no===n));}
   else if(url.includes('scope=foreign'))throw Error('Foreign unavailable');
@@ -18,14 +18,13 @@ test('independent feeds render progressively; failures stay visible; shared DART
   return {ok:true,json:async()=>body};
  }};
  vm.runInNewContext(fs.readFileSync('discovery-desk.js','utf8'),context);
- for(let i=0;i<100&&requests.filter(x=>x.includes('action=review')).length<20;i++)await new Promise(r=>setTimeout(r,5));
+ for(let i=0;i<100&&requests.filter(x=>x.includes('action=review')).length<22;i++)await new Promise(r=>setTimeout(r,5));
  await new Promise(r=>setTimeout(r,20));
- assert.equal(max,2);assert.equal(requests.filter(x=>x.includes('action=review')).length,20);
+ assert.equal(max,2);assert.equal(requests.filter(x=>x.includes('action=review')).length,22);
  assert.ok(!requests.some(x=>x.includes('rcept_no='+items[0].rcept_no)));
  assert.match(node('#discoveryCards').innerHTML,/100 억원/);assert.match(node('#discoverySources').innerHTML,/외신 · 불러오기 실패/);
- assert.match(node('#discoverySources').innerHTML,/취재일정 · 수집 중/);assert.match(node('#discoveryReviewStatus').textContent,/대기 2건/);
- assert.equal(node('#discoveryReadMore').hidden,false);assert.equal(node('#discoveryRetry').hidden,false);
- await node('#discoveryReadMore').onclick();assert.equal(requests.filter(x=>x.includes('action=review')).length,22);
+ assert.match(node('#discoverySources').innerHTML,/취재일정 · 수집 중/);assert.doesNotMatch(node('#discoveryReviewStatus').textContent,/대기/);
+ assert.equal(node('#discoveryReadMore').hidden,true);assert.equal(node('#discoveryRetry').hidden,false);
  resolveCalendar();await new Promise(r=>setTimeout(r,5));assert.equal(node('#discoveryReadMore').hidden,true);
  assert.match(node('#discoveryCounts').textContent,/최근 자료 23건/);
 });
