@@ -18,16 +18,21 @@ test('selection keeps own reporting and official sources ahead of repeated news;
  const selected=R.chooseSources(rows,'홈플러스',now);assert.equal(selected[0].search_purpose,'marketin_coverage');assert.equal(selected.length,2);
 });
 test('research reads public bodies, performs own-coverage search and returns no body dump',async()=>{
- const queries=[];const result=await R.research({topic:'홈플러스'},{now,key:'test',search:async q=>{queries.push(q);return {records:docs,log:[{status:'ok'}]};},read:async d=>d,generate:async ds=>R.validate(valid(),ds)});
+ const queries=[];const result=await R.research({topic:'홈플러스'},{now,key:'test',index:async()=>[],search:async q=>{queries.push(q);return {records:docs,log:[{status:'ok'}]};},read:async d=>d,generate:async ds=>R.validate(valid(),ds)});
  assert.equal(result.status,'ready');assert.equal(result.coverage.read,2);assert.ok(queries.some(q=>q.includes('site:marketin.edaily.co.kr')));assert.ok(result.sources.every(s=>!('text' in s)));assert.equal(result.analysis.angles.length,1);
 });
 test('missing model key and unreadable sources do not generate a fictitious recommendation',async()=>{
  const search=async()=>({records:docs,log:[]});let generated=false;
- const deps={now,key:'',search,read:async d=>d,generate:async()=>{generated=true;}};
+ const deps={now,key:'',search,index:async()=>[],read:async d=>d,generate:async()=>{generated=true;}};
  const r=await R.research({topic:'홈플러스'},deps);assert.equal(r.status,'sources_only');assert.equal(r.error,'model_key_unconfigured');assert.equal(r.analysis,null);assert.equal(generated,false);
  const failed=await R.research({topic:'홈플러스'},{...deps,read:async d=>({...d,read_ok:false})});assert.equal(failed.error,'insufficient_sources');
 });
 test('unrelated topics and private source URLs are rejected',async()=>{
  await assert.rejects(()=>R.research({topic:'홈플러스 site:attacker.test'}),/invalid_topic/);
  assert.deepEqual(R.chooseSources([{url:'http://127.0.0.1/secret',title:'홈플러스'}],'홈플러스',now),[]);
+});
+
+test('MarketIN public index supplies direct originals when search returns redirect links',()=>{
+ const html='<a href="/News/Read?newsId=123"><h2>홈플러스 재매각</h2></a><a href="https://evil.test/News/Read?newsId=1">홈플러스</a>';
+ const rows=R.marketinLinks(html,'홈플러스');assert.equal(rows.length,1);assert.equal(rows[0].url,'https://marketin.edaily.co.kr/News/Read?newsId=123');
 });
