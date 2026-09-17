@@ -5,21 +5,21 @@
 <title>IB 취재 레이더 · AI 발견</title><link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"><link rel="stylesheet" href="/app.css">
 
-<link rel="stylesheet" href="/ai-discovery.css?v=8"><link rel="stylesheet" href="/story-timeline.css?v=1"></head>
+<link rel="stylesheet" href="/ai-discovery.css?v=8"><link rel="stylesheet" href="/story-timeline.css?v=1"><link rel="stylesheet" href="/daily-report-pitch.css?v=1"></head>
 <body>
 <header class="topbar"><div class="brandrow"><div class="brand"><div class="eyebrow">MARKETIN RESEARCH DESK</div><h1>IB 취재 레이더</h1><p>새 자료보다 먼저, 무엇이 달라졌는지 봅니다.</p></div><div class="status" id="status">—</div></div><nav class="nav"><a href="/">뉴스</a><a href="/dart.html">DART 공시</a><a href="/motae.html">출자공고</a><a class="on" href="/leads.html">AI 취재단서</a><a href="/relations.html">취재파일</a><a href="/judgment.html">기사판단기</a><a class="engine-link" href="https://article-engine-wjy-onejess.vercel.app/" target="_blank" rel="noopener">기사 엔진 ↗</a></nav></header>
 <main class="page" id="discoveryDesk">
-<div class="page-head"><div class="page-title"><div class="kicker">AI DISCOVERY DESK</div><h2>AI 발견</h2><p>최신 상황과 마켓인 기존 보도를 함께 읽고, 더 취재할 내용이 있는 이슈를 추립니다. 기사 방향이 확인되면 오늘 이후의 다음 신호와 후속 기사까지 사건선으로 이어봅니다.</p></div><div class="actions"><button class="btn primary" id="refresh">다시 확인</button></div></div>
-<div class="discovery-toolbar"><div class="discovery-tabs"><button class="on" data-discovery-view="current" aria-pressed="true">지금 살펴볼 취재거리</button><button data-discovery-view="background" aria-pressed="false">기존 분석</button></div><input id="discoverySearch" type="search" aria-label="취재거리 검색" placeholder="기업·기관·취재거리 검색"></div>
+<div class="page-head"><div class="page-title"><div class="kicker">AI DISCOVERY DESK</div><h2>AI 발견</h2><p>첫 화면에는 오늘 데스크 일보에 제목을 써서 올릴 수 있는 발제만 남깁니다. 최신 공개자료와 마켓인 기존 보도를 대조해 구체적인 사실·비교축이 없으면 일보 후보로 올리지 않습니다.</p></div><div class="actions"><button class="btn primary" id="refresh">다시 확인</button></div></div>
+<div class="discovery-toolbar"><div class="discovery-tabs"><button class="on" data-discovery-view="current" aria-pressed="true">오늘 일보 후보</button><button data-discovery-view="background" aria-pressed="false">기존 분석</button></div><input id="discoverySearch" type="search" aria-label="취재거리 검색" placeholder="기업·기관·취재거리 검색"></div>
 <p id="discoveryAutoStatus" class="discovery-note" role="status">5분마다 자동 업데이트</p>
 <button id="discoveryUpdates" class="discovery-more" hidden>새 결과가 도착했습니다 · 지금 반영</button>
 <p id="discoveryCounts" class="discovery-note" aria-live="polite"></p>
-<p class="discovery-note">PEF·VC, M&A, LP·GP, 인수금융·크레딧을 중심으로 봅니다. 최신 사실과 기존 보도의 차이를 확인한 뒤 후속 기사 방향을 제안합니다. 시장에 직접 영향을 주는 규제·정책 발표는 D-3부터 원문 근거가 있을 때만 사전 랩업 후보로 올립니다.</p>
+<p class="discovery-note">일보 후보는 ‘오늘 무엇이 달라졌는지’, 기존 마켓인 기사보다 무엇을 더 설명할지, 기사에 들어갈 구체적 사실이 최소 두 출처에서 잡힌 경우에만 표시합니다. 후보가 없으면 0건으로 둡니다. ‘더 보기’를 누르면 아직 일보 문턱을 넘지 못한 탐색 중 단서도 볼 수 있습니다.</p>
 <p id="discoveryMessage" role="status"></p>
 <div id="discoveryCards" class="discovery-grid"></div>
-<button id="discoveryMore" class="discovery-more" hidden>더 보기</button>
+<button id="discoveryMore" class="discovery-more" hidden>탐색 중 단서도 보기</button>
 <div class="discovery-coverage"><b>수집·원문 확인 상태</b><div id="discoverySources" aria-live="polite"></div><p id="discoveryReviewStatus"></p><button id="discoveryReadMore" hidden>남은 공시 원문 읽기</button><button id="discoveryRetry" hidden>실패한 수집 다시 확인</button></div>
-<p class="discovery-note">관련 보도는 이슈별로 묶습니다. 본문을 읽지 못하거나 기존 보도에서 더 나아갈 근거가 없으면 기사 제안과 다음 기사 흐름을 모두 보류합니다. 제안은 취재로 검증할 방향이며 확인된 결론이 아닙니다.</p>
+<p class="discovery-note">본문을 읽지 못한 경우 공개 인덱스 문장과 기사 제목을 제한된 근거로만 사용합니다. 제목 근거에서 확인되지 않은 수치나 인수후보를 채우지 않습니다. 일보 후보는 기사화 판단이 아니라 오늘 취재를 시작할 수 있는 발제입니다.</p>
 </main>
 
-<script src="/news-reader-core.js?v=discovery1"></script><script src="/discovery-core.js?v=2"></script><script src="/marketin-story-brief.js?v=4"></script><script src="/story-timeline.js?v=1"></script><script src="/discovery-desk.js?v=4"></script></body></html>
+<script src="/news-reader-core.js?v=discovery1"></script><script src="/discovery-core.js?v=2"></script><script src="/marketin-story-brief.js?v=4"></script><script src="/story-timeline.js?v=1"></script><script src="/daily-report-pitch.js?v=1"></script><script src="/discovery-desk.js?v=4"></script></body></html>
