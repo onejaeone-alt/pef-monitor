@@ -135,6 +135,7 @@ function shortlist(rows,limit=12){
 function mergeProject(rows,clue,now=new Date().toISOString()){
  if(!Array.isArray(rows))throw Error('기존 취재 목록을 읽지 못했습니다.');
  const id='project-'+clue.clue_id,old=rows.find(x=>x.project_id===id),next={...(old||{project_id:id,clue_id:clue.clue_id,status:'진행중',notes:'',judgment:null,judgment_history:[],created_at:now}),title:old?.title||clue.article_pitch||clue.headline,clue,updated_at:now};
+ if(old?.clue?.selected_angle&&clue.selected_angle&&JSON.stringify(old.clue.research)!==JSON.stringify(clue.research))next.research_history=[...(old.research_history||[]),{saved_at:old.updated_at,selected_angle:old.clue.selected_angle,research:old.clue.research,selected_evidence:old.clue.selected_evidence,changed_fact:old.clue.changed_fact,previous_state:old.clue.previous_state}];
  if(clue.dart_review_receipts)next.dart_review_receipts=unique([...(old?.dart_review_receipts||[]),...clue.dart_review_receipts]);
  return {id,rows:old?rows.map(x=>x.project_id===id?next:x):[next,...rows]};
 }

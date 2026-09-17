@@ -3,7 +3,7 @@
  else{root.MarketInStoryBrief=api;api.install(root);}
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const VERSION='marketin-research-1';
+const VERSION='marketin-research-2';
 const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>clean(v).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
@@ -59,23 +59,34 @@ function attach(x,result){
  if(!result||result.version!==VERSION)return x;
  if(result.status==='out_of_scope')return null;
  const a=result.analysis;if(result.status!=='ready'||!a)return {...x,research:result};
- return {...x,research:result,detector_label:a.angles?.length?'후속 기사 제안':'이슈 브리핑',fact_status:'보도',one_line_signal:a.summary?.text||x.one_line_signal,reason:a.why_now?.text||'',article_pitch:a.angles?.[0]?.headline,article_brief:a,sources:[...new Map([...(result.sources||[]).map(s=>({...s,label:s.publisher||s.title})),...(x.sources||[])].map(s=>[s.url,s])).values()]};
+ return {...x,research:result,detector_label:a.angles?.length?'후속 기사 제안':'이슈 브리핑',fact_status:'보도',one_line_signal:a.summary?.text||x.one_line_signal,reason:a.why_now?.text||'',article_pitch:a.angles?.[0]?.headline,article_brief:a,changed_fact:(a.changes||[]).map(c=>c.text).join(' · '),previous_state:a.previous_state?.text||'비교할 이전 상태를 원문에서 확인하지 못했습니다.',reported:(a.facts||[]).map(f=>f.text),questions:(a.angles||[]).map(p=>p.question).filter(Boolean),unknowns:[...(a.uncertainties||[]).map(u=>u.text),...(a.angles||[]).map(p=>p.missing).filter(Boolean)],sources:[...new Map([...(result.sources||[]).map(s=>({...s,label:s.publisher||s.title})),...(x.sources||[])].map(s=>[s.url,s])).values()]};
 }
 function href(url){try{const u=new URL(url);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
 function citation(ids,result){const a=result.analysis;return [...new Set((ids||[]).map(id=>a?.facts?.find(f=>f.id===id)?.source_id).filter(Boolean))].map(id=>{const s=result.sources.find(s=>s.source_id===id),url=href(s?.url);return url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(s.publisher||s.title||'원문')} ↗</a>`:'';}).join(' · ');}
-function renderBriefHtml(result){
+function renderBriefHtml(result,clueId){
  if(!result)return '';
  if(result.status!=='ready'||!result.analysis){const error=result.error||'';const text=/model_/.test(error)?'AI 분석 연결을 사용할 수 없어 원문 목록만 표시합니다.':error==='insufficient_sources'?'읽을 수 있는 원문이 부족해 기사 제안을 보류했습니다.':error==='no_recent_source'?'최근 원문을 확인하지 못해 기사 제안을 보류했습니다.':result.status==='loading'?'최신 기사와 마켓인 기존 보도를 읽는 중…':'원문 대조를 완료하지 못해 기사 제안을 보류했습니다.';return `<p class="discovery-research-status">${esc(text)}</p>`;}
  const a=result.analysis;
  const facts=a.facts.slice(0,3).map(f=>`<li>${esc(f.text)} <span>${citation([f.id],result)}</span></li>`).join('');
- const angles=a.angles.map(p=>`<div class="marketin-story-pitch"><strong>후속 기사 방향 · 검증 전</strong><p>${esc(p.headline)}</p><div>${esc(p.reason)}</div><small>기존 보도에서 더 나아갈 부분: ${esc(p.new_information)}</small><span>${citation(p.basis_ids,result)}</span></div>`).join('');
- return `<section class="marketin-story-brief" aria-label="원문 기반 이슈 브리핑"><ul class="discovery-brief-facts">${facts}</ul>${angles||'<p class="discovery-research-status">현재 읽은 자료에서는 별도 후속 기사 방향을 제안하지 않았습니다.</p>'}</section>`;
+ const angles=a.angles.map((p,index)=>`<div class="marketin-story-pitch"><strong>후속 기사 방향 · 검증 전</strong><p>${esc(p.question||p.headline)}</p><div><b>추천 이유</b> ${esc(p.reason)}</div><small><b>기존 보도에서 더 나아갈 부분</b> ${esc(p.new_information)}</small>${p.missing?`<small><b>가장 큰 빈칸</b> ${esc(p.missing)}</small>`:''}${p.first_action?`<small><b>첫 취재</b> ${esc(p.first_action)}</small>`:''}<span>${citation(p.basis_ids,result)}</span>${clueId?`<button class="discovery-angle-select" data-discovery-project="${esc(clueId)}" data-discovery-angle="${index}">이 방향으로 취재에 담기</button>`:''}</div>`).join('');
+ const before=a.previous_state?`<p><b>직전 상태</b> ${esc(a.previous_state.text)} ${citation(a.previous_state.fact_ids,result)}</p>`:'<p>비교할 이전 상태를 원문에서 확인하지 못했습니다.</p>';
+ const changes=(a.changes||[]).map(c=>`<li>${esc(c.text)} ${citation([...(c.before_ids||[]),...(c.after_ids||[])],result)}</li>`).join('');
+ return `<section class="marketin-story-brief" aria-label="원문 기반 이슈 브리핑"><b class="discovery-section-label">확인한 내용 · 원문 검수 전</b><ul class="discovery-brief-facts">${facts}</ul><div class="discovery-comparison">${before}${changes?`<b>전후 비교</b><ul>${changes}</ul>`:'<p>전후 조건의 차이는 아직 확인하지 못했습니다.</p>'}</div>${angles||'<p class="discovery-research-status">현재 읽은 자료에서는 별도 후속 기사 방향을 제안하지 않았습니다.</p>'}</section>`;
 }
+// Stable direction identity keeps repeat saves on the same project without mixing different hypotheses.
+function selectAngle(clue,index){
+ const a=clue.article_brief,p=a?.angles?.[index];if(!p?.question||!p.direction_key)throw Error('선택한 취재 방향을 다시 확인해 주세요.');
+ const key=norm(p.direction_key);if(!key)throw Error('취재 방향을 식별하지 못했습니다.');
+ let id=2166136261;for(const c of key){id^=c.charCodeAt(0);id=Math.imul(id,16777619);}
+ return {...clue,parent_clue_id:clue.clue_id,clue_id:clue.clue_id+'-angle-'+(id>>>0).toString(16),selected_angle:{...p},headline:p.question,article_pitch:p.question,reason:p.reason,questions:[p.question],unknowns:[p.missing,...(a.uncertainties||[]).map(u=>u.text)],next_action:p.first_action,hypothesis:p.new_information,falsification:p.falsification,selected_evidence:(a.facts||[]).filter(f=>p.basis_ids.includes(f.id)),stage:'취재 방향 선택'};
+}
+
 function renderDetails(result){
  if(!result?.sources)return '';
  const a=result.analysis;let html='';
  if(a){
   html+='<h4>현재 읽은 마켓인 기사에서 다룬 내용</h4>'+((a.already_covered||[]).length?'<ul>'+a.already_covered.map(c=>{const s=result.sources.find(s=>s.source_id===c.source_id);return `<li>${esc(c.text)} ${href(s?.url)?`<a href="${esc(href(s.url))}" target="_blank" rel="noopener noreferrer">기존 기사 ↗</a>`:''}</li>`;}).join('')+'</ul>':'<p>마켓인 본문을 확보하지 못했습니다. 기사 제안은 보류합니다.</p>');
+  if(a.angles?.length)html+='<h4>방향별 반증 조건</h4><ul>'+a.angles.filter(p=>p.falsification).map(p=>`<li><b>${esc(p.question)}</b> · ${esc(p.falsification)}</li>`).join('')+'</ul>';
   if(a.uncertainties?.length)html+='<h4>아직 정해지지 않았거나 보도가 다른 부분</h4><ul>'+a.uncertainties.map(u=>`<li>${esc(u.text)} ${citation(u.fact_ids,result)}</li>`).join('')+'</ul>';
   html+='<h4>사실과 출처</h4><ul>'+a.facts.map(f=>`<li>${f.date?esc(f.date)+' · ':''}${esc(f.text)} ${citation([f.id],result)}</li>`).join('')+'</ul>';
  }
@@ -84,5 +95,5 @@ function renderDetails(result){
  return html;
 }
 function install(root){const C=root?.IBDiscovery;if(!C||C.__marketinStoryBriefInstalled)return false;const original=C.build;C.build=function(input,...rest){return select(original.call(C,input,...rest),input);};C.__marketinStoryBriefInstalled=true;return true;}
-return {VERSION,primaryEntity,eligible,select,requestFor,attach,renderBriefHtml,renderDetails,shortlist,install};
+return {VERSION,primaryEntity,eligible,select,requestFor,attach,renderBriefHtml,renderDetails,selectAngle,shortlist,install};
 });
