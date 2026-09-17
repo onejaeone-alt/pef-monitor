@@ -36,3 +36,8 @@ test('MarketIN public index supplies direct originals when search returns redire
  const html='<a href="/News/Read?newsId=123"><h2>홈플러스 재매각</h2></a><a href="https://evil.test/News/Read?newsId=1">홈플러스</a>';
  const rows=R.marketinLinks(html,'홈플러스');assert.equal(rows.length,1);assert.equal(rows[0].url,'https://marketin.edaily.co.kr/News/Read?newsId=123');
 });
+test('prior operating context is retained when many publishers repeat todays sale announcement',()=>{
+ const latest=Array.from({length:10},(_,i)=>({title:'홈플러스 매각 착수',url:'https://www.newspim.com/news/view/'+i,publisher:'매체'+i,published_at:'2026-09-17T05:00:00Z'}));
+ const earlier={title:'홈플러스 매출 부진과 체불 임금',url:'https://www.yna.co.kr/view/prior',published_at:'2026-09-16T06:00:00Z'};
+ assert.ok(R.chooseSources([...latest,earlier],'홈플러스',now).some(x=>x.url===earlier.url));
+});
