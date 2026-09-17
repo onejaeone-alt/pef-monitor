@@ -1,7 +1,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.IBDartTopics=api;})(typeof window==='object'?window:globalThis,function(){
 'use strict';
 // Read-only editorial lenses. No article score, fact promotion or new source collection.
-const VERSION='dart-topics-1',REVIEW_VERSION='dart-review-1.5';
+const VERSION='dart-topics-1',REVIEW_VERSION='dart-review-1.6';
 const TOPICS=[
  {id:'control',label:'경영권·주주',question:'누가 지분·의결권을 확보하나?',compare:'직전 지분보고 · 주식양수도 계약 · 주주구성',limit:'지분보고가 곧 경영권 인수는 아닙니다. 보유 목적과 의결권을 확인해야 합니다.'},
  {id:'deal',label:'인수·매각',question:'누가 무엇을 사고팔며, 거래대금은 실제로 오갔나?',compare:'최초 취득·처분 결정 · 계약 조건 · 거래 종결 자료',limit:'취득·처분 결정은 거래 종결이나 투자금 회수와 다릅니다.'},

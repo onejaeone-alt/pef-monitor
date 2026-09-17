@@ -104,9 +104,9 @@ test('unrelated SPAC dissolution no longer enters the personal DART feed', () =>
   assert.equal(out.tier,'followup');
 });
 
-test('periodic filings stay only for directly identified PEF or VC houses', () => {
+test('periodic filings include watched portfolio companies as financial background', () => {
   assert.equal(shouldKeep(item({ report_nm:'분기보고서', analysis:{event_id:'periodic',entity_strength:0} })), false);
-  assert.equal(shouldKeep(item({ corp_name:'홈플러스',flr_nm:'홈플러스',report_nm:'분기보고서', analysis:{event_id:'periodic',entity_strength:0} })), false);
+  assert.equal(shouldKeep(item({ corp_name:'홈플러스',flr_nm:'홈플러스',report_nm:'분기보고서', analysis:{event_id:'periodic',entity_strength:0} })), true);
   assert.equal(shouldKeep(item({ corp_name:'신규PEF하우스',flr_nm:'신규PEF하우스',pef_entity:true,report_nm:'분기보고서', analysis:{event_id:'periodic',entity_strength:2} })), true);
 });
 

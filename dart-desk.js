@@ -6,9 +6,9 @@
 'use strict';
 
 // DART is a daily-report material selector, not an automatic article-value judge.
-// Source reading happens only after an explicit disclosure click.
+// Bounded background reads enrich public filings; private notes stay in this browser.
 const STORE='ib_dart_reviews_v1',PROJECTS='pef_my_reporting_projects_v1';
-const REVIEW_VERSION='dart-review-1.5',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
+const REVIEW_VERSION='dart-review-1.6',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
 const staleNotice='이전 분석 버전의 보관 결과입니다. 새로 읽기 전에는 원문과 직접 대조해주세요.';
 const isCurrentReview=r=>Boolean(r?.ok&&r.version===REVIEW_VERSION);
 const hasChanges=r=>Boolean(isCurrentReview(r)&&Array.isArray(r.changes)&&r.changes.length);
@@ -42,13 +42,22 @@ function familyStats(items){
   return out;
 }
 
-function priorityReason(item){
+function priorityReason(item,review){
   if(!item)return null;
-  if(concern(item))return '위험·법적 변화';
-  if(item.tier==='core')return item.tier_label||'핵심 변동';
-  if(item.tier==='change')return item.tier_label||'정정·조건변경';
-  if(correction(item)&&!['reference','other'].includes(item.group_id))return '정정·조건변경';
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&review.parties?.length)return '원문에 투자자 확인';
+  if(/공개매수/.test(item.report_nm||''))return '공개매수';
+  if(item.scope_kind==='watch'&&item.group_id!=='reference')return '취재기업';
   return null;
+}
+function fieldValue(f){
+  return String(f.value||'')+(f.unit&&!String(f.value).endsWith(f.unit)?' '+f.unit:'');
+}
+function investorHtml(item,review){
+  const fields=isCurrentReview(review)&&review.rcept_no===item.rcept_no?(review.current_fields||[]).filter(f=>f.topic==='party'):[];
+  const direct=fields.slice(0,3).map(f=>`<p><small>${esc(f.label)}</small><b>${esc(compact(f.value,80))}</b></p>`).join('');
+  const context=item.reporting_context||{},rels=context.relationships||[],entities=context.entities||[];
+  const background=rels.slice(0,3).map(r=>`<a href="${/^https?:\/\//.test(r.url||'')?esc(r.url):'#'}" target="_blank" rel="noopener noreferrer">${esc(r.investor)}</a>`).join(' · ');
+  return direct+(background?`<div class="dd-background"><small>기존 투자·사업 관계</small>${background}<small>이번 거래 참여 여부는 별도 확인${rels[0]?.as_of?' · '+esc(rels[0].as_of)+' 기준':''}</small></div>`:entities.length?`<small>공시 회사·제출자</small><b>${entities.map(e=>esc(e.name)).join(' · ')}</b>`:direct?'':'<span class="dd-muted">상대방 확인 전</span>');
 }
 
 function groupDisplay(item){
@@ -69,14 +78,16 @@ function axisTags(item,review){
 }
 
 function rowDelta(item,review){
-  if(isCurrentReview(review)&&Array.isArray(review.changes)&&review.changes.length){
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&Array.isArray(review.changes)&&review.changes.length){
     return {label:'달라진 것',state:'confirmed',text:review.changes.slice(0,2).map(d=>`${compact(d.label,24)} ${compact(d.before,38)} → ${compact(d.after,38)}`).join(' · ')};
   }
   if(correction(item))return {label:'달라진 것',state:'pending',text:'정정공시 · 변경값 확인 전'};
-  if(isCurrentReview(review)&&Array.isArray(review.current_fields)&&review.current_fields.length){
-    return {label:'이번 공시',state:'confirmed',text:review.current_fields.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(f.value,50)}`).join(' · ')};
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&Array.isArray(review.current_fields)&&review.current_fields.length){
+    const facts=review.current_fields.filter(f=>f.topic!=='party');
+    if(facts.length)return {label:'이번 공시',state:'confirmed',text:facts.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(fieldValue(f),65)}`).join(' · ')};
   }
-  return {label:'이번 공시',state:'pending',text:'원문 비교 전 · 내용 확인 필요'};
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no)return {label:'원문 확인',state:'pending',text:'거래 수치를 자동 추출하지 못했습니다 · 원문 확인'};
+  return {label:'원문 확인',state:'pending',text:'본문에서 거래 조건을 확인합니다'};
 }
 
 function nextCheckText(item){
@@ -91,15 +102,16 @@ function reportingCheck(item){
   return map[item?.group_id]||'공시 상대방·금액·지분·일정을 원문과 취재로 확인';
 }
 
-function filteredItems(items,{query='',group='ALL',onlyCorrections=false,feed='all'}={}){
+function filteredItems(items,{query='',group='ALL',onlyCorrections=false,feed='all',reviews={}}={}){
   const q=String(query).trim().toLowerCase();
   return (items||[]).filter(x=>{
     if(!receipt(x?.rcept_no))return false;
     if(group!=='ALL'&&x.group_id!==group)return false;
     if(onlyCorrections&&!correction(x))return false;
-    if(feed==='priority'&&!priorityReason(x))return false;
+    if(feed==='priority'&&!priorityReason(x,reviews[x.rcept_no]))return false;
+    if(feed==='market'&&(priorityReason(x,reviews[x.rcept_no])||x.scope_kind!=='market'))return false;
     if(feed==='corrections'&&!correction(x))return false;
-    if(q&&![x.corp_name,x.flr_nm,x.report_nm,x.group_label,x.event_label].join(' ').toLowerCase().includes(q))return false;
+    if(q&&![x.corp_name,x.flr_nm,x.report_nm,x.group_label,x.event_label,...(x.reporting_context?.relationships||[]).map(r=>r.investor),...(reviews[x.rcept_no]?.current_fields||[]).filter(f=>f.topic==='party').map(f=>f.value)].join(' ').toLowerCase().includes(q))return false;
     return true;
   }).sort((a,b)=>String(b.rcept_no).localeCompare(String(a.rcept_no)));
 }
@@ -149,7 +161,7 @@ function init(){
   document.addEventListener('click',event=>{const a=event.target.closest('a[href^="#dd-e-"]');if(!a)return;const target=document.getElementById(a.hash.slice(1));if(!target)return;event.preventDefault();for(let p=target.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;target.scrollIntoView({block:'center'});});
   if(!$('#dartDesk')){let pending=false;const observer=new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;attachProjects();});});observer.observe(document.body,{childList:true,subtree:true});attachProjects();return;}
 
-  let items=[],reviews=readReviews(),days=3,query='',group='ALL',feed=DEFAULT_FEED,shown=60,sequence=0,controller;
+  let items=[],reviews=readReviews(),days=3,query='',group='ALL',feed=DEFAULT_FEED,shown=60,sequence=0,controller,autoSequence=0;
   const open=new Set(),loading=new Set(),failed=new Map(),message=t=>{$('#deskMessage').textContent=t;};
   const validReview=n=>reviews[n]?.rcept_no===n&&isCurrentReview(reviews[n]);
   const getItem=n=>items.find(x=>x.rcept_no===n);
@@ -179,13 +191,19 @@ function init(){
   }
   function detail(item){
     const n=item.rcept_no,r=reviews[n],usable=r?.ok&&r.rcept_no===n;
-    return `<tr class="dd-expanded" id="dart-detail-${n}"><td colspan="4"><section class="dd-review" tabindex="-1" aria-label="${esc(item.corp_name)} 공시 상세">${loading.has(n)?'<p class="dd-reading" role="status">공시 원문을 읽고 있습니다…</p>':''}${failed.has(n)?`<p class="dd-warning" role="alert">${esc(failed.get(n))}${usable?' 이전 보관 결과는 유지합니다.':''}</p>`:''}<div class="dd-briefing-grid"><article><b>이번에 확인된 사실</b>${factsHtml(item,usable?r:null)}</article><article><b>이전 상태</b>${previousHtml(usable?r:null)}</article><article><b>같이 볼 것</b>${relatedHtml(item)}</article><article class="dd-next"><b>일보에 넣으려면</b><p>${esc(reportingCheck(item))}</p><small>볼 항목 · ${esc(nextCheckText(item))}</small></article></div>${usable?`<details class="dd-evidence"><summary>원문 추출 상세 보기</summary>${evidenceHtml(r)}</details>`:'<p class="dd-note">내용 확인을 누르면 이 공시 한 건만 원문에서 읽습니다. 자동으로 기사화 판단하지 않습니다.</p>'}<div class="dd-review-actions"><a href="${url(n)}" target="_blank" rel="noopener noreferrer">DART 원문 ↗</a><button type="button" data-read="${n}" ${loading.has(n)?'disabled':''}>${usable?'새로 읽기':'원문 읽기'}</button>${validReview(n)?`<button type="button" data-copy="${n}">공시 근거 복사</button><button type="button" data-project="${n}">진행중 취재에 담기</button>`:''}</div></section></td></tr>`;
+    return `<tr class="dd-expanded" id="dart-detail-${n}"><td colspan="4"><section class="dd-review" tabindex="-1" aria-label="${esc(item.corp_name)} 공시 상세">${loading.has(n)?'<p class="dd-reading" role="status">공시 원문을 읽고 있습니다…</p>':''}${failed.has(n)?`<p class="dd-warning" role="alert">${esc(failed.get(n))}${usable?' 이전 보관 결과는 유지합니다.':''}</p>`:''}<div class="dd-briefing-grid"><article><b>공시 본문에서 확인한 내용</b>${factsHtml(item,usable?r:null)}</article><article><b>같은 기업의 다른 공시</b>${relatedHtml(item)}</article></div>${usable?`<details class="dd-evidence"><summary>원문 추출 상세 보기</summary>${evidenceHtml(r)}</details>`:'<p class="dd-note">추출하지 못한 항목은 원문에서 확인해 주세요.</p>'}<div class="dd-review-actions"><a href="${url(n)}" target="_blank" rel="noopener noreferrer">DART 원문 ↗</a><button type="button" data-read="${n}" ${loading.has(n)?'disabled':''}>${usable?'새로 읽기':'원문 읽기'}</button>${validReview(n)?`<button type="button" data-copy="${n}">공시 근거 복사</button><button type="button" data-project="${n}">진행중 취재에 담기</button>`:''}</div></section></td></tr>`;
   }
   function render(){
-    const all=filteredItems(items,{query,group,feed}),rows=all.slice(0,shown),stats=familyStats(items);
-    $('#rawRows').innerHTML=rows.length?rows.map(x=>{const n=x.rcept_no,r=reviews[n],delta=rowDelta(x,r),tags=axisTags(x,r),reason=priorityReason(x);return `<tr data-receipt="${n}" class="${open.has(n)?'dd-open':''}"><td class="dd-when"><span>${date(x.rcept_dt)}</span><b>${esc(x.corp_name)}</b></td><td class="dd-disclosure"><div class="dd-pills"><span>${esc(groupDisplay(x))}</span>${correction(x)?'<span class="dd-correction">정정</span>':''}${reason?`<span class="dd-priority">${esc(reason)}</span>`:''}</div><a href="${url(n)}" target="_blank" rel="noopener noreferrer">${esc(base(x.report_nm))}</a></td><td class="dd-delta"><small>${esc(delta.label)}</small><strong class="${delta.state==='confirmed'?'is-confirmed':'is-pending'}">${esc(delta.text)}</strong>${familyBadge(x,stats)}</td><td class="dd-follow"><div class="dd-axis">${tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><small>${esc(nextCheckText(x))}</small><button type="button" data-toggle="${n}" aria-expanded="${open.has(n)}" aria-controls="dart-detail-${n}">${open.has(n)?'접기':'내용 확인'}</button></td></tr>${open.has(n)?detail(x):''}`;}).join(''):'<tr><td colspan="4" class="dd-no-rows">조건에 맞는 공시가 없습니다.</td></tr>';
-    const total=filteredItems(items,{query,group,feed:'all'}).length,priority=filteredItems(items,{query,group,feed:'priority'}).length,corrections=filteredItems(items,{query,group,feed:'corrections'}).length;
-    $('#rawCount').textContent=feed==='priority'?`먼저 확인 ${all.length}건 · 전체 ${total}건`:feed==='corrections'?`정정 ${all.length}건 · 전체 ${total}건`:`전체 ${all.length}건 · 먼저 확인 ${priority}건 · 정정 ${corrections}건`;
+    const all=filteredItems(items,{query,group,feed,reviews}),rows=all.slice(0,shown),stats=familyStats(items);
+    $('#rawRows').innerHTML=rows.length?rows.map(x=>{
+      const n=x.rcept_no,r=reviews[n],delta=rowDelta(x,r),reason=priorityReason(x,r);
+      const state=loading.has(n)?'원문 읽는 중…':failed.has(n)?'자동 추출 실패 · 원문 확인':delta.text;
+      return `<tr data-receipt="${n}" class="${open.has(n)?'dd-open':''}"><td class="dd-when"><span>${date(x.rcept_dt)} · ${esc(groupDisplay(x))}</span><b>${esc(x.corp_name)}</b><a class="dd-filing-name" href="${url(n)}" target="_blank" rel="noopener noreferrer">${esc(base(x.report_nm))}</a>${correction(x)?'<span class="dd-repeat">정정</span>':''}</td><td class="dd-delta"><small>${delta.state==='confirmed'?'원문 추출':esc(x.event_label||'공시 내용')}</small><strong class="${delta.state==='confirmed'?'is-confirmed':'is-pending'}">${esc(state)}</strong>${familyBadge(x,stats)}</td><td class="dd-investor">${investorHtml(x,r)}</td><td class="dd-follow"><a href="${url(n)}" target="_blank" rel="noopener noreferrer">원문 ↗</a><button type="button" data-toggle="${n}" aria-expanded="${open.has(n)}" aria-controls="dart-detail-${n}">${open.has(n)?'접기':'내용 확인'}</button></td></tr>${open.has(n)?detail(x):''}`;
+    }).join(''):'<tr><td colspan="4" class="dd-no-rows">이 범위에서 취재에 연결된 공시가 없습니다. 새 거래나 전체 자료도 확인할 수 있습니다.</td></tr>';
+    const total=items.length,priority=filteredItems(items,{feed:'priority',reviews}).length,market=filteredItems(items,{feed:'market',reviews}).length;
+    $('#rawCount').textContent=`${all.length}건`;
+    const labels={priority:'취재 연결',market:'새 거래',all:'전체 자료'},counts={priority,market,all:total};
+    document.querySelectorAll('[data-feed] b').forEach(b=>{const f=b.parentElement.dataset.feed;b.textContent=labels[f]+' '+counts[f];});
     $('#more').hidden=all.length<=shown;
     document.querySelectorAll('[data-feed]').forEach(b=>{const on=b.dataset.feed===feed;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
   }
@@ -200,18 +218,35 @@ function init(){
     }catch(e){failed.set(n,e.name==='TimeoutError'?'원문 응답이 늦습니다. DART 원문을 열거나 다시 읽어주세요.':String(e.message||e));}
     finally{loading.delete(n);render();}
   }
+  async function readVisibleSources(){
+    const token=++autoSequence,period=sequence;
+    const candidates=items.filter(x=>!validReview(x.rcept_no)&&!failed.has(x.rcept_no))
+      .sort((a,b)=>Number(Boolean(priorityReason(b)))-Number(Boolean(priorityReason(a))));
+    const queue=candidates.slice(0,20);let cursor=0,done=0;
+    $('#readMoreSources').disabled=true;
+    async function worker(){while(cursor<queue.length&&token===autoSequence&&period===sequence){
+      const item=queue[cursor++];await readReceipt(item.rcept_no);done++;
+      if(token===autoSequence&&period===sequence)$('#sourceProgress').textContent=`원문 확인 ${done}/${queue.length}건`;
+    }}
+    await Promise.all([worker(),worker()]);
+    if(token!==autoSequence||period!==sequence)return;
+    const remaining=items.filter(x=>!validReview(x.rcept_no)&&!failed.has(x.rcept_no)).length;
+    $('#sourceProgress').textContent=`원문 추출 ${items.filter(x=>validReview(x.rcept_no)).length}건${failed.size?' · 추출 실패 '+failed.size+'건':''}${remaining?' · 대기 '+remaining+'건':''}`;
+    $('#readMoreSources').hidden=!remaining;$('#readMoreSources').disabled=false;
+  }
   async function load(fresh=false){
-    controller?.abort();controller=new AbortController();const token=++sequence;$('#refresh').disabled=true;$('#status').textContent='DART 조회 중';$('#rawRows').setAttribute('aria-busy','true');
+    autoSequence++;controller?.abort();controller=new AbortController();const token=++sequence;$('#refresh').disabled=true;$('#status').textContent='DART 조회 중';$('#rawRows').setAttribute('aria-busy','true');
     try{
       const response=await fetch(`/api/dart-feed?days=${days}&limit=700${fresh?'&fresh=1':''}&_=${Date.now()}`,{signal:controller.signal,cache:'no-store'}),data=await response.json();
       if(!response.ok||!data.ok)throw Error(data.error||'조회 실패');if(token!==sequence)return;
       const seen=new Set();items=(Array.isArray(data.items)?data.items:[]).filter(x=>receipt(x?.rcept_no)&&!seen.has(x.rcept_no)&&seen.add(x.rcept_no));shown=60;const c=data.coverage||{};
       $('#coverage').textContent=`${data.range?.bgn||''}~${data.range?.end||''} · 관련 공시 ${data.matched??items.length}건${c.complete===false?' · 일부 페이지 미수집':''}${c.display_limited?' · 표시 한도 적용':''}`;
-      $('#coverage').classList.toggle('dd-warning',c.complete===false);$('#status').textContent=`${days}일 · ${items.length}건`;message(c.complete===false?'일부 DART 목록을 가져오지 못했습니다. 현재 표시된 범위만 확인하세요.':'');render();
+      $('#coverage').classList.toggle('dd-warning',c.complete===false);$('#status').textContent=`${days}일 · ${items.length}건`;message(c.complete===false?'일부 DART 목록을 가져오지 못했습니다. 현재 표시된 범위만 확인하세요.':'');render();readVisibleSources();
     }catch(e){if(token!==sequence)return;message(e.name==='AbortError'?'조회가 중단됐습니다. 다시 새로고침해주세요.':String(e.message||e));if(!items.length)$('#rawRows').innerHTML='<tr><td colspan="4" class="dd-no-rows">DART 공시를 불러오지 못했습니다.</td></tr>';}
     finally{if(token===sequence){$('#refresh').disabled=false;$('#rawRows').setAttribute('aria-busy','false');}}
   }
 
+  $('#readMoreSources').addEventListener('click',readVisibleSources);
   $('#refresh').addEventListener('click',()=>load(true));
   $('#search').addEventListener('input',e=>{query=e.target.value;shown=60;render();});
   $('#groups').addEventListener('change',e=>{group=e.target.value;shown=60;render();});
@@ -228,5 +263,5 @@ function init(){
   load();
 }
 
-return {REVIEW_VERSION,DEFAULT_VIEW,DEFAULT_FEED,isCurrentReview,hasChanges,buildGroups,filteredItems,mergeProject,evidenceHtml,brief,priorityReason,axisTags,rowDelta,nextCheckText,reportingCheck,familyStats,groupDisplay,init};
+return {REVIEW_VERSION,DEFAULT_VIEW,DEFAULT_FEED,isCurrentReview,hasChanges,buildGroups,filteredItems,mergeProject,evidenceHtml,brief,priorityReason,axisTags,rowDelta,nextCheckText,reportingCheck,familyStats,groupDisplay,investorHtml,fieldValue,init};
 });
