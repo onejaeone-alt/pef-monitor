@@ -38,19 +38,25 @@ test('market-pattern brief requires independent cases and a counterexample befor
   assert.match(brief.ready_when,/한 건이면 단건 기사/);
 });
 
-test('rendered brief escapes untrusted source strings',()=>{
-  const html=B.renderBriefHtml({kind:'M&A·거래',angle:'<img src=x onerror=alert(1)>',must_get:['<script>x</script>'],compare:[],calls:[],ready_when:'확인'});
+test('explicit story pitch is rendered above the generic reporting frame and keeps why-today and bespoke checks',()=>{
+  const clue={detector:'reporting_opportunity',headline:'BDC 세부안 발표',entities:['금융위원회'],story_mode:'사전 랩업',article_pitch:'[가제] BDC 규제 발표 D-2…시행 전 쟁점 총정리',why_today:'2일 뒤 발표 예정',story_requirements:['현행 규정과 변경 항목 대조','운용사 참여 계획 확인'],comparison_targets:['미국 BDC와 영국 VCT'],contacts:['금융위원회','운용사']};
+  const brief=B.storyBrief(clue);assert.equal(brief.kind,'사전 랩업');assert.equal(brief.pitch,clue.article_pitch);assert.deepEqual(brief.must_get,clue.story_requirements);assert.deepEqual(brief.compare,clue.comparison_targets);assert.equal(brief.calls[0],'금융위원회');
+  const html=B.renderBriefHtml(brief);assert.match(html,/기사 제안/);assert.match(html,/BDC 규제 발표 D-2/);assert.match(html,/왜 오늘/);assert.match(html,/2일 뒤 발표 예정/);
+});
+
+test('rendered brief escapes untrusted source strings including article pitches',()=>{
+  const html=B.renderBriefHtml({kind:'M&A·거래',pitch:'<img src=x onerror=alert(1)>',why_today:'<script>x</script>',angle:'<img src=x onerror=alert(1)>',must_get:['<script>x</script>'],compare:[],calls:[],ready_when:'확인'});
   assert.doesNotMatch(html,/<img|<script>/);
   assert.match(html,/&lt;img/);
   assert.match(html,/마켓인형 취재안/);
 });
 
-test('AI discovery loads the story brief between clue building and card rendering',()=>{
+test('AI discovery loads timing-aware story briefs between clue building and card rendering',()=>{
   const html=fs.readFileSync('leads.html','utf8');
   const core=html.indexOf('/discovery-core.js'),brief=html.indexOf('/marketin-story-brief.js'),desk=html.indexOf('/discovery-desk.js');
   assert.ok(core>=0&&brief>core&&desk>brief);
-  assert.match(html,/필요한 숫자·비교사례·취재원/);
-  assert.match(fs.readFileSync('ai-discovery.css','utf8'),/marketin-story-brief/);
+  assert.match(html,/D-3 안의 중요 발표/);assert.match(html,/시나리오·후속 기사/);
+  const css=fs.readFileSync('ai-discovery.css','utf8');assert.match(css,/marketin-story-brief/);assert.match(css,/marketin-story-pitch/);
 });
 
 test('install enriches the existing discovery build without changing source clues in place',()=>{
