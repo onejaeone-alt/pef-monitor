@@ -106,9 +106,8 @@ function enrichClue(clue){
 }
 function renderBriefHtml(brief){
   if(!brief)return '';
-  const list=(rows,limit=3)=>(rows||[]).slice(0,limit).map(row=>`<li>${esc(row)}</li>`).join('');
-  const pitch=brief.pitch?`<div class="marketin-story-pitch"><strong>기사 제안</strong><p>${esc(brief.pitch)}</p>${brief.why_today?`<small><b>왜 오늘</b> ${esc(brief.why_today)}</small>`:''}</div>`:'';
-  return `<section class="marketin-story-brief" aria-label="마켓인형 취재안"><div class="marketin-story-head"><b>마켓인형 취재안</b><span>${esc(brief.kind)}</span></div>${pitch}<p class="marketin-story-angle">${esc(brief.angle)}</p><div class="marketin-story-grid"><div><strong>반드시 확인</strong><ul>${list(brief.must_get)}</ul></div><div><strong>비교할 것</strong><ul>${list(brief.compare,2)}</ul></div><div><strong>전화 순서</strong><ul>${list(brief.calls,3)}</ul></div></div><p class="marketin-story-ready"><b>기사 성립선</b> ${esc(brief.ready_when)}</p></section>`;
+  const proposal=brief.pitch?`<div class="marketin-story-pitch"><strong>기사 제안</strong><p>${esc(brief.pitch)}</p>${brief.why_today?`<small><b>왜 오늘</b> ${esc(brief.why_today)}</small>`:''}</div>`:`<p class="marketin-story-angle">${esc(brief.angle)}</p>`;
+  return `<section class="marketin-story-brief" aria-label="마켓인형 취재안"><div class="marketin-story-head"><b>마켓인형 취재안</b><span>${esc(brief.kind)}</span></div>${proposal}</section>`;
 }
 function decorate(root){
   const doc=root?.document,map=root?.__marketinStoryBriefMap;if(!doc||!map)return;
