@@ -25,4 +25,16 @@
 #discoveryDesk .discovery-more,#discoveryDesk .discovery-coverage button{border:1px solid #d8dfe5;border-radius:7px;padding:9px 12px;background:white;color:#45566a;cursor:pointer;font-size:12px;margin-right:8px}
 #discoveryDesk .discovery-empty{grid-column:1/-1;padding:42px 15px;text-align:center;font-size:14px;color:#7a8593}
 #discoveryDesk [hidden]{display:none!important}#discoveryMessage{font-size:13px;color:#a44a29}#discoveryDesk button:focus-visible,#discoveryDesk a:focus-visible,#discoveryDesk summary:focus-visible{outline:2px solid #ba4077;outline-offset:3px}
-@media(max-width:850px){#discoveryDesk .discovery-grid{grid-template-columns:1fr}#discoveryDesk .discovery-card{padding:17px 17px 0}#discoveryDesk details{margin:0 -17px;padding:0 17px}#discoveryDesk .discovery-toolbar{align-items:stretch}#discoverySearch{width:100%;min-width:0}#discoveryDesk h3{font-size:18px}#discoveryDesk .discovery-tabs button{font-size:13px;padding:10px 12px}}
+/* MarketIN-style story development: concrete reporting work, not a headline generator. */
+#discoveryDesk .marketin-story-brief{border:1px solid #e2e6eb;border-radius:10px;background:#fbfbf8;padding:13px 14px;margin:0 0 14px;color:#344155}
+#discoveryDesk .marketin-story-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+#discoveryDesk .marketin-story-head b{font-size:11px;color:#7b425c;font-weight:700}
+#discoveryDesk .marketin-story-head span{font-size:10px;color:#5b6675;background:#eef0eb;border-radius:999px;padding:3px 7px}
+#discoveryDesk .marketin-story-angle{font-size:13.5px;line-height:1.65;color:#253247;margin:0 0 11px;font-weight:600;word-break:keep-all}
+#discoveryDesk .marketin-story-grid{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:12px;border-top:1px solid #e8ebe7;padding-top:10px}
+#discoveryDesk .marketin-story-grid strong{display:block;font-size:10.5px;color:#6d7784;margin-bottom:5px}
+#discoveryDesk .marketin-story-grid ul{margin:0;padding-left:15px;font-size:11px;line-height:1.55;color:#4b5868}
+#discoveryDesk .marketin-story-grid li+li{margin-top:3px}
+#discoveryDesk .marketin-story-ready{font-size:11px;line-height:1.55;color:#667382;border-top:1px dashed #dfe3df;margin:10px 0 0;padding-top:9px}
+#discoveryDesk .marketin-story-ready b{color:#455267}
+@media(max-width:850px){#discoveryDesk .discovery-grid{grid-template-columns:1fr}#discoveryDesk .discovery-card{padding:17px 17px 0}#discoveryDesk details{margin:0 -17px;padding:0 17px}#discoveryDesk .discovery-toolbar{align-items:stretch}#discoverySearch{width:100%;min-width:0}#discoveryDesk h3{font-size:18px}#discoveryDesk .discovery-tabs button{font-size:13px;padding:10px 12px}#discoveryDesk .marketin-story-grid{grid-template-columns:1fr;gap:9px}}
