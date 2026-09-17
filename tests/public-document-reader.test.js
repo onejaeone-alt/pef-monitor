@@ -36,3 +36,19 @@ test('unread PDF empty text layer is not called successful extraction',async()=>
 test('a short news widget cannot hide a subsequent explicit article body',()=>{const html='<div class="newsView">이전 기사</div><div class="newsView_txt">'+paragraph.repeat(4)+'</div><aside>다른 기사</aside>';const blocks=R.htmlBlocks(html,'media');assert.match(blocks[0].text,/본문/);assert.ok(!blocks[0].text.includes('다른 기사'));});
 
 test('Marketin view_txt body takes precedence over the footer notice article',()=>{const html='<div class="mk_view_wrap"><div class="view_txt"><table><tr><td>사진 설명</td></tr></table>'+paragraph.repeat(4)+'<br>기사 마지막 문단</div></div><article>공지사항 서비스 안내</article>';const blocks=R.htmlBlocks(html,'media');assert.match(blocks[0].text,/기사 마지막 문단/);assert.doesNotMatch(blocks[0].text,/공지사항/);});
+
+test('MarketIN streamed public view_txt body and Korean publication time are parsed separately from widgets',()=>{
+ const html='<article class="black_bar">짧은 화면 요소</article><div hidden id="S:0"><span class="veiw_date"><p>등록<!-- --> 2026-09-16 오후 1:36:07</p><p>수정 2026-09-17 오후 2:00:00</p></span><div class="view_txt">'+paragraph.repeat(4)+'</div></div>';
+ assert.match(R.htmlBlocks(html,'media')[0].text,/본문/);assert.equal(R.publicationDate(html),'2026-09-16T13:36:07+09:00');
+ assert.equal(R.publicationDate('<p>수집일 2026-09-17</p>'),null);
+});
+
+test('explicitly free article is not hidden by a separate login dialog, but locked article bodies remain unread',()=>{
+ const free='<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":true}</script>';
+ const modal='<div class="hk-modal-body">로그인이 필요한 서비스 입니다.</div>';
+ const body='<div id="articleBody">'+paragraph.repeat(3)+'</div>';
+ assert.match(R.htmlBlocks(free+body+modal,'media')[0].text,/본문/);
+ assert.throws(()=>R.htmlBlocks(free+'<div id="articleBody">로그인이 필요합니다 '+paragraph.repeat(3)+'</div>','media'),/BODY_UNREADABLE/);
+ assert.throws(()=>R.htmlBlocks(free.replace('true','false')+body,'media'),/PAYWALL/);
+ assert.throws(()=>R.htmlBlocks(free+body+'<p>Access Denied</p>','media'),/ACCESS_LIMITED/);
+});

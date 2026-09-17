@@ -41,3 +41,8 @@ test('prior operating context is retained when many publishers repeat todays sal
  const earlier={title:'홈플러스 매출 부진과 체불 임금',url:'https://www.yna.co.kr/view/prior',published_at:'2026-09-16T06:00:00Z'};
  assert.ok(R.chooseSources([...latest,earlier],'홈플러스',now).some(x=>x.url===earlier.url));
 });
+
+test('known publisher originals are read before Google navigation links in the remaining source budget',()=>{
+ const rows=[{url:'https://news.google.com/rss/articles/a',title:'시험사 매각 착수',published_at:'2026-09-17T05:00:00Z'}, {url:'https://www.hankyung.com/article/1',title:'시험사 매각 착수',published_at:'2026-09-17T01:00:00Z'}];
+ assert.equal(R.chooseSources(rows,'시험사',now)[0].url,'https://www.hankyung.com/article/1');
+});

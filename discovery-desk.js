@@ -7,7 +7,7 @@ const endpoints={canonical:['출자공고·기존 분석','/api/signals?mode=clu
 let state={},status={},reviews={},data=[],view='current',query='',expanded=false,run=0,controller,reading=false,failures=new Set();
 const UPDATE_MS=5*60*1000;
 const B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
-let researchCache=stored(RESEARCH_KEY,{}),researching=false,researchPending=new Set();
+let researchCache=stored(RESEARCH_KEY,{}),researching=false,researchPending=new Set(),researchRequests=new Map();
 let loading=false,lastStarted=0,lastChecked=0,updateTimer=null,pendingData=null,renderedCards='';
 const away=()=>document.hidden||globalThis.navigator?.onLine===false;
 const readingCard=()=>document.querySelectorAll('[data-detail][open]').length>0||(globalThis.scrollY||0)>180;
@@ -28,7 +28,7 @@ function card(x){
  const research=pitch?(B?.renderBriefHtml({...x.research,headline_in_card:true})||''):'',researchDetails=(B?.renderDetails(x.research,x.clue_id)||'')+(!pitch?(B?.renderBriefHtml(x.research)||''):'');
  const heading=pitch?.headline||x.one_line_signal||x.headline;
  const evidence=(x.evidence||[]).map(f=>`${f.label}: ${f.before!==undefined?f.before+' → '+f.after:f.value+(f.unit?' '+f.unit:'')} · ${f.source?.location||'원문 위치 확인'}`);
- return `<article class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}<div class="discovery-actions">${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
+ return `<article class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}<div class="discovery-actions">${B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
 }
 function render({accept=false}={}){
  const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
@@ -89,11 +89,15 @@ async function load({automatic=false}={}){
  if(token===run&&!away())readBatch(token);
  if(token===run){loading=false;lastChecked=Date.now();$('#refresh').disabled=false;render();scheduleUpdate();readResearch(token);}
 }
-async function readResearch(token){
- if(!B||researching||away())return;
+async function readResearch(token,requested){
+ if(!B||away())return;
+ if(requested){const r=B.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);render();}}
+ if(researching)return;
  researching=true;
  const queue=B.shortlist(data.filter(x=>x.lane==='current'),data.length).map(x=>B.requestFor(x)).filter(r=>r&&!(researchCache[r.key]?.until>Date.now())).filter((r,i,all)=>all.findIndex(t=>t.key===r.key)===i).slice(0,3);
- try{for(const request of queue){
+ const completed=new Set();
+ try{while(queue.length||researchRequests.size){
+  const request=researchRequests.size?researchRequests.values().next().value:queue.shift();researchRequests.delete(request.key);if(completed.has(request.key))continue;completed.add(request.key);
   if(token!==run||away())break;
   researchPending.add(request.key);render();
   let value;
@@ -110,6 +114,7 @@ $('#discoveryUpdates').onclick=()=>render({accept:true});
 $('#discoveryMore').onclick=()=>{expanded=true;render({accept:true});};$('#discoverySearch').oninput=e=>{query=e.target.value.trim().toLowerCase();render({accept:true});};
 root.addEventListener('click',e=>{
  const tab=e.target.closest('[data-discovery-view]');if(tab){view=tab.dataset.discoveryView;for(const b of document.querySelectorAll('[data-discovery-view]')){b.classList.toggle('on',b===tab);b.setAttribute('aria-pressed',String(b===tab));}render({accept:true});}
+ const researchButton=e.target.closest('[data-discovery-research]');if(researchButton){const clue=data.find(x=>x.clue_id===researchButton.dataset.discoveryResearch);if(clue)readResearch(run,clue);return;}
  const button=e.target.closest('[data-discovery-project]');if(!button)return;
  let clue=data.find(x=>x.clue_id===button.dataset.discoveryProject);if(!clue)return;
  if(button.hasAttribute('data-discovery-angle')){try{clue=B.selectAngle(clue,Number(button.dataset.discoveryAngle));}catch(e){$('#discoveryMessage').textContent=e.message;return;}}

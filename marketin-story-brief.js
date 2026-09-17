@@ -3,7 +3,7 @@
  else{root.MarketInStoryBrief=api;api.install(root);}
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const VERSION='marketin-research-3';
+const VERSION='marketin-research-4';
 const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>clean(v).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
@@ -67,7 +67,7 @@ function renderBriefHtml(result,clueId){
  if(!result)return '';
  if(result.status!=='ready'||!result.analysis){const error=result.error||'';const text=/model_/.test(error)?'AI 분석 연결을 사용할 수 없어 원문 목록만 표시합니다.':error==='insufficient_sources'?'읽을 수 있는 원문이 부족해 기사 제안을 보류했습니다.':error==='no_recent_source'?'최근 원문을 확인하지 못해 기사 제안을 보류했습니다.':result.status==='loading'?'최신 기사와 마켓인 기존 보도를 읽는 중…':'원문 대조를 완료하지 못해 기사 제안을 보류했습니다.';return `<p class="discovery-research-status">${esc(text)}</p>`;}
  const a=result.analysis;
- if(result.headline_in_card&&a.angles?.length){const p=a.angles[0];return `<section class="marketin-story-brief" aria-label="발제 요지"><p class="discovery-pitch-reason">${esc(p.reason)}</p><p class="discovery-pitch-difference">${esc(p.new_information)}</p><span>${citation(p.basis_ids,result)}</span></section>`;}
+ if(result.headline_in_card&&a.angles?.length){const p=a.angles[0];return `<section class="marketin-story-brief" aria-label="발제 요지"><p class="discovery-pitch-reason">${esc(p.reason)}</p><p class="discovery-pitch-difference">${esc(p.new_information)}</p>${p.question?`<p class="discovery-pitch-detail"><b>핵심 질문</b> ${esc(p.question)}</p>`:''}${p.missing?`<p class="discovery-pitch-detail"><b>가장 큰 빈칸</b> ${esc(p.missing)}</p>`:''}${p.first_action?`<p class="discovery-pitch-detail"><b>첫 취재</b> ${esc(p.first_action)}</p>`:''}<span>${citation(p.basis_ids,result)}</span></section>`;}
  const facts=a.facts.slice(0,3).map(f=>`<li>${esc(f.text)} <span>${citation([f.id],result)}</span></li>`).join('');
  const angles=a.angles.map((p,index)=>`<div class="marketin-story-pitch"><strong>후속 기사 방향 · 검증 전</strong><p>${esc(p.question||p.headline)}</p><div><b>추천 이유</b> ${esc(p.reason)}</div><small><b>기존 보도에서 더 나아갈 부분</b> ${esc(p.new_information)}</small>${p.missing?`<small><b>가장 큰 빈칸</b> ${esc(p.missing)}</small>`:''}${p.first_action?`<small><b>첫 취재</b> ${esc(p.first_action)}</small>`:''}<span>${citation(p.basis_ids,result)}</span>${clueId?`<button class="discovery-angle-select" data-discovery-project="${esc(clueId)}" data-discovery-angle="${index}">이 방향으로 취재에 담기</button>`:''}</div>`).join('');
  const before=a.previous_state?`<p><b>직전 상태</b> ${esc(a.previous_state.text)} ${citation(a.previous_state.fact_ids,result)}</p>`:'<p>비교할 이전 상태를 원문에서 확인하지 못했습니다.</p>';
@@ -89,6 +89,7 @@ function renderDetails(result,clueId){
   if(a.why_now?.text)html+='<h4>지금 살펴볼 이유</h4><p>'+esc(a.why_now.text)+'</p>';
   if(a.previous_state)html+='<h4>직전 상태</h4><p>'+esc(a.previous_state.text)+' '+citation(a.previous_state.fact_ids,result)+'</p>';
   if(a.changes?.length)html+='<h4>전후 비교</h4><ul>'+a.changes.map(c=>'<li>'+esc(c.text)+' '+citation([...(c.before_ids||[]),...(c.after_ids||[])],result)+'</li>').join('')+'</ul>';
+  if(a.angles?.length)html+='<h4>방향별 취재 계획</h4><ul>'+a.angles.map(p=>'<li><b>'+esc(p.question||p.headline)+'</b><br>남은 확인: '+esc(p.missing)+'<br>첫 취재: '+esc(p.first_action)+'</li>').join('')+'</ul>';
   if(a.angles?.length>1)html+='<h4>다른 기사 방향</h4><ul>'+a.angles.slice(1).map((p,i)=>'<li>'+esc(p.headline)+' · '+esc(p.new_information)+(clueId?`<button class="discovery-angle-select" data-discovery-project="${esc(clueId)}" data-discovery-angle="${i+1}">이 방향으로 취재에 담기</button>`:'')+'</li>').join('')+'</ul>';
   html+='<h4>현재 읽은 마켓인 기사에서 다룬 내용</h4>'+((a.already_covered||[]).length?'<ul>'+a.already_covered.map(c=>{const s=result.sources.find(s=>s.source_id===c.source_id);return `<li>${esc(c.text)} ${href(s?.url)?`<a href="${esc(href(s.url))}" target="_blank" rel="noopener noreferrer">기존 기사 ↗</a>`:''}</li>`;}).join('')+'</ul>':'<p>마켓인 본문을 확보하지 못했습니다. 기사 제안은 보류합니다.</p>');
   if(a.angles?.length)html+='<h4>방향별 반증 조건</h4><ul>'+a.angles.filter(p=>p.falsification).map(p=>`<li><b>${esc(p.question)}</b> · ${esc(p.falsification)}</li>`).join('')+'</ul>';
