@@ -39,10 +39,10 @@ function timingCandidates(rows,input,C,now=Date.now()){
     return {...x,clue_id:'timing-'+x.clue_id,detector:'reporting_opportunity',detector_label:'발표 전 랩업',fact_status:'단서',article_pitch:undefined,article_brief:null,research_topic:topic,reason:`${x.event_date} 예정 발표입니다. 관련 원문과 기존 마켓인 보도를 읽어 기존 보도보다 더 나아갈 기사 방향이 있을 때만 제안합니다.`,sources:dedupeSources((x.sources||[]).map(s=>({...s,title:x.headline,date:s.date||x.event_date})))};
   }).filter(Boolean);
   for(const candidate of scheduled){
-    const existing=out.find(x=>norm(x.research_topic)===norm(candidate.research_topic));
-    if(existing){
-      existing.event_date=candidate.event_date;existing.story_mode=candidate.story_mode;existing.timing_source=candidate.sources[0]||null;
-      existing.sources=dedupeSources([...(candidate.sources||[]),...(existing.sources||[])]);
+    const index=out.findIndex(x=>norm(x.research_topic)===norm(candidate.research_topic));
+    if(index>=0){
+      const existing=out[index];
+      out[index]={...existing,event_date:candidate.event_date,story_mode:candidate.story_mode,timing_source:candidate.sources[0]||null,sources:dedupeSources([...(candidate.sources||[]),...(existing.sources||[])])};
     }else out.push(candidate);
   }
   return out;
