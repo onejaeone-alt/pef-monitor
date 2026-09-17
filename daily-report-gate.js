@@ -18,8 +18,9 @@ function basisFacts(angle,analysis){const ids=new Set(angle?.basis_ids||[]);retu
 function hardFact(facts){return [...facts].sort((a,b)=>Number(/\d/.test(b.text))-Number(/\d/.test(a.text))||String(b.date||'').localeCompare(String(a.date||''))).find(f=>HARD.test(f.text))||null;}
 function imminent(clue,now=Date.now()){const d=until(clue?.event_date,now);return Number.isFinite(d)&&d>=0&&d<=3;}
 function tokens(text){
-  const normalized=clean(text).toLowerCase().replace(/\s+/g,'');const out=new Set((clean(text).match(/\d[\d,.]*(?:조|억|만|%|개점|곳|개)?/g)||[]).map(x=>x.replace(/,/g,'')));
-  for(const term of TERMS)if(normalized.includes(term))out.add(term);return [...out];
+  const raw=clean(text),normalized=raw.toLowerCase().replace(/\s+/g,''),out=new Set();
+  for(const match of raw.match(/\d[\d,.]*/g)||[])out.add('n:'+match.replace(/,/g,''));
+  for(const term of TERMS)if(normalized.includes(term))out.add('t:'+term);return [...out];
 }
 function hasNovelSignal(angle,analysis){
   const fresh=tokens(angle?.new_information+' '+angle?.headline),covered=new Set(tokens((analysis?.already_covered||[]).map(x=>x.text).join(' ')));
