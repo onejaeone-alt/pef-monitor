@@ -31,7 +31,7 @@ test('money and party fields are read with original labels, units and exact prov
  assert.equal(r.current_fields[0].value,'1,000,000,000');assert.equal(r.current_fields[0].unit,'원');assert.equal(r.current_fields[0].source.row,1);
  assert.equal(r.parties[0].name,'MBK파트너스');assert.equal(r.parties[0].source.source_id,'dart:'+n);
  const item={...raw('타법인주식및출자증권처분결정'),scope_kind:'market'};
- assert.equal(U.priorityReason(item,r),'원문에 투자자 확인');assert.match(U.rowDelta(item,r).text,/1,000,000,000 원/);
+ assert.equal(U.priorityReason(item,r),'원문에 펀드·투자자 확인');assert.match(U.rowDelta(item,r).text,/10억원/);
 });
 test('number without explicit unit stays without invented currency',()=>assert.equal(analyze(table([['처분금액','300']])).current_fields[0].unit,null));
 test('target issuer name beside a merged section heading remains a target, not buyer',()=>{
@@ -59,4 +59,12 @@ test('priority uses reporting relationships rather than core labels; wrong recei
 test('investor search uses background relationships and source fields',()=>{
  const item={...raw('주요사항보고서'),reporting_context:{relationships:[{investor:'UCK파트너스'}]}};
  assert.equal(U.filteredItems([item],{query:'UCK'}).length,1);
+});
+
+test('Jeju private real-estate fund redemption connects from source role without inventing its manager',()=>{
+ const r=analyze(table([['1. 발행회사','회사명','퍼시픽제3호일반사모부동산투자(유)'],['처분금액(원)','52,793,715,894'],['처분 목적','출자금 회수']]));
+ assert.equal(r.parties[0].name,'퍼시픽제3호일반사모부동산투자(유)');assert.equal(r.parties[0].role,'대상회사');
+ const item={...raw('타법인주식및출자증권처분결정'),scope_kind:'market'};
+ assert.match(U.rowDelta(item,r).text,/약 527.9억원/);assert.match(U.brief(item,r),/52,793,715,894 원/);
+ assert.match(U.priorityReason(item,r),/펀드/);
 });

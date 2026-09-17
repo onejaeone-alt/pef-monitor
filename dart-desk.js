@@ -8,7 +8,7 @@
 // DART is a daily-report material selector, not an automatic article-value judge.
 // Bounded background reads enrich public filings; private notes stay in this browser.
 const STORE='ib_dart_reviews_v1',PROJECTS='pef_my_reporting_projects_v1';
-const REVIEW_VERSION='dart-review-1.6',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
+const REVIEW_VERSION='dart-review-1.7',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
 const staleNotice='이전 분석 버전의 보관 결과입니다. 새로 읽기 전에는 원문과 직접 대조해주세요.';
 const isCurrentReview=r=>Boolean(r?.ok&&r.version===REVIEW_VERSION);
 const hasChanges=r=>Boolean(isCurrentReview(r)&&Array.isArray(r.changes)&&r.changes.length);
@@ -44,13 +44,18 @@ function familyStats(items){
 
 function priorityReason(item,review){
   if(!item)return null;
-  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&review.parties?.length)return '원문에 투자자 확인';
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&review.parties?.length)return '원문에 펀드·투자자 확인';
   if(/공개매수/.test(item.report_nm||''))return '공개매수';
   if(item.scope_kind==='watch'&&item.group_id!=='reference')return '취재기업';
   return null;
 }
 function fieldValue(f){
   return String(f.value||'')+(f.unit&&!String(f.value).endsWith(f.unit)?' '+f.unit:'');
+}
+function summaryValue(f){
+  const value=String(f.value||''),n=Number(value.replace(/,/g,''));
+  if(f.unit==='원'&&/^[\d,]+$/.test(value)&&Number.isSafeInteger(n)&&n>=100000000)return (n%100000000?'약 ':'')+(n/100000000).toLocaleString('ko-KR',{maximumFractionDigits:1})+'억원';
+  return fieldValue(f);
 }
 function investorHtml(item,review){
   const fields=isCurrentReview(review)&&review.rcept_no===item.rcept_no?(review.current_fields||[]).filter(f=>f.topic==='party'):[];
@@ -84,7 +89,7 @@ function rowDelta(item,review){
   if(correction(item))return {label:'달라진 것',state:'pending',text:'정정공시 · 변경값 확인 전'};
   if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&Array.isArray(review.current_fields)&&review.current_fields.length){
     const facts=review.current_fields.filter(f=>f.topic!=='party');
-    if(facts.length)return {label:'이번 공시',state:'confirmed',text:facts.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(fieldValue(f),65)}`).join(' · ')};
+    if(facts.length)return {label:'이번 공시',state:'confirmed',text:facts.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(summaryValue(f),65)}`).join(' · ')};
   }
   if(isCurrentReview(review)&&review.rcept_no===item.rcept_no)return {label:'원문 확인',state:'pending',text:'거래 수치를 자동 추출하지 못했습니다 · 원문 확인'};
   return {label:'원문 확인',state:'pending',text:'본문에서 거래 조건을 확인합니다'};
@@ -143,7 +148,7 @@ function evidenceHtml(r){
 function brief(item,r){
   return [!isCurrentReview(r)?staleNotice:'',item.corp_name+' · '+item.report_nm,url(item.rcept_no),'DART 원문 자동 추출 · 검수 전',r?.read_at?'추출 시각: '+r.read_at:'',
     ...(r?.changes||[]).map(d=>`${d.label}: ${d.before} → ${d.after}\n공시의 정정 사유: ${d.reason||'정정표에서 별도 사유 미확보'}\n${d.source?.location||'원문 위치 미확보'}`),
-    ...(r?.current_fields||[]).map(f=>`${f.label||f.raw_label}: ${f.value}\n${f.source?.location||'원문 위치 미확보'}`),...(r?.warnings||[])
+    ...(r?.current_fields||[]).map(f=>`${f.raw_label||f.label}: ${fieldValue(f)}\n${f.source?.location||'원문 위치 미확보'}`),...(r?.warnings||[])
   ].filter(Boolean).join('\n\n');
 }
 
@@ -174,7 +179,7 @@ function init(){
     if(!isCurrentReview(r))return '<p>원문 확인 전입니다.</p>';
     const rows=[];
     for(const d of r.changes||[])if(d.after)rows.push(`<li><b>${esc(d.label)}</b> ${esc(compact(d.after,90))}</li>`);
-    for(const f of r.current_fields||[])if(f.value&&!rows.some(x=>x.includes(esc(f.label||f.raw_label))))rows.push(`<li><b>${esc(f.label||f.raw_label)}</b> ${esc(compact(f.value,90))}</li>`);
+    for(const f of r.current_fields||[])if(f.value&&!rows.some(x=>x.includes(esc(f.label||f.raw_label))))rows.push(`<li><b>${esc(f.label||f.raw_label)}</b> ${esc(compact(fieldValue(f),90))}</li>`);
     return rows.length?'<ul>'+rows.slice(0,4).join('')+'</ul>':'<p>자동 추출에서 현재 조건을 확보하지 못했습니다. 원문 확인이 필요합니다.</p>';
   }
   function previousHtml(r){
@@ -231,10 +236,12 @@ function init(){
     await Promise.all([worker(),worker()]);
     if(token!==autoSequence||period!==sequence)return;
     const remaining=items.filter(x=>!validReview(x.rcept_no)&&!failed.has(x.rcept_no)).length;
-    $('#sourceProgress').textContent=`원문 추출 ${items.filter(x=>validReview(x.rcept_no)).length}건${failed.size?' · 추출 실패 '+failed.size+'건':''}${remaining?' · 대기 '+remaining+'건':''}`;
+    const failedCount=items.filter(x=>failed.has(x.rcept_no)).length;
+    $('#sourceProgress').textContent=`원문 추출 ${items.filter(x=>validReview(x.rcept_no)).length}건${failedCount?' · 추출 실패 '+failedCount+'건':''}${remaining?' · 대기 '+remaining+'건':''}`;
     $('#readMoreSources').hidden=!remaining;$('#readMoreSources').disabled=false;
   }
   async function load(fresh=false){
+    if(fresh)failed.clear();
     autoSequence++;controller?.abort();controller=new AbortController();const token=++sequence;$('#refresh').disabled=true;$('#status').textContent='DART 조회 중';$('#rawRows').setAttribute('aria-busy','true');
     try{
       const response=await fetch(`/api/dart-feed?days=${days}&limit=700${fresh?'&fresh=1':''}&_=${Date.now()}`,{signal:controller.signal,cache:'no-store'}),data=await response.json();
@@ -263,5 +270,5 @@ function init(){
   load();
 }
 
-return {REVIEW_VERSION,DEFAULT_VIEW,DEFAULT_FEED,isCurrentReview,hasChanges,buildGroups,filteredItems,mergeProject,evidenceHtml,brief,priorityReason,axisTags,rowDelta,nextCheckText,reportingCheck,familyStats,groupDisplay,investorHtml,fieldValue,init};
+return {REVIEW_VERSION,DEFAULT_VIEW,DEFAULT_FEED,isCurrentReview,hasChanges,buildGroups,filteredItems,mergeProject,evidenceHtml,brief,priorityReason,axisTags,rowDelta,nextCheckText,reportingCheck,familyStats,groupDisplay,investorHtml,fieldValue,summaryValue,init};
 });
