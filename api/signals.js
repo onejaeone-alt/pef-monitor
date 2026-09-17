@@ -343,6 +343,7 @@ async function buildClueResponse(req, res, days) {
     ok: true,
     mode: 'clues',
     items: clues,
+    source_signals: collected.items.filter(x => ['capital_call', 'selection_result'].includes(x.source_type)).map(x => ({title:x.title, source_url:x.source_url, source_name:x.source_name, source_type:x.source_type, published_at:x.published_at, target:x.target ? {name:x.target.name} : null})),
     stats: clueStats(clues),
     source_counts: {
       canonical_clues_raw: selected.canonical_raw_count,
