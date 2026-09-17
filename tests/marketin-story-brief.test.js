@@ -1,71 +1,26 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const test=require('node:test'),assert=require('node:assert/strict');
 const B=require('../marketin-story-brief');
-
-test('M&A clue becomes a concrete reporting brief without pretending the angle is confirmed',()=>{
-  const clue={clue_id:'d1',detector:'dart_deal',headline:'SGC에너지 · 타법인주식및출자증권취득결정',entities:['SGC에너지'],one_line_signal:'취득금액 3000억원 · 대상회사 A'};
-  const brief=B.storyBrief(clue);
-  assert.equal(brief.kind,'M&A·거래');
-  assert.match(brief.angle,/누가 얼마를 어떤 돈으로/);
-  assert.ok(brief.must_get.some(x=>/자금원/.test(x)));
-  assert.ok(brief.compare.some(x=>/유사 거래/.test(x)));
-  assert.match(brief.ready_when,/원문과 당사자 취재/);
-  assert.doesNotMatch(brief.angle,/확정|기사화$/);
+const source={clue_id:'x',detector:'news_followup',headline:'홈플러스 재매각 착수',entities:['홈플러스'],lane:'current',sort_date:'2026-09-17',sources:[{url:'https://www.hankyung.com/article/1',title:'홈플러스 재매각 착수',label:'한국경제',date:'2026-09-17'}]};
+test('announcement schedules and generic public relations are not article recommendations',()=>{
+ for(const row of [{detector:'reporting_opportunity',headline:'금융위 부위원장 PF 사업장 방문'},{detector:'story_pitch',headline:'홈플러스 회생 다음은'},{detector:'official_followup',headline:'성장금융 출자사업 공고'},{detector:'news_followup',headline:'PEF 후원 축제 개최'}])assert.equal(B.eligible(row),false);
+ assert.equal(B.eligible(source),true);
+ assert.equal(B.eligible({detector:'news_followup',headline:'국민연금 자산배분 개편, 사모펀드 투자 확대'}),true);
 });
-
-test('LP and GP brief separates policy amount, planned size, commitment and paid-in money',()=>{
-  const brief=B.storyBrief({detector:'official_followup',headline:'국민성장펀드 GP 선정 기준 변경',entities:['국민성장펀드'],questions:['GP 선정 기준이 어떻게 바뀌나?']});
-  assert.equal(brief.kind,'LP·GP');
-  const text=brief.must_get.join(' ');
-  for(const term of ['정책 출자액','출자 요청액','결성예정액','실제 약정액'])assert.match(text,new RegExp(term));
-  assert.match(brief.compare.join(' '),/최근 2개년/);
+test('same company is grouped without inventing a pitch or claiming the bodies have been read',()=>{
+ const rows=B.select([source,{...source,clue_id:'y'}]);assert.equal(rows.length,1);assert.equal(rows[0].headline,'홈플러스');assert.equal(rows[0].article_pitch,undefined);assert.equal(rows[0].article_brief,null);assert.match(rows[0].reason,/본문 대조 전/);
+ assert.ok(B.requestFor(rows[0]).url.includes('mode=research'));
 });
-
-test('credit brief asks who bears risk and requires terms, collateral and refinancing source',()=>{
-  const brief=B.storyBrief({detector:'news_followup',headline:'현대건설 5000억원 CB 투자자 손실 우려',entities:['현대건설']});
-  assert.equal(brief.kind,'크레딧');
-  assert.match(brief.angle,/위험과 손실/);
-  assert.match(brief.must_get.join(' '),/금리|수익률/);
-  assert.match(brief.must_get.join(' '),/담보|보증/);
-  assert.match(brief.must_get.join(' '),/상환재원|차환/);
+test('model failure stays an honest sources-only result and never recreates template advice',()=>{
+ const x=B.attach(source,{version:B.VERSION,status:'sources_only',error:'model_quota_exhausted'});
+ assert.equal(x.article_pitch,undefined);const html=B.renderBriefHtml(x.research);assert.match(html,/AI 분석 연결/);assert.doesNotMatch(html,/기사 제안|반드시 확인|전화 순서|확인할 질문/);
+ assert.equal(B.attach(source,{version:B.VERSION,status:'out_of_scope'}),null);
 });
-
-test('market-pattern brief requires independent cases and a counterexample before calling it a trend',()=>{
-  const brief=B.storyBrief({detector:'market_pattern',headline:'PEF 식음료 애드온 투자 증가',one_line_signal:'유사 거래 반복'});
-  assert.equal(brief.kind,'시장흐름');
-  assert.match(brief.must_get.join(' '),/반대 사례/);
-  assert.match(brief.ready_when,/3개 이상 사례/);
-  assert.match(brief.ready_when,/한 건이면 단건 기사/);
+test('evidence brief shows citations, coverage differences, and uncertainty with safe links',()=>{
+ const r={version:B.VERSION,status:'ready',sources:[{source_id:'s1',url:'https://marketin.edaily.co.kr/News/Read?id=1',publisher:'마켓인',title:'매각 기사',read_ok:true},{source_id:'s2',url:'javascript:alert(1)',publisher:'외부',title:'다른 기사',read_ok:true}],analysis:{summary:{text:'현재 상황'},why_now:{text:'새 변화'},facts:[{id:'f1',text:'<img src=x onerror=alert(1)>',source_id:'s1'},{id:'f2',text:'목표 대비 매출에 관한 보도',source_id:'s2'}],angles:[{headline:'가제',reason:'두 자료를 함께 볼 이유',new_information:'기보도와의 차이',basis_ids:['f1','f2']}],already_covered:[{text:'매각 착수',source_id:'s1'}],uncertainties:[{text:'계획은 미정',fact_ids:['f1']}]}};
+ const html=B.renderBriefHtml(r)+B.renderDetails(r);assert.match(html,/기보도와의 차이/);assert.match(html,/계획은 미정/);assert.match(html,/marketin.edaily.co.kr/);assert.doesNotMatch(html,/<img|javascript:|확인할 질문|전화 순서/);assert.match(html,/&lt;img/);
+ assert.equal(B.attach(source,r).article_pitch,'가제');
 });
-
-test('explicit story pitch is rendered above the generic reporting frame and keeps why-today and bespoke checks',()=>{
-  const clue={detector:'reporting_opportunity',headline:'BDC 세부안 발표',entities:['금융위원회'],story_mode:'사전 랩업',article_pitch:'[가제] BDC 규제 발표 D-2…시행 전 쟁점 총정리',why_today:'2일 뒤 발표 예정',story_requirements:['현행 규정과 변경 항목 대조','운용사 참여 계획 확인'],comparison_targets:['미국 BDC와 영국 VCT'],contacts:['금융위원회','운용사']};
-  const brief=B.storyBrief(clue);assert.equal(brief.kind,'사전 랩업');assert.equal(brief.pitch,clue.article_pitch);assert.deepEqual(brief.must_get,clue.story_requirements);assert.deepEqual(brief.compare,clue.comparison_targets);assert.equal(brief.calls[0],'금융위원회');
-  const html=B.renderBriefHtml(brief);assert.match(html,/기사 제안/);assert.match(html,/BDC 규제 발표 D-2/);assert.match(html,/왜 오늘/);assert.match(html,/2일 뒤 발표 예정/);
-});
-
-test('rendered brief escapes untrusted source strings including article pitches',()=>{
-  const html=B.renderBriefHtml({kind:'M&A·거래',pitch:'<img src=x onerror=alert(1)>',why_today:'<script>x</script>',angle:'<img src=x onerror=alert(1)>',must_get:['<script>x</script>'],compare:[],calls:[],ready_when:'확인'});
-  assert.doesNotMatch(html,/<img|<script>/);
-  assert.match(html,/&lt;img/);
-  assert.match(html,/마켓인형 취재안/);
-});
-
-test('AI discovery loads timing-aware story briefs between clue building and card rendering',()=>{
-  const html=fs.readFileSync('leads.html','utf8');
-  const core=html.indexOf('/discovery-core.js'),brief=html.indexOf('/marketin-story-brief.js'),desk=html.indexOf('/discovery-desk.js');
-  assert.ok(core>=0&&brief>core&&desk>brief);
-  assert.match(html,/D-3 안의 중요 발표/);assert.match(html,/시나리오·후속 기사/);
-  const css=fs.readFileSync('ai-discovery.css','utf8');assert.match(css,/marketin-story-brief/);assert.match(css,/marketin-story-pitch/);
-});
-
-test('install enriches the existing discovery build without changing source clues in place',()=>{
-  const source={clue_id:'x',detector:'news_followup',headline:'PEF 인수 검토',entities:['A PEF']};
-  const C={build:()=>[source]};
-  const root={IBDiscovery:C};
-  assert.equal(B.install(root),true);
-  const out=C.build();
-  assert.ok(out[0].article_brief);
-  assert.equal(source.article_brief,undefined);
-  assert.equal(B.install(root),false);
+test('install replaces generic enrichment without mutating core source records',()=>{
+ const C={build:()=>[source]},root={IBDiscovery:C};assert.equal(B.install(root),true);assert.equal(B.install(root),false);const out=C.build();assert.equal(out[0].article_brief,null);assert.equal(source.article_brief,undefined);
 });

@@ -386,6 +386,16 @@ module.exports = async (req, res) => {
   try {
     const days = Math.min(Math.max(parseInt(req.query.days || '7', 10), 1), 14);
     const mode = String(req.query.mode || 'signals').toLowerCase();
+    if (mode === 'research') {
+      res.setHeader('Cache-Control', 'private, no-store');
+      if (req.method && req.method !== 'GET') return res.status(405).json({ok:false,error:'method_not_allowed'});
+      let seeds=[];
+      try { seeds=JSON.parse(String(req.query.seeds||'[]')); } catch { return res.status(400).json({ok:false,error:'invalid_seeds'}); }
+      if (!Array.isArray(seeds)||seeds.length>6||seeds.some(s=>!s||typeof s!=='object')||JSON.stringify(seeds).length>14000) return res.status(400).json({ok:false,error:'invalid_seeds'});
+      const topic=String(req.query.topic||'').trim();
+      if(topic.length<2||topic.length>80||!/^[가-힣a-zA-Z0-9 .&·()_-]+$/.test(topic))return res.status(400).json({ok:false,error:'invalid_topic'});
+      return res.status(200).json(await require('../lib/discovery-research').cachedResearch({topic,seeds}));
+    }
     if (mode === 'clues') return buildClueResponse(req, res, days);
 
     const limit = Math.min(Math.max(parseInt(req.query.limit || '40', 10), 5), 100);

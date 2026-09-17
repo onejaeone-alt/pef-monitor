@@ -1,140 +1,88 @@
 (function(root,factory){
-  const api=factory();
-  if(typeof module==='object'&&module.exports)module.exports=api;
-  else{root.MarketInStoryBrief=api;api.install(root);}
+ const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;
+ else{root.MarketInStoryBrief=api;api.install(root);}
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-
-const clean=value=>String(value||'').replace(/\s+/g,' ').trim();
-const unique=rows=>[...new Set((rows||[]).map(clean).filter(Boolean))];
-const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const compact=(value,n=86)=>{const text=clean(value);return text.length>n?text.slice(0,n-1)+'…':text;};
-
-function clueText(clue){
-  return clean([
-    clue?.detector,clue?.detector_label,clue?.headline,clue?.article_pitch,clue?.story_mode,clue?.why_today,clue?.one_line_signal,clue?.changed_fact,clue?.reason,clue?.next_action,
-    ...(clue?.story_requirements||[]),...(clue?.comparison_targets||[]),...(clue?.questions||[]),...(clue?.unknowns||[]),...(clue?.entities||[]),...(clue?.extracted_facts||[]),...(clue?.reported||[])
-  ].join(' '));
+const VERSION='marketin-research-1';
+const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=v=>clean(v).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
+const generic=/^(PEF|VC|LP|GP|사모펀드|벤처캐피탈|금융위원회|금융위|금융감독원|금융권|IB|M&A)$/i;
+const scope=/사모펀드|PEF|프라이빗|벤처(?:캐피탈|투자)|인수금융|경영권|공개매수|재매각|매각.{0,15}(?:본입찰|예비입찰|우협|주관사)|펀드레이징|세컨더리|컨티뉴에이션|출자사업|위탁운용|모태펀드|성장금융|자산배분|기관투자자|LP\b|GP\b|신용등급|회사채.{0,15}(?:수요예측|차환|미매각)|PF.{0,15}(?:대출|본PF|차환|부실)|재무약정|세일앤리스백|DIP|BDC|private equity|private credit|buyout|fundrais/i;
+const noise=/수목원|국가정원|축제|기념식|업무협약|MOU|목표주가|투자의견|주가.{0,12}(?:상승|급등|하락)|프로모션|할인행사|봉사활동|채용공고|교육과정|실무교육|과정\s*개설|기관\s*이전|이전기관|유치전|민생법안|무더기\s*적발|미공개정보.{0,15}(?:고발|통보|조치)/i;
+const meaningful=/경영권|공개매수|인수금융|재매각|회생|워크아웃|EOD|기한이익|약정|차환|신용등급|부실|매각|인수|투자|출자|결성|모집|개편|규제|시행|세컨더리|buyout|acquisition|fundrais/i;
+function primaryEntity(x){
+ const known=(x.entities||[]).map(clean).find(e=>e.length>=2&&!generic.test(e));if(known)return known;
+ const title=clean(x.headline);
+ if(/의무공개매수/.test(title))return '의무공개매수';
+ if(/인수금융\s*차환/.test(title))return '인수금융 차환';
+ const leading=title.match(/^([가-힣A-Za-z][가-힣A-Za-z0-9·]{1,24}),/)?.[1];
+ return leading&&!/^(증선위|금융당국|금투협|여야|국회|정부|업계|전문가)$/.test(leading)?leading:'';
 }
-function primaryEntity(clue){
-  const named=(clue?.entities||[]).map(clean).find(Boolean);
-  if(named)return named;
-  const head=clean(clue?.headline);
-  return head.split(/\s*[·|｜:]\s*/)[0]||'해당 거래';
+function eligible(x){
+ if(['story_pitch','reporting_opportunity'].includes(x.detector))return false;
+ if(x.detector==='dart_deal')return true;
+ const text=clean(x.headline+' '+(x.one_line_signal||''));
+ if(noise.test(text))return false;
+ if(x.detector==='official_followup'&&/공고|선정결과/.test(text)&&!/변경|확대|축소|신설|폐지|경쟁률/.test(text))return false;
+ return scope.test(text)&&meaningful.test(text);
 }
-function kindFor(clue){
-  const detector=clean(clue?.detector),text=clueText(clue);
-  if(['market_pattern','formation_pattern','cross_source'].includes(detector))return '시장흐름';
-  if(detector==='reporting_opportunity')return '선취재';
-  if(/영입|선임|승진|퇴임|인사|대표.{0,6}교체|헤드|파트너.{0,6}영입|조직개편/.test(text))return '인사·펀드레이징';
-  if(/출자사업|모태펀드|국민성장펀드|위탁운용사|GP\s*선정|LP\b|약정액|결성예정|결성총회|최종\s*클로징|펀드레이징/.test(text))return 'LP·GP';
-  if(/규제|기준\s*(?:변경|완화|강화)|요건\s*(?:변경|완화|강화)|제도\s*(?:변경|개편)|정책\s*(?:변경|개편)|금융위|금감원/.test(text))return '정책·규칙';
-  if(/회생|워크아웃|부도|연체|EOD|기한이익상실|회사채|전환사채|CB\b|교환사채|EB\b|인수금융|리파이낸싱|차입|담보|보증|PF\b|신용등급|상환/.test(text))return '크레딧';
-  if(/처분|매각|회수|엑시트|세컨더리|컨티뉴에이션|잔여\s*지분|펀드\s*만기/.test(text))return '회수·매각';
-  if(/인수|취득|양수|합병|분할|영업양수|공개매수|경영권|우선협상|우협|SPA/.test(text)||detector==='dart_deal')return 'M&A·거래';
-  return '후속단독';
+function select(rows,input={}){
+ const out=[],groups=new Map(),allNews=[...(input.news||[]),...(input.foreign||[])];
+ const seenUrls=new Set(rows.filter(x=>x.detector==='news_followup').flatMap(x=>(x.sources||[]).map(s=>s.url)));
+ const extra=allNews.filter(n=>!seenUrls.has(n.source_url)&&n.source_type!=='press_release'&&Date.parse(n.published_at)<=Date.now()&&Date.parse(n.published_at)>Date.now()-7*86400000).map(n=>({clue_id:'news-'+norm(n.title_ko||n.title),detector:'news_followup',headline:n.title_ko||n.title,entities:[n.target?.name,...(n.related_entities||[]).map(e=>e.canonical_name)].filter(Boolean),sort_date:n.published_at,lane:'current',fact_status:'보도',sources:[{url:n.source_url,label:n.source_name,title:n.title_ko||n.title,date:n.published_at}]}));
+ for(const x of [...rows,...extra].sort((a,b)=>String(b.sort_date||'').localeCompare(String(a.sort_date||'')))){
+  if(x.lane==='background'){out.push({...x,article_brief:null});continue;}
+  if(!eligible(x))continue;
+  const entity=primaryEntity(x),topic=entity||'';
+  if(x.detector!=='news_followup'){out.push({...x,article_pitch:undefined,article_brief:null,research_topic:topic});continue;}
+  const key=entity?norm(entity):x.clue_id;
+  if(groups.has(key))continue;groups.set(key,true);
+  const related=entity?allNews.filter(n=>norm(n.title_ko||n.title).includes(norm(entity))&&!noise.test(n.title_ko||n.title)):[];
+  const sources=[...related.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))).map(n=>({label:n.source_name,title:n.title_ko||n.title,url:n.source_url,date:n.published_at})),...(x.sources||[])];
+  const unique=[...new Map(sources.map(s=>[s.url,s])).values()];
+  out.push({...x,clue_id:entity?'issue-'+norm(entity):x.clue_id,sort_date:related[0]?.published_at||x.sort_date,headline:entity||x.headline,one_line_signal:entity?(related[0]?.title_ko||related[0]?.title||x.headline):'',detector_label:'관련 보도',reason:'본문 대조 전 · 기사 제안은 원문을 읽은 뒤 표시합니다.',article_pitch:undefined,article_brief:null,research_topic:topic,sources:unique.slice(0,12),reported:unique.slice(0,6).map(s=>(s.label||'보도')+': '+(s.title||x.headline))});
+ }
+ return out;
 }
-
-function template(kind,clue){
-  const entity=primaryEntity(clue),signal=compact(clue?.one_line_signal||clue?.changed_fact||clue?.headline,70);
-  const base={kind,angle:'',must_get:[],compare:[],calls:[],ready_when:''};
-  if(kind==='M&A·거래')return {...base,
-    angle:`${entity}의 거래 사실 자체보다 누가 얼마를 어떤 돈으로 사고, 거래 뒤 지배력이 어떻게 바뀌는지 확인해 ‘실제 인수 구조와 다음 단계’로 확장`,
-    must_get:['거래금액·취득지분·거래 전후 지분율','매수자·매도자와 자금원(자기자금·인수금융·공동투자)','SPA·우협·클로징 일정과 선행조건'],
-    compare:['같은 기업의 직전 지분·사업 구조','동일 매수자·PEF의 최근 유사 거래 2건'],
-    calls:unique([entity,'거래 상대방','매각·인수 자문사 또는 대주단']),
-    ready_when:'금액·상대방·자금원·거래 단계가 원문과 당사자 취재로 맞고, 왜 지금 거래하는지 한쪽 이상 설명이 붙으면 기사화 판단.'};
-  if(kind==='회수·매각')return {...base,
-    angle:`${entity}의 매각·처분 가격만 쓰지 말고 투자원가·누적 회수액·잔여 지분·펀드 만기를 붙여 실제 회수 성과와 매각 배경을 확인`,
-    must_get:['최초 투자일·투자원가·추가 투자금','이번 처분가와 누적 배당·중간회수액','잔여 지분·펀드 만기·LP 회수 일정'],
-    compare:['같은 펀드의 다른 회수 사례','직전 가치평가·리파이낸싱 또는 배당 시점'],
-    calls:unique([entity,'매도자·운용사','LP 또는 거래 자문사']),
-    ready_when:'투자원가와 누적 회수액을 구분해 확인하고 잔여 지분·펀드 시계를 붙일 수 있으면 회수 기사 판단.'};
-  if(kind==='LP·GP')return {...base,
-    angle:`${entity} 관련 공고·선정 한 건에서 끝내지 말고 지원사·경쟁률·반복 선정·실제 결성까지 비교해 정책자금이 어떤 GP로 이동하는지 확인`,
-    must_get:['정책 출자액·출자 요청액·결성예정액·실제 약정액을 구분','지원→1차→최종 선정 GP와 경쟁률','민간 LP 확약·GP 커밋·최초 납입·최종 클로징'],
-    compare:['같은 LP의 최근 2개년 동일 리그 선정 결과','선정 GP의 다른 정책 LP 반복 선정·결성 성적'],
-    calls:unique([entity,'선정 GP 2곳 이상','LP 출자 담당자']),
-    ready_when:'선정 단계와 금액 정의를 원문으로 확정하고 GP·LP 양쪽 확인이 붙으면 단건 또는 반복선정 흐름 기사 판단.'};
-  if(kind==='정책·규칙')return {...base,
-    angle:`${entity}의 새 기준 문구를 요약하는 데서 그치지 말고 이전 기준과 대조해 실제 자금 배분·선정 대상이 누구에게 유리하거나 불리해지는지 확인`,
-    must_get:['변경 전·후 문구와 시행일·적용 대상','정책자금 규모와 실제 배분 방식','새 기준을 적용받는 GP·기업·투자자의 구체 사례'],
-    compare:['직전 연도 동일 제도·출자사업 결과','변경 기준을 충족하지 못하거나 새로 충족하는 반대 사례'],
-    calls:unique([entity,'정책 담당 부서','적용 대상 GP·LP 또는 업계 관계자']),
-    ready_when:'전후 규칙과 실제 적용 사례를 각각 확인하고, 수혜·부담 주체를 양쪽 취재로 검증하면 정책 기사 판단.'};
-  if(kind==='크레딧')return {...base,
-    angle:`${entity}의 조달액이나 사건명보다 금리·만기·담보·옵션·상환재원을 붙여 누가 위험과 손실을 떠안는 구조인지 확인`,
-    must_get:['조달액·금리/수익률·만기·전환/풋/콜 조건','담보·보증·우선순위와 채권자 구성','상환재원·차환 계획·다음 만기 또는 EOD 조건'],
-    compare:['직전 조달 조건과 현재 시장금리·주가','동일 신용등급·업종의 최근 조달 2건'],
-    calls:unique([entity,'주관사·대주단·채권자','신용평가사 또는 투자자']),
-    ready_when:'계약 조건과 상환재원을 확인하고 투자자·채권자의 손익 변화가 계산 가능하면 크레딧 기사 판단.'};
-  if(kind==='인사·펀드레이징')return {...base,
-    angle:`${entity}의 인사 사실보다 새 역할이 어떤 펀드레이징·투자 전략과 연결되는지, 첫 담당 펀드·딜·LP 접촉을 확인`,
-    must_get:['이전 직책과 새 역할·의사결정 권한','담당 펀드 목표액·현재 모집액·주요 LP','첫 담당 딜·포트폴리오와 기존 파트너 역할 변화'],
-    compare:['최근 1년 유사한 한국계·아시아 펀드레이징 인사','같은 하우스의 직전 조직개편·펀드레이징 결과'],
-    calls:unique([entity,'이동 전·후 하우스','주요 국내 LP 또는 동종 하우스']),
-    ready_when:'역할·권한과 실제 펀드/LP 과제가 확인되고 유사 인사 2건 이상이 붙으면 인사 단독 또는 시장 인력경쟁 기사 판단.'};
-  if(kind==='시장흐름')return {...base,
-    angle:`${signal||entity+' 관련 변화'}를 한 사례로 단정하지 말고 독립된 유사 사례 3건 이상과 과거 기준치를 붙여 새로운 시장 관행인지 검증`,
-    must_get:['유사 사례별 날짜·금액·당사자·거래 단계','직전 연도 또는 직전 사이클 기준치','같은 방향이 아닌 반대 사례 최소 1건'],
-    compare:['동일 전략·산업의 최소 3개 거래','규모가 다른 GP·LP의 움직임'],
-    calls:['서로 다른 운용사·LP 3곳 이상','거래 자문사·대주단','반대 사례 당사자'],
-    ready_when:'서로 독립된 3개 이상 사례와 반대 사례를 확인해야 시장 흐름 기사로 판단. 한 건이면 단건 기사에 머문다.'};
-  if(kind==='선취재')return {...base,
-    angle:`${entity}의 발표를 받아쓰지 않도록 발표 전 기준 수치·기존 상태·쟁점을 준비하고, 발표 직후 달라진 조건과 이해관계자 반응을 확인`,
-    must_get:['발표 전 기준 수치와 직전 공식 입장','당일 확인할 금액·시행일·선정/거래 조건','발표 직후 바로 전화할 당사자와 반대 이해관계자'],
-    compare:['직전 발표·공고와 달라진 문구','예상과 실제 발표가 다른 항목'],
-    calls:unique([entity,'발표 담당 부서','직접 영향을 받는 GP·LP·기업']),
-    ready_when:'발표 전 기준과 발표 후 변경점을 대조하고 당사자 반응까지 확보하면 당일 후속 기사 판단.'};
-  return {...base,
-    angle:`${entity} 관련 기존 보도에서 빠진 가격·자금조달·계약 단계·당사자 확인 중 하나를 독자적으로 확인해 후속 단독 가능성을 점검`,
-    must_get:['기존 보도가 확인한 사실과 아직 보도에 없는 항목을 분리','가격·금액·지분·일정 가운데 독자 확인 가능한 핵심 수치','거래 양측 또는 이해관계가 다른 두 곳의 확인'],
-    compare:['최초 보도와 후속 보도의 달라진 사실','같은 기업·운용사의 직전 거래·펀드 사례'],
-    calls:unique([entity,'거래·출자 담당자','상대방·자문사·LP 등 반대편 취재원']),
-    ready_when:'기존 보도에 없던 핵심 사실 하나를 독자 확인하고 거래 양측의 확인 또는 반론을 붙이면 후속 기사 판단.'};
+function requestFor(x){
+ if(!x.research_topic)return null;
+ const sources=(x.sources||[]).filter(s=>s.title&&/^https?:/.test(s.url)).slice(0,5).map(s=>({url:s.url,title:s.title,published_at:s.date,publisher:s.label}));
+ const key=JSON.stringify([VERSION,x.research_topic,sources]);
+ return {key,url:'/api/signals?mode=research&topic='+encodeURIComponent(x.research_topic)+'&seeds='+encodeURIComponent(JSON.stringify(sources))};
 }
-
-function storyBrief(clue){
-  if(!clue||typeof clue!=='object')return null;
-  const brief=template(kindFor(clue),clue);
-  if(!clue.article_pitch)return brief;
-  return {...brief,kind:clue.story_mode||brief.kind,pitch:clean(clue.article_pitch),why_today:clean(clue.why_today||clue.reason),must_get:(clue.story_requirements||[]).length?unique(clue.story_requirements):brief.must_get,compare:(clue.comparison_targets||[]).length?unique(clue.comparison_targets):brief.compare,calls:unique([...(clue.contacts||[]),...brief.calls])};
+function shortlist(rows,limit=6){
+ const weight=x=>x.article_brief?.angles?.length?100:x.article_brief?80:x.detector==='dart_deal'?60:x.research_topic?40:0;
+ return [...rows].sort((a,b)=>weight(b)-weight(a)||String(b.sort_date||'').localeCompare(String(a.sort_date||''))).slice(0,limit);
 }
-function enrichClue(clue){
-  if(!clue||typeof clue!=='object')return clue;
-  return {...clue,article_brief:storyBrief(clue)};
+function attach(x,result){
+ if(!result||result.version!==VERSION)return x;
+ if(result.status==='out_of_scope')return null;
+ const a=result.analysis;if(result.status!=='ready'||!a)return {...x,research:result};
+ return {...x,research:result,detector_label:a.angles?.length?'후속 기사 제안':'이슈 브리핑',fact_status:'보도',one_line_signal:a.summary?.text||x.one_line_signal,reason:a.why_now?.text||'',article_pitch:a.angles?.[0]?.headline,article_brief:a,sources:[...new Map([...(result.sources||[]).map(s=>({...s,label:s.publisher||s.title})),...(x.sources||[])].map(s=>[s.url,s])).values()]};
 }
-function renderBriefHtml(brief){
-  if(!brief)return '';
-  const proposal=brief.pitch?`<div class="marketin-story-pitch"><strong>기사 제안</strong><p>${esc(brief.pitch)}</p>${brief.why_today?`<small><b>왜 오늘</b> ${esc(brief.why_today)}</small>`:''}</div>`:`<p class="marketin-story-angle">${esc(brief.angle)}</p>`;
-  return `<section class="marketin-story-brief" aria-label="마켓인형 취재안"><div class="marketin-story-head"><b>마켓인형 취재안</b><span>${esc(brief.kind)}</span></div>${proposal}</section>`;
+function href(url){try{const u=new URL(url);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
+function citation(ids,result){const a=result.analysis;return [...new Set((ids||[]).map(id=>a?.facts?.find(f=>f.id===id)?.source_id).filter(Boolean))].map(id=>{const s=result.sources.find(s=>s.source_id===id),url=href(s?.url);return url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(s.publisher||s.title||'원문')} ↗</a>`:'';}).join(' · ');}
+function renderBriefHtml(result){
+ if(!result)return '';
+ if(result.status!=='ready'||!result.analysis){const error=result.error||'';const text=/model_/.test(error)?'AI 분석 연결을 사용할 수 없어 원문 목록만 표시합니다.':error==='insufficient_sources'?'읽을 수 있는 원문이 부족해 기사 제안을 보류했습니다.':error==='no_recent_source'?'최근 원문을 확인하지 못해 기사 제안을 보류했습니다.':result.status==='loading'?'최신 기사와 마켓인 기존 보도를 읽는 중…':'원문 대조를 완료하지 못해 기사 제안을 보류했습니다.';return `<p class="discovery-research-status">${esc(text)}</p>`;}
+ const a=result.analysis;
+ const facts=a.facts.slice(0,3).map(f=>`<li>${esc(f.text)} <span>${citation([f.id],result)}</span></li>`).join('');
+ const angles=a.angles.map(p=>`<div class="marketin-story-pitch"><strong>후속 기사 방향 · 검증 전</strong><p>${esc(p.headline)}</p><div>${esc(p.reason)}</div><small>기존 보도에서 더 나아갈 부분: ${esc(p.new_information)}</small><span>${citation(p.basis_ids,result)}</span></div>`).join('');
+ return `<section class="marketin-story-brief" aria-label="원문 기반 이슈 브리핑"><ul class="discovery-brief-facts">${facts}</ul>${angles||'<p class="discovery-research-status">현재 읽은 자료에서는 별도 후속 기사 방향을 제안하지 않았습니다.</p>'}</section>`;
 }
-function decorate(root){
-  const doc=root?.document,map=root?.__marketinStoryBriefMap;if(!doc||!map)return;
-  for(const card of doc.querySelectorAll('.discovery-card')){
-    if(card.querySelector('.marketin-story-brief'))continue;
-    const detail=card.querySelector('[data-detail]'),clue=detail&&map.get(detail.dataset.detail);if(!clue?.article_brief)continue;
-    const anchor=card.querySelector('.discovery-reason')||card.querySelector('.discovery-fact');if(!anchor)continue;
-    anchor.insertAdjacentHTML('afterend',renderBriefHtml(clue.article_brief));
-  }
+function renderDetails(result){
+ if(!result?.sources)return '';
+ const a=result.analysis;let html='';
+ if(a){
+  html+='<h4>현재 읽은 마켓인 기사에서 다룬 내용</h4>'+((a.already_covered||[]).length?'<ul>'+a.already_covered.map(c=>{const s=result.sources.find(s=>s.source_id===c.source_id);return `<li>${esc(c.text)} ${href(s?.url)?`<a href="${esc(href(s.url))}" target="_blank" rel="noopener noreferrer">기존 기사 ↗</a>`:''}</li>`;}).join('')+'</ul>':'<p>마켓인 본문을 확보하지 못했습니다. 기사 제안은 보류합니다.</p>');
+  if(a.uncertainties?.length)html+='<h4>아직 정해지지 않았거나 보도가 다른 부분</h4><ul>'+a.uncertainties.map(u=>`<li>${esc(u.text)} ${citation(u.fact_ids,result)}</li>`).join('')+'</ul>';
+  html+='<h4>사실과 출처</h4><ul>'+a.facts.map(f=>`<li>${f.date?esc(f.date)+' · ':''}${esc(f.text)} ${citation([f.id],result)}</li>`).join('')+'</ul>';
+ }
+ html+='<h4>본문 확인 범위</h4><ul>'+result.sources.map(s=>`<li>${esc(s.title)} · ${s.read_ok?'본문 읽음':'본문 미확보'}${s.published_at?' · '+esc(String(s.published_at).slice(0,10)):''}</li>`).join('')+'</ul>';
+ if(result.as_of)html+='<p>분석 기준 '+esc(new Date(result.as_of).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' (한국시간)</p>';
+ return html;
 }
-function install(root){
-  const C=root?.IBDiscovery;if(!C||C.__marketinStoryBriefInstalled)return false;
-  const original=C.build;if(typeof original!=='function')return false;
-  C.build=function(){
-    const rows=(original.apply(C,arguments)||[]).map(enrichClue);
-    root.__marketinStoryBriefMap=new Map(rows.map(row=>[row.clue_id,row]));
-    return rows;
-  };
-  C.storyBrief=storyBrief;C.__marketinStoryBriefInstalled=true;
-  if(root.document&&typeof root.MutationObserver==='function'){
-    const observer=new root.MutationObserver(()=>decorate(root));
-    const target=root.document.querySelector('#discoveryCards')||root.document.body;
-    if(target)observer.observe(target,{childList:true,subtree:true});
-    decorate(root);
-  }
-  return true;
-}
-
-return {clueText,enrichClue,kindFor,primaryEntity,renderBriefHtml,storyBrief,install};
+function install(root){const C=root?.IBDiscovery;if(!C||C.__marketinStoryBriefInstalled)return false;const original=C.build;C.build=function(input,...rest){return select(original.call(C,input,...rest),input);};C.__marketinStoryBriefInstalled=true;return true;}
+return {VERSION,primaryEntity,eligible,select,requestFor,attach,renderBriefHtml,renderDetails,shortlist,install};
 });

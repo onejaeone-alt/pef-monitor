@@ -6,6 +6,8 @@ const REVIEW_KEY='ib_dart_reviews_v1',PROJECT_KEY='pef_my_reporting_projects_v1'
 const endpoints={canonical:['출자공고·기존 분석','/api/signals?mode=clues&days=14'],news:['국내 뉴스','/api/news?feed=reader&days=7&limit=500'],foreign:['외신','/api/news?scope=foreign&days=7&limit=100'],dart:['DART 공시','/api/dart-feed?days=7&limit=800'],calendar:['취재일정','/api/news?feed=calendar']};
 let state={},status={},reviews={},data=[],view='current',query='',expanded=false,run=0,controller,reading=false,failures=new Set();
 const UPDATE_MS=5*60*1000;
+const B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
+let researchCache=stored(RESEARCH_KEY,{}),researching=false,researchPending=new Set();
 let loading=false,lastStarted=0,lastChecked=0,updateTimer=null,pendingData=null,renderedCards='';
 const away=()=>document.hidden||globalThis.navigator?.onLine===false;
 const readingCard=()=>document.querySelectorAll('[data-detail][open]').length>0||(globalThis.scrollY||0)>180;
@@ -22,18 +24,19 @@ function stored(k,fallback){try{return JSON.parse(localStorage.getItem(k)||'null
 function list(rows){return rows?.length?'<ul>'+rows.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>현재 확보한 내용이 없습니다.</p>';}
 function links(rows){return (rows||[]).filter(s=>C.safeUrl(s.url)).map(s=>`<a href="${esc(C.safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.label||'원문')} ↗</a>`).join('');}
 function card(x){
+ const research=B?.renderBriefHtml(x.research)||'',researchDetails=B?.renderDetails(x.research)||'';
  const evidence=(x.evidence||[]).map(f=>`${f.label}: ${f.before!==undefined?f.before+' → '+f.after:f.value+(f.unit?' '+f.unit:'')} · ${f.source?.location||'원문 위치 확인'}`);
- return `<article class="discovery-card"><div class="discovery-meta"><span>${esc(x.detector_label)}</span><span>${esc(x.fact_status==='보도'?'보도 기반 · 당사자 확인 필요':x.evidence?'원문 추출 · 검수 전':x.fact_status||'단서')}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3><p class="discovery-fact">${esc(x.one_line_signal||x.changed_fact)}</p><p class="discovery-reason">${esc(x.reason)}</p><div class="discovery-actions">${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}">취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
+ return `<article class="discovery-card"><div class="discovery-meta"><span>${esc(x.detector_label)}</span><span>${esc(x.fact_status==='보도'?'보도 기반 · 당사자 확인 필요':x.evidence?'원문 추출 · 검수 전':x.fact_status||'단서')}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3><p class="discovery-fact">${esc(x.one_line_signal||x.changed_fact)}</p><p class="discovery-reason">${esc(x.reason)}</p>${research}<div class="discovery-actions">${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}">취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
 }
 function render({accept=false}={}){
  const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
- const next=C.build({...state,reviews});
+ const next=C.build({...state,reviews}).map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>Date.now()?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
  if(!accept&&data.length&&readingCard()&&JSON.stringify(next)!==JSON.stringify(data))pendingData=next;
  else {data=next;pendingData=null;}
  $('#discoveryUpdates').hidden=!pendingData;
  const counts={current:data.filter(x=>x.lane==='current').length,background:data.filter(x=>x.lane==='background').length};
  let rows=data.filter(x=>x.lane===view&&(!query||[x.headline,x.one_line_signal,...(x.entities||[])].join(' ').toLowerCase().includes(query)));
- const total=rows.length;if(view==='current'&&!expanded&&!query)rows=C.shortlist(rows);
+ const total=rows.length;if(view==='current'&&!expanded&&!query)rows=B?B.shortlist(rows):C.shortlist(rows);
  const html=rows.length?rows.map(card).join(''):`<div class="discovery-empty">${Object.values(status).some(s=>s.state==='loading')?'자료를 읽는 중입니다. 도착한 자료부터 표시합니다.':'현재 조건에서 추린 취재거리가 없습니다. 아래 수집 상태를 확인해 주세요.'}</div>`;
  if(html!==renderedCards){$('#discoveryCards').innerHTML=html;renderedCards=html;for(const el of document.querySelectorAll('[data-detail]'))if(open.has(el.dataset.detail))el.open=true;}
  $('#discoveryCounts').textContent=`최근 자료 ${counts.current}건 · 기존 분석 ${counts.background}건`;
@@ -77,7 +80,23 @@ async function load({automatic=false}={}){
   }catch(e){if(token!==run)return;status[key]={state:'failed'};if(state[key]?.length)$('#discoveryMessage').textContent='일부 수집원에 연결하지 못해 해당 항목은 이전 자료를 유지했습니다. 다음 자동 갱신 때 다시 확인합니다.';render();}
  }));
  if(token===run&&!away())await readBatch(token);
- if(token===run){loading=false;lastChecked=Date.now();$('#refresh').disabled=false;render();scheduleUpdate();}
+ if(token===run){loading=false;lastChecked=Date.now();$('#refresh').disabled=false;render();scheduleUpdate();readResearch(token);}
+}
+async function readResearch(token){
+ if(!B||researching||away())return;
+ researching=true;
+ const queue=B.shortlist(data.filter(x=>x.lane==='current'),data.length).map(x=>B.requestFor(x)).filter(r=>r&&!(researchCache[r.key]?.until>Date.now())).filter((r,i,all)=>all.findIndex(t=>t.key===r.key)===i).slice(0,3);
+ try{for(const request of queue){
+  if(token!==run||away())break;
+  researchPending.add(request.key);render();
+  let value;
+  try{value=await json(request.url,controller.signal);}catch{value={version:B.VERSION,status:'sources_only',error:'research_unavailable',sources:[]};}
+  researchPending.delete(request.key);if(token!==run)break;
+  researchCache[request.key]={until:Date.now()+30*60000,value};
+  const keep=Object.entries(researchCache).filter(([,v])=>v.until>Date.now()).sort((a,b)=>b[1].until-a[1].until).slice(0,15);researchCache=Object.fromEntries(keep);
+  try{localStorage.setItem(RESEARCH_KEY,JSON.stringify(researchCache));}catch{}
+  render();
+ }}finally{researching=false;researchPending.clear();if(token===run)render();}
 }
 $('#refresh').onclick=()=>load();$('#discoveryRetry').onclick=()=>load();$('#discoveryReadMore').onclick=()=>readBatch(run);
 $('#discoveryUpdates').onclick=()=>render({accept:true});
