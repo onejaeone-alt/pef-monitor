@@ -106,7 +106,8 @@ function install(root){
     return {...attached,article_timeline:timeline,research:{...(attached.research||result),story_timeline:timeline}};
   };
   B.renderBriefHtml=function(result){
-    const html=originalRender.call(B,result),timeline=result?.story_timeline;if(!timeline?.length||!html.includes('</section>'))return html;
+    let html=originalRender.call(B,result),timeline=result?.story_timeline;if(!timeline?.length||!html.includes('</section>'))return html;
+    html=html.replace(/후속 기사 방향 · 검증 전/g,'오늘 기사 방향 · 검증 전');
     return html.replace('</section>',renderTimelineHtml(timeline)+'</section>');
   };
   if(typeof originalShortlist==='function')B.shortlist=function(rows,limit=6){
