@@ -45,8 +45,8 @@ async function load(){
    else state[key]=key==='calendar'?d.events||[]:d.items||[];
    if(key==='news')state.newsIssues=d.issues||[];
    const count=(state[key]||[]).length;const partial=d.coverage?.complete===false||d.collection_status?.partial||d.sources?.some(s=>!s.ok)||key==='canonical'&&Object.values(d.diagnostics?.providers?.official||{}).some(v=>!v);
-   const capped=d.coverage?.display_limited||d.collection_status?.truncated;
-   status[key]={state:partial?'partial':'ready',detail:count+'건 확인'+(partial?' · 일부 수집 실패':'')+(capped?' · 조회 상한 적용':'')};render();
+   const capped=d.coverage?.display_limited||d.collection_status?.truncated,translationFailed=Number(d.translation?.failed)||0;
+   status[key]={state:partial||translationFailed?'partial':'ready',detail:count+'건 확인'+(partial?' · 일부 수집 실패':'')+(capped?' · 조회 상한 적용':'')+(translationFailed?' · 번역 미확보 '+translationFailed+'건':'')};render();
    if(key==='dart')await readBatch(token);
   }catch(e){if(token!==run)return;status[key]={state:'failed'};render();}
  }));
