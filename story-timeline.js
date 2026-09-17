@@ -97,7 +97,7 @@ function renderTimelineHtml(rows){
 }
 function install(root){
   const C=root?.IBDiscovery,B=root?.MarketInStoryBrief;if(!C||!B||B.__storyTimelineInstalled)return false;
-  const originalBuild=C.build,originalAttach=B.attach,originalRender=B.renderBriefHtml,originalShortlist=B.shortlist;
+  const originalBuild=C.build,originalAttach=B.attach,originalRender=B.renderBriefHtml,originalShortlist=B.shortlist,originalDetails=B.renderDetails;
   if(typeof originalBuild!=='function'||typeof originalAttach!=='function'||typeof originalRender!=='function')return false;
   C.build=function(input,...rest){return timingCandidates(originalBuild.call(C,input,...rest),input,C);};
   B.attach=function(clue,result){
@@ -106,12 +106,13 @@ function install(root){
     return {...attached,article_timeline:timeline,research:{...(attached.research||result),story_timeline:timeline}};
   };
   B.renderBriefHtml=function(result,...args){
-    let html=originalRender.call(B,result,...args),timeline=result?.story_timeline;if(!timeline?.length||!html.includes('</section>'))return html;
+    let html=originalRender.call(B,result,...args),timeline=result?.story_timeline;if(result?.headline_in_card||!timeline?.length||!html.includes('</section>'))return html;
     html=html.replace(/후속 기사 방향 · 검증 전/g,'오늘 기사 방향 · 검증 전');
     return html.replace('</section>',renderTimelineHtml(timeline)+'</section>');
   };
+  if(typeof originalDetails==='function')B.renderDetails=function(result,...args){return originalDetails.call(B,result,...args)+renderTimelineHtml(result?.story_timeline);};
   if(typeof originalShortlist==='function')B.shortlist=function(rows,limit=6){
-    const base=originalShortlist.call(B,rows,rows.length),timing=base.filter(x=>x.event_date&&x.story_mode),rest=base.filter(x=>!timing.includes(x));return [...timing,...rest].slice(0,limit);
+    const base=originalShortlist.call(B,rows,rows.length),timing=base.filter(x=>x.event_date&&x.story_mode&&x.article_brief?.angles?.length),rest=base.filter(x=>!timing.includes(x));return [...timing,...rest].slice(0,limit);
   };
   B.storyTimeline=timelineFor;B.__storyTimelineInstalled=true;return true;
 }

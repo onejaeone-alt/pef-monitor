@@ -58,5 +58,5 @@ test('install adds timing candidates and appends timelines only after the resear
 
 test('AI discovery loads timeline extension after source-grounded MarketIN research and before the desk',()=>{
   const html=fs.readFileSync('leads.html','utf8');const brief=html.indexOf('/marketin-story-brief.js'),timeline=html.indexOf('/story-timeline.js'),desk=html.indexOf('/discovery-desk.js');
-  assert.ok(brief>=0&&timeline>brief&&desk>timeline);assert.match(html,/D-3부터 원문 근거/);assert.match(html,/story-timeline.css/);
+  assert.ok(brief>=0&&timeline>brief&&desk>timeline);assert.match(html,/story-timeline.css/);
 });

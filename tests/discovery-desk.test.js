@@ -26,5 +26,5 @@ test('independent feeds render progressively; failures stay visible; shared DART
  assert.match(node('#discoverySources').innerHTML,/취재일정 · 수집 중/);assert.doesNotMatch(node('#discoveryReviewStatus').textContent,/대기/);
  assert.equal(node('#discoveryReadMore').hidden,true);assert.equal(node('#discoveryRetry').hidden,false);
  resolveCalendar();await new Promise(r=>setTimeout(r,5));assert.equal(node('#discoveryReadMore').hidden,true);
- assert.match(node('#discoveryCounts').textContent,/최근 자료 23건/);
+ assert.match(node('#discoveryCounts').textContent,/최근 참고자료 23건/);
 });

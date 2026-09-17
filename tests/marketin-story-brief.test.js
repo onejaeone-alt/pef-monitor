@@ -24,3 +24,6 @@ test('evidence brief shows citations, coverage differences, and uncertainty with
 test('install replaces generic enrichment without mutating core source records',()=>{
  const C={build:()=>[source]},root={IBDiscovery:C};assert.equal(B.install(root),true);assert.equal(B.install(root),false);const out=C.build();assert.equal(out[0].article_brief,null);assert.equal(source.article_brief,undefined);
 });
+
+test('latest news research precedes unanalysed DART material, grounded pitches precede both',()=>{const news={detector:'news_followup',research_topic:'홈플러스',sort_date:'2026-09-17'},dart={detector:'dart_deal',research_topic:'공시기업',sort_date:'2026-09-17'},pitch={article_brief:{angles:[{headline:'검증된 근거의 가제'}]},sort_date:'2026-09-16'};assert.deepEqual(B.shortlist([dart,news,pitch]),[pitch,news,dart]);});
+test('pitch-first card body omits duplicate headline and retains cited rationale',()=>{const r={status:'ready',headline_in_card:true,sources:[{source_id:'s1',url:'https://marketin.edaily.co.kr/News/Read?id=1',publisher:'마켓인'}],analysis:{facts:[{id:'f1',source_id:'s1'}],angles:[{headline:'이미 카드 제목에 있는 가제',reason:'발제 요지',new_information:'기보도에서 진전시킬 내용',basis_ids:['f1']}]}};const html=B.renderBriefHtml(r);assert.match(html,/발제 요지/);assert.match(html,/기보도에서 진전/);assert.match(html,/marketin.edaily.co.kr/);assert.doesNotMatch(html,/이미 카드 제목/);});

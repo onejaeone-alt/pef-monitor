@@ -44,6 +44,17 @@
 #discoveryDesk .marketin-story-pitch>div{font-size:13px;line-height:1.7;margin:7px 0;color:#4a5768}
 #discoveryDesk .marketin-story-pitch small{font-size:12px;line-height:1.65;margin:7px 0}
 
+/* Proposals lead with the article; unanalysed material stays compact. */
+#discoveryDesk .discovery-section-title{grid-column:1/-1;font-size:16px;margin:10px 0 0;letter-spacing:-.02em}
+#discoveryDesk .discovery-section-title span{font-size:12px;color:#85909d;font-weight:500;margin-left:5px}
+#discoveryDesk .discovery-reference h3{font-size:16px;line-height:1.55;font-weight:600;margin-bottom:4px}
+#discoveryDesk .discovery-reference .discovery-meta span:first-child{color:#697586;background:#f2f4f6}
+#discoveryDesk .discovery-proposal{border-top:3px solid #b43a70}
+#discoveryDesk .discovery-proposal h3{font-size:21px;line-height:1.5;margin:15px 0 12px}
+#discoveryDesk .discovery-proposal .marketin-story-brief{border:0;border-top:1px solid #edf0f2;border-radius:0;background:none;padding:12px 0 0;margin:0}
+#discoveryDesk .discovery-pitch-reason{font-size:14px;line-height:1.75;color:#2f3b4d;margin:0 0 9px}
+#discoveryDesk .discovery-pitch-difference{font-size:13px;line-height:1.7;color:#725367;margin:0 0 10px}
+@media(max-width:850px){#discoveryDesk .discovery-proposal h3{font-size:19px}}
 #discoveryDesk .discovery-section-label{display:block;font-size:12px;margin-bottom:8px;color:#526276}
 #discoveryDesk .discovery-comparison{font-size:12px;line-height:1.7;padding:0 0 10px;margin-bottom:12px;border-bottom:1px solid #e2e6eb}
 #discoveryDesk .discovery-comparison p{margin:6px 0}#discoveryDesk .discovery-comparison ul{padding-left:18px}
