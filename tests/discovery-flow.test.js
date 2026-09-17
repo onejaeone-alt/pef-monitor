@@ -34,15 +34,43 @@ test('only upcoming sourced events or announcements; cancellations, old events, 
  const rows=[e,{...e,status:'cancelled'},{...e,date:'2026-09-16'},{...e,date:'2026-10-01'},{...e,title:'출자 접수 마감'},{...e,evidence:''}];
  assert.equal(C.calendarClues(rows,now).length,1);assert.match(C.calendarClues(rows,now)[0].next_action,/취재 등록/);
 });
+test('a sourced BDC announcement in two days becomes a pre-announcement wrapup pitch, not a prediction',()=>{
+ const e={id:'bdc',title:'금융위원회 기업성장집합투자기구(BDC) 규제 세부안 발표',date:'2026-09-19',status:'scheduled',evidence:'9월 19일 BDC 세부안 발표 예정',source_url:'https://example.com/bdc',source_name:'금융위원회',kind:'announcement',organizer:'금융위원회'};
+ const clue=C.calendarClues([e],now)[0];
+ assert.equal(C.daysUntil(e.date,now),2);assert.equal(clue.story_mode,'사전 랩업');assert.match(clue.article_pitch,/BDC 규제 발표 D-2/);assert.match(clue.why_today,/2일 뒤/);assert.ok(clue.story_requirements.length>=4);assert.ok(clue.comparison_targets.some(x=>/미국 BDC/.test(x)));assert.equal(clue.fact_status,'단서');
+});
+test('repeated Homeplus restructuring coverage becomes a next-scenario story pitch with concrete reporting requirements',()=>{
+ const rows=[
+  ['홈플러스 회생 인가…매각 절차 재개','2026-09-15','한국경제'],
+  ['홈플러스 재매각 시동…핵심 점포 새 주인 찾기','2026-09-16','매일경제'],
+  ['홈플러스 회생 이후 자산 매각 본격화…채권단 촉각','2026-09-17','전자신문'],
+ ].map(([title,published_at,source_name],i)=>({title,published_at,source_name,source_type:'domestic_news',source_url:'https://example.com/homeplus-'+i,target:{name:'홈플러스'},related_entities:[]}));
+ const clues=C.storyPitchClues(rows,now);assert.equal(clues.length,1);const clue=clues[0];assert.equal(clue.detector,'story_pitch');assert.equal(clue.story_mode,'시나리오');assert.match(clue.article_pitch,/홈플러스/);assert.match(clue.article_pitch,/시나리오/);assert.match(clue.why_today,/3건/);assert.ok(clue.story_requirements.some(x=>/채권자별/.test(x)));assert.equal(clue.fact_status,'추론');
+});
+test('article count alone never creates a pitch when there is no next-stage or scenario cue',()=>{
+ const rows=Array.from({length:6},(_,i)=>({title:'A사 신제품 출시 관련 보도 '+i,published_at:i<3?'2026-09-16':'2026-09-17',source_name:i%2?'매체B':'매체A',source_type:'domestic_news',source_url:'https://example.com/noise-'+i,target:{name:'A사'},related_entities:[]}));
+ assert.equal(C.storyPitchClues(rows,now).length,0);
+});
+test('multi-day M&A reporting needs an explicit next-stage cue before it becomes a deal followup pitch',()=>{
+ const rows=[
+  ['B사 매각 추진','2026-09-15','매체A'],['C사 B사 인수 검토','2026-09-16','매체B'],['B사 매각 본계약 앞두고 인수금융 협의','2026-09-17','매체C'],
+ ].map(([title,published_at,source_name],i)=>({title,published_at,source_name,source_type:'domestic_news',source_url:'https://example.com/deal-'+i,target:{name:'B사'},related_entities:[]}));
+ const clue=C.storyPitchClues(rows,now)[0];assert.equal(clue.story_mode,'거래 후속');assert.match(clue.article_pitch,/인수금융/);assert.ok(clue.story_requirements.some(x=>/종결/.test(x)));
+});
 test('old canonical analyses remain available without posing as fresh discoveries; source URLs prevent duplicate cards',()=>{
  const old={clue_id:'old',sort_date:'2026-09-07',sources:[{url:'https://example.com/old'}]};
  const same={...old,clue_id:'same',sources:[{url:'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='+n}]};
  const rows=C.build({dart:[item],reviews:{[n]:review},canonical:[old,same]},now);assert.equal(rows.length,2);assert.equal(rows[1].lane,'background');
 });
-test('shortlist reserves space for multiple source types and does not hide remaining candidates in data',()=>{
+test('shortlist reserves first-screen space for story pitches without hiding other candidates in data',()=>{
  const rows=Array.from({length:20},(_,i)=>({clue_id:'n'+i,detector:'news_followup',sort_date:'2026-09-17',lane:'current'}));
- rows.push({clue_id:'d',detector:'dart_deal',lane:'current'},{clue_id:'c',detector:'reporting_opportunity',lane:'current',event_date:'2026-09-18'});
- const shown=C.shortlist(rows);assert.equal(shown.length,12);assert.ok(shown.some(x=>x.clue_id==='d'));assert.ok(shown.some(x=>x.clue_id==='c'));assert.equal(rows.length,22);
+ rows.push({clue_id:'d',detector:'dart_deal',lane:'current'},{clue_id:'c',detector:'reporting_opportunity',lane:'current',event_date:'2026-09-18'},{clue_id:'s',detector:'story_pitch',lane:'current',sort_date:'2026-09-17',article_pitch:'[가제] 기사'});
+ const shown=C.shortlist(rows);assert.equal(shown.length,12);assert.ok(shown.some(x=>x.clue_id==='d'));assert.ok(shown.some(x=>x.clue_id==='c'));assert.ok(shown.some(x=>x.clue_id==='s'));assert.equal(rows.length,23);
+});
+test('story-pitch project handoff uses the pitch as project title while preserving reporter notes and judgments',()=>{
+ const clue={clue_id:'story-homeplus',headline:'홈플러스 관련 보도 흐름',article_pitch:'[가제] 홈플러스 다음 시나리오',sources:[{url:'https://example.com/h'}],questions:['q']};
+ const result=C.mergeProject([],clue,'2026-09-17T01:00:00Z');assert.equal(result.rows[0].title,clue.article_pitch);
+ const old={...result.rows[0],notes:'기자 메모',judgment:'보류',judgment_history:[{x:1}],title:'내가 고친 제목'};const next=C.mergeProject([old],clue,'2026-09-17T02:00:00Z');assert.equal(next.rows[0].notes,'기자 메모');assert.equal(next.rows[0].judgment,'보류');assert.equal(next.rows[0].title,'내가 고친 제목');
 });
 test('same-receipt project handoff preserves reporter notes and judgments and carries source evidence and questions',()=>{
  const clue=C.dartClue(item,review),old={project_id:'project-dart-'+n,notes:'기자 메모',judgment:'보류',judgment_history:[{x:1}],title:'기존 제목',created_at:'2026-09-16'};
