@@ -30,6 +30,11 @@
 #discoveryDesk .marketin-story-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 #discoveryDesk .marketin-story-head b{font-size:11px;color:#7b425c;font-weight:700}
 #discoveryDesk .marketin-story-head span{font-size:10px;color:#5b6675;background:#eef0eb;border-radius:999px;padding:3px 7px}
+#discoveryDesk .marketin-story-pitch{margin:5px 0 11px;padding:10px 11px;border:1px solid #ead5df;border-radius:8px;background:#fff7fa}
+#discoveryDesk .marketin-story-pitch>strong{display:block;font-size:10.5px;color:#a23568;margin-bottom:5px}
+#discoveryDesk .marketin-story-pitch p{font-size:14px;line-height:1.55;font-weight:700;letter-spacing:-.02em;color:#263448;margin:0 0 6px;word-break:keep-all}
+#discoveryDesk .marketin-story-pitch small{display:block;font-size:10.5px;line-height:1.55;color:#6c7888}
+#discoveryDesk .marketin-story-pitch small b{color:#4e5c70;margin-right:4px}
 #discoveryDesk .marketin-story-angle{font-size:13.5px;line-height:1.65;color:#253247;margin:0 0 11px;font-weight:600;word-break:keep-all}
 #discoveryDesk .marketin-story-grid{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:12px;border-top:1px solid #e8ebe7;padding-top:10px}
 #discoveryDesk .marketin-story-grid strong{display:block;font-size:10.5px;color:#6d7784;margin-bottom:5px}
