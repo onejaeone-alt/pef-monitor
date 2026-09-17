@@ -12,8 +12,8 @@ const compact=(value,n=86)=>{const text=clean(value);return text.length>n?text.s
 
 function clueText(clue){
   return clean([
-    clue?.detector,clue?.detector_label,clue?.headline,clue?.one_line_signal,clue?.changed_fact,clue?.reason,clue?.next_action,
-    ...(clue?.questions||[]),...(clue?.unknowns||[]),...(clue?.entities||[]),...(clue?.extracted_facts||[]),...(clue?.reported||[])
+    clue?.detector,clue?.detector_label,clue?.headline,clue?.article_pitch,clue?.story_mode,clue?.why_today,clue?.one_line_signal,clue?.changed_fact,clue?.reason,clue?.next_action,
+    ...(clue?.story_requirements||[]),...(clue?.comparison_targets||[]),...(clue?.questions||[]),...(clue?.unknowns||[]),...(clue?.entities||[]),...(clue?.extracted_facts||[]),...(clue?.reported||[])
   ].join(' '));
 }
 function primaryEntity(clue){
@@ -96,7 +96,9 @@ function template(kind,clue){
 
 function storyBrief(clue){
   if(!clue||typeof clue!=='object')return null;
-  return template(kindFor(clue),clue);
+  const brief=template(kindFor(clue),clue);
+  if(!clue.article_pitch)return brief;
+  return {...brief,kind:clue.story_mode||brief.kind,pitch:clean(clue.article_pitch),why_today:clean(clue.why_today||clue.reason),must_get:(clue.story_requirements||[]).length?unique(clue.story_requirements):brief.must_get,compare:(clue.comparison_targets||[]).length?unique(clue.comparison_targets):brief.compare,calls:unique([...(clue.contacts||[]),...brief.calls])};
 }
 function enrichClue(clue){
   if(!clue||typeof clue!=='object')return clue;
@@ -105,7 +107,8 @@ function enrichClue(clue){
 function renderBriefHtml(brief){
   if(!brief)return '';
   const list=(rows,limit=3)=>(rows||[]).slice(0,limit).map(row=>`<li>${esc(row)}</li>`).join('');
-  return `<section class="marketin-story-brief" aria-label="마켓인형 취재안"><div class="marketin-story-head"><b>마켓인형 취재안</b><span>${esc(brief.kind)}</span></div><p class="marketin-story-angle">${esc(brief.angle)}</p><div class="marketin-story-grid"><div><strong>반드시 확인</strong><ul>${list(brief.must_get)}</ul></div><div><strong>비교할 것</strong><ul>${list(brief.compare,2)}</ul></div><div><strong>전화 순서</strong><ul>${list(brief.calls,3)}</ul></div></div><p class="marketin-story-ready"><b>기사 성립선</b> ${esc(brief.ready_when)}</p></section>`;
+  const pitch=brief.pitch?`<div class="marketin-story-pitch"><strong>기사 제안</strong><p>${esc(brief.pitch)}</p>${brief.why_today?`<small><b>왜 오늘</b> ${esc(brief.why_today)}</small>`:''}</div>`:'';
+  return `<section class="marketin-story-brief" aria-label="마켓인형 취재안"><div class="marketin-story-head"><b>마켓인형 취재안</b><span>${esc(brief.kind)}</span></div>${pitch}<p class="marketin-story-angle">${esc(brief.angle)}</p><div class="marketin-story-grid"><div><strong>반드시 확인</strong><ul>${list(brief.must_get)}</ul></div><div><strong>비교할 것</strong><ul>${list(brief.compare,2)}</ul></div><div><strong>전화 순서</strong><ul>${list(brief.calls,3)}</ul></div></div><p class="marketin-story-ready"><b>기사 성립선</b> ${esc(brief.ready_when)}</p></section>`;
 }
 function decorate(root){
   const doc=root?.document,map=root?.__marketinStoryBriefMap;if(!doc||!map)return;
