@@ -7,12 +7,18 @@
 #discoveryDesk .discovery-note{font-size:13px;line-height:1.65;color:#697587;margin:8px 0}
 #discoveryDesk .discovery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}
 #discoveryDesk .discovery-card{background:#fff;border:1px solid #e0e3e6;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;padding:20px 22px 0}
+#discoveryDesk .discovery-card.has-pitch{border-color:#dcc8d2;box-shadow:0 8px 22px rgba(80,54,68,.045)}
 #discoveryDesk .discovery-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:#758194;line-height:1.5}
 #discoveryDesk .discovery-meta span:first-child{font-size:12px;font-weight:650;color:#ae3167;background:#fcf0f5;border-radius:6px;padding:4px 7px}
+#discoveryDesk .discovery-meta .story-mode{font-size:11px;font-weight:650;color:#4c5f73;background:#eef3f7;border-radius:6px;padding:4px 7px}
 #discoveryDesk .discovery-meta time{margin-left:auto;font-variant-numeric:tabular-nums}
 #discoveryDesk h3{font-size:19px;line-height:1.45;font-weight:650;letter-spacing:-.035em;color:#202b3c;margin:14px 0 8px;word-break:keep-all;overflow-wrap:anywhere}
+#discoveryDesk .has-pitch h3{font-size:20px;color:#192638}
+#discoveryDesk .discovery-origin{display:flex;align-items:flex-start;gap:7px;margin:0 0 9px;font-size:12px;line-height:1.55;color:#788394}
+#discoveryDesk .discovery-origin b{flex:0 0 auto;color:#9a4a70;font-weight:650}#discoveryDesk .discovery-origin span{overflow-wrap:anywhere}
 #discoveryDesk .discovery-fact{font-size:14px;line-height:1.7;color:#344155;margin:0 0 9px;overflow-wrap:anywhere}
 #discoveryDesk .discovery-reason{font-size:12px;line-height:1.6;color:#7a8491;margin:0 0 15px}
+#discoveryDesk .has-pitch .discovery-reason{color:#5f6d7e}
 #discoveryDesk .discovery-question{border-left:3px solid #e6a1c2;padding:9px 12px;background:#fdf8fa;border-radius:0 7px 7px 0;margin-top:auto}
 #discoveryDesk .discovery-question b{font-size:11px;font-weight:650;color:#a83669}#discoveryDesk .discovery-question p{font-size:14px;line-height:1.6;margin:5px 0;color:#273548}#discoveryDesk .discovery-question span{font-size:12px;color:#748092;overflow-wrap:anywhere}
 #discoveryDesk .discovery-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0}
@@ -25,4 +31,4 @@
 #discoveryDesk .discovery-more,#discoveryDesk .discovery-coverage button{border:1px solid #d8dfe5;border-radius:7px;padding:9px 12px;background:white;color:#45566a;cursor:pointer;font-size:12px;margin-right:8px}
 #discoveryDesk .discovery-empty{grid-column:1/-1;padding:42px 15px;text-align:center;font-size:14px;color:#7a8593}
 #discoveryDesk [hidden]{display:none!important}#discoveryMessage{font-size:13px;color:#a44a29}#discoveryDesk button:focus-visible,#discoveryDesk a:focus-visible,#discoveryDesk summary:focus-visible{outline:2px solid #ba4077;outline-offset:3px}
-@media(max-width:850px){#discoveryDesk .discovery-grid{grid-template-columns:1fr}#discoveryDesk .discovery-card{padding:17px 17px 0}#discoveryDesk details{margin:0 -17px;padding:0 17px}#discoveryDesk .discovery-toolbar{align-items:stretch}#discoverySearch{width:100%;min-width:0}#discoveryDesk h3{font-size:18px}#discoveryDesk .discovery-tabs button{font-size:13px;padding:10px 12px}}
+@media(max-width:850px){#discoveryDesk .discovery-grid{grid-template-columns:1fr}#discoveryDesk .discovery-card{padding:17px 17px 0}#discoveryDesk details{margin:0 -17px;padding:0 17px}#discoveryDesk .discovery-toolbar{align-items:stretch}#discoverySearch{width:100%;min-width:0}#discoveryDesk h3{font-size:18px}#discoveryDesk .has-pitch h3{font-size:19px}#discoveryDesk .discovery-tabs button{font-size:13px;padding:10px 12px}}
