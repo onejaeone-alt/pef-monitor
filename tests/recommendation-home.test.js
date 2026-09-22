@@ -5,6 +5,8 @@ test('published home serves recommendations and keeps the complete news reader a
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'recommendation-home-'));
  try{
   for(const f of ['index.html','news.html','leads.html','projects.html','site-header.js'])fs.copyFileSync(f,path.join(dir,f));
+  Home.main(dir);Home.prepare(dir);
+  assert.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/class="page news-desk"/);
   Home.main(dir);Home.main(dir);
   const home=fs.readFileSync(path.join(dir,'index.html'),'utf8'),news=fs.readFileSync(path.join(dir,'news.html'),'utf8');
   assert.match(home,/id="discoveryDesk"/);assert.match(home,/aria-current="page">추천 기사/);

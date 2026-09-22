@@ -22,5 +22,12 @@ function main(root=path.resolve(__dirname,'..')){
   const header=path.join(root,'site-header.js');
   fs.writeFileSync(header,fs.readFileSync(header,'utf8').replace("href: '/', class: 'site-account-action', text: '뉴스 보관함 관리'","href: '/news.html', class: 'site-account-action', text: '뉴스 보관함 관리'"));
 }
-if(require.main===module)main();
-module.exports={navigation,main};
+function prepare(root=path.resolve(__dirname,'..')){
+  const index=path.join(root,'index.html'),news=path.join(root,'news.html');
+  if(!fs.readFileSync(index,'utf8').includes('id="discoveryDesk"'))return;
+  const reader=fs.readFileSync(news,'utf8');
+  if(!reader.includes('class="page news-desk"'))throw Error('Cannot rebuild without the preserved news reader');
+  fs.writeFileSync(index,reader);
+}
+if(require.main===module){if(process.argv.includes('--prepare'))prepare();else main();}
+module.exports={navigation,main,prepare};
