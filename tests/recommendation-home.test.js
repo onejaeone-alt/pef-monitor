@@ -20,6 +20,9 @@ test('published home serves recommendations and keeps the complete news reader a
   }
   for(const html of [home,news,fs.readFileSync(path.join(dir,'projects.html'),'utf8')]){
    assert.equal((html.match(/href="\/news.html\?scope=foreign"/g)||[]).length,1);
+   const menu=html.match(/<nav class="nav"[^>]*>[\s\S]*?<\/nav>/)[0];
+   const links=[...menu.matchAll(/href="([^"]+)"/g)].map(m=>m[1]);
+   assert.equal(links.length,new Set(links).size,'Repeated builds must not duplicate navigation');
   }
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

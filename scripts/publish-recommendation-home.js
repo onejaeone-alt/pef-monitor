@@ -9,9 +9,14 @@ function navigation(html,home=false){
   if(home)html=html.replace(/<nav\b[^>]*class="nav"[^>]*>[\s\S]*?<\/nav>/,
     '<nav class="nav" aria-label="주 메뉴"><a class="on" href="/" aria-current="page">추천 기사</a><a href="/news.html">뉴스</a><a href="/news.html?scope=foreign">외신</a><a href="/dart.html">DART 공시</a><a href="/calendar.html">취재 일정</a><a href="/motae.html">출자공고</a><a href="/projects.html">진행중 취재</a><a href="/relations.html">취재파일</a><a href="/judgment.html">기사화 판단</a><a href="https://article-engine-wjy-onejess.vercel.app/" target="_blank" rel="noopener">기사 엔진 ↗</a></nav>');
   // Keep foreign coverage one click away on every desk, including repeated builds.
-  html=html.replace(/<nav\b[^>]*class="nav"[^>]*>[\s\S]*?<\/nav>/,nav=>
-    nav.includes('href="/news.html?scope=foreign"')?nav:
-      nav.replace(/(<a\b[^>]*href="\/news\.html"[^>]*>뉴스<\/a>)/,'$1<a href="/news.html?scope=foreign">외신</a>'));
+  html=html.replace(/<nav\b[^>]*class="nav"[^>]*>[\s\S]*?<\/nav>/,nav=>{
+    if(!nav.includes('href="/news.html?scope=foreign"'))nav=nav.replace(/(<a\b[^>]*href="\/news\.html"[^>]*>뉴스<\/a>)/,'$1<a href="/news.html?scope=foreign">외신</a>');
+    const seen=new Set();
+    return nav.replace(/<a\b[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>/g,(link,href)=>{
+      if(seen.has(href))return '';
+      seen.add(href);return link;
+    });
+  });
   return html;
 }
 function main(root=path.resolve(__dirname,'..')){
