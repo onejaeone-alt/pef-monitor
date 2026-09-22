@@ -13,6 +13,14 @@ test('published home serves recommendations and keeps the complete news reader a
   assert.match(news,/class="page news-desk"/);assert.doesNotMatch(news,/http-equiv="refresh"/);
   assert.match(home,/href="\/news.html">뉴스/);assert.match(fs.readFileSync(path.join(dir,'projects.html'),'utf8'),/href="\/news.html">뉴스/);
   assert.match(home,/<details class="discovery-coverage"><summary>/);
+  const nav=home.match(/<nav class="nav"[^>]*>[\s\S]*?<\/nav>/)[0];
+  assert.doesNotMatch(nav,/<details|<summary/);
+  for(const href of ['/news.html','/news.html?scope=foreign','/dart.html','/calendar.html','/motae.html','/projects.html','/relations.html','/judgment.html']){
+   assert.ok(nav.includes('href="'+href+'"'),href+' remains directly visible');
+  }
+  for(const html of [home,news,fs.readFileSync(path.join(dir,'projects.html'),'utf8')]){
+   assert.equal((html.match(/href="\/news.html\?scope=foreign"/g)||[]).length,1);
+  }
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 test('first screen shows only three ready proposals, with evidence collapsed; reference tab and more remain usable',async()=>{

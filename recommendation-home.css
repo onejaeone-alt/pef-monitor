@@ -4,12 +4,8 @@ body.recommendation-page{background:#faf9f6}
 .recommendation-page .brand p,.recommendation-page .brand .eyebrow{display:none}
 .recommendation-page .site-header-tools .global-dossier-search{display:none}
 .recommendation-page .brandrow{padding-bottom:12px}
-.recommendation-page .nav{align-items:center;overflow:visible;gap:8px;padding-bottom:10px}
+.recommendation-page .nav{align-items:center;flex-wrap:wrap;overflow:visible;gap:8px;padding-bottom:10px}
 .recommendation-page .nav a{border:0;border-radius:7px;padding:9px 12px}
-.recommendation-page .nav details{position:relative;margin-left:auto}
-.recommendation-page .nav summary{cursor:pointer;font-size:13px;color:#657080;padding:9px 12px}
-.recommendation-page .nav details>div{position:absolute;right:0;top:100%;min-width:180px;background:white;border:1px solid #e4e5e7;border-radius:10px;padding:8px;box-shadow:0 8px 24px #17203312;z-index:60}
-.recommendation-page .nav details a{display:block;white-space:nowrap}
 #discoveryDesk{max-width:900px;padding-top:36px}
 #discoveryDesk .page-head{align-items:center;margin-bottom:14px}
 #discoveryDesk .page-title h2{font-size:30px;letter-spacing:-.045em;margin:0 0 8px}
@@ -33,7 +29,7 @@ body.recommendation-page{background:#faf9f6}
 #discoveryDesk .discovery-note:empty,#discoveryResearchStatus:empty,#discoveryMessage:empty{display:none}
 #discoveryDesk .discovery-empty{border:1px dashed #dbddd7;border-radius:12px;padding:44px 26px;line-height:1.8;text-align:left;background:#fff}
 @media(max-width:600px){
- .recommendation-page .nav{gap:0}.recommendation-page .nav a,.recommendation-page .nav summary{padding:9px 8px;font-size:12px}
+ .recommendation-page .nav{gap:0}.recommendation-page .nav a{padding:9px 8px;font-size:12px}
  #discoveryDesk{padding:24px 16px 48px}#discoveryDesk .page-head{flex-direction:row}#discoveryDesk .page-title h2{font-size:25px}
  #discoveryDesk .page-title p{font-size:12px;max-width:240px}#discoveryDesk .discovery-tabs{gap:3px}#discoveryDesk .discovery-tabs button{font-size:12px;padding:10px}
  #discoveryDesk .discovery-card{padding:18px 18px 0}#discoveryDesk .discovery-card details{margin:0 -18px;padding:0 18px}#discoveryDesk .discovery-proposal h3{font-size:20px}
