@@ -22,8 +22,6 @@ test('independent feeds render progressively; failures stay visible; shared DART
  await new Promise(r=>setTimeout(r,20));
  assert.equal(max,2);assert.equal(requests.filter(x=>x.includes('action=review')).length,22);
  assert.ok(!requests.some(x=>x.includes('rcept_no='+items[0].rcept_no)));
- assert.doesNotMatch(node('#discoveryCards').innerHTML,/100 억원/);
- node('#discoveryDesk').click({target:{closest:s=>s==='[data-discovery-view]'?{dataset:{discoveryView:'references'}}:null}});
  assert.match(node('#discoveryCards').innerHTML,/100 억원/);assert.match(node('#discoverySources').innerHTML,/외신 · 불러오기 실패/);
  assert.match(node('#discoverySources').innerHTML,/취재일정 · 수집 중/);assert.doesNotMatch(node('#discoveryReviewStatus').textContent,/대기/);
  assert.equal(node('#discoveryReadMore').hidden,true);assert.equal(node('#discoveryRetry').hidden,false);

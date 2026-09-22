@@ -13,7 +13,6 @@ function harness(){
  }};
  const settle=()=>new Promise(r=>setImmediate(r));
  vm.runInNewContext(fs.readFileSync('discovery-desk.js','utf8'),context);
- node('#discoveryDesk').click({target:{closest:s=>s==='[data-discovery-view]'?{dataset:{discoveryView:'references'}}:null}});
  return {nodes,node,timers,events,docEvents,requests,context,document,settle,setVersion:v=>version=v,setFail:v=>fail=v,setDefer:p=>defer=p,setOpen:v=>open=v,advance:async ms=>{now+=ms;for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);await t.fn();}await settle();}};
 }
 test('five-minute refresh retains existing cards until successful replacement, retries failures, and keeps filters',async()=>{

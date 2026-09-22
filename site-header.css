@@ -63,9 +63,9 @@
 
 /* HEADER_DESIGN_V2: a compact wordmark and clear, readable navigation. */
 .topbar[data-site-header] .nav {
- gap:5px !important; min-width:0; max-width:100%; flex-wrap:wrap;
+ gap:5px !important; min-width:0; max-width:100%; flex-wrap:nowrap;
  align-items:center; padding:0 0 7px;
- overflow:visible;
+ overflow-x:auto; overflow-y:hidden; scroll-padding-inline:8px;
 }
 .topbar[data-site-header] .nav > a {
  display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center;

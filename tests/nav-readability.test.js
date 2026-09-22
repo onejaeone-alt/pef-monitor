@@ -18,11 +18,10 @@ test('main navigation overrides legacy compact font size without changing body t
   assert.match(rules.at(-1), /min-height:44px/);
 });
 
-test('long menu labels stay whole and every navigation link wraps into view', () => {
+test('long menu labels stay whole and the navigation scrolls rather than shrinking', () => {
   assert.match(css, /flex:0 0 auto/);
   assert.match(css, /white-space:nowrap/);
-  assert.match(css, /flex-wrap:wrap/);
-  assert.match(css, /overflow:visible/);
+  assert.match(css, /overflow-x:auto; overflow-y:hidden/);
   assert.match(css, /\.nav > a:focus-visible \{ outline-offset:-3px/);
 });
 
