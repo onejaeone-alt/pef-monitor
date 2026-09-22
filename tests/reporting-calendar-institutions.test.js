@@ -12,7 +12,7 @@ test('FSC capital-market policy release is shown as published, never as a future
  assert.equal(e.date,'2026-09-08');assert.equal(e.status,'published');assert.equal(e.date_basis,'publication');
 });
 test('FSC formal publication schedule uses the announced date',()=>{
- const e=I.announcement({url:'https://www.fsc.go.kr/no010101/2',title:'벤처투자 제도개선 발표',published_at:'2026-09-11'},'보도시점:2026년9월18일 14:00',fsc,H);assert.equal(e.date,'2026-09-18');assert.equal(e.status,'scheduled');
+ const e=I.announcement({url:'https://www.fsc.go.kr/no010101/2',title:'벤처투자 제도개선 발표',published_at:'2026-09-11'},'보도시점:2026년9월18일 14:00',fsc,{...H,kstDay:()=> '2026-09-11'});assert.equal(e.date,'2026-09-18');assert.equal(e.status,'scheduled');
 });
 test('board rows do not turn attached PDFs into separate notices',()=>{
  const html='<li><a href="/no010101/100">삼성증권 단기금융업 인가</a><a href="/comm/getFile?fileNo=123">삼성증권 단기금융업 인가.pdf</a><p>2026-09-09</p></li>';
