@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const VERSION = '20260908-topright1';
-const CSS_VERSION = '20260911-header-design1';
+const CSS_VERSION = '20260924-naver-font1';
 const headerPattern = /<header\b[^>]*class="[^"]*\btopbar\b[^"]*"[^>]*>[\s\S]*?<\/header>/;
 
 function divWithClass(html, className) {
@@ -51,6 +51,9 @@ function page(html) {
     '<div class="site-header-tools"><div class="site-account-row"><button type="button" id="readerAccount" class="site-login" aria-haspopup="dialog">로그인</button></div>' + searchMarkup + '</div>' +
     '<div class="status" id="status" hidden aria-hidden="true"></div></div>' + nav[0] + '</header>';
   let next = html.replace(old[0], header);
+  // Match Naver News's system-font stack throughout every shared-header page.
+  next = next.replace(/<link\b[^>]*href="https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard[^"<>]*"[^>]*>/g, '');
+  next = next.replace(/href="\/app\.css(?:\?[^"<>]*)?"/g, 'href="/app.css?v=20260924-naver-font1"');
   // One search controller for every page; preserve the existing dossier renderer and IDs.
   next = next.replace(/<script\b[^>]*id="global-dossier-search-script"[^>]*>[\s\S]*?<\/script>/g, '');
   if (!next.includes('/dossier-drawer.css')) next = next.replace('</head>', '<link rel="stylesheet" href="/dossier-drawer.css"></head>');
