@@ -117,7 +117,7 @@ function build({dart=[],reviews={},news=[],newsIssues=[],foreign=[],official=[],
  const series=storyPitchClues([...news,...foreign],now);
  const fresh=[...series,...dartCandidates(dart,now).map(x=>dartClue(x,reviews[x.rcept_no])).filter(Boolean),...newsClues([...news,...foreign,...official],now,newsIssues),...calendarClues(calendar,now)];
  const used=new Set(fresh.flatMap(x=>x.sources.map(s=>s.url)));
- const old=canonical.filter(x=>!x.sources?.some(s=>used.has(s.url))).map(x=>({...x,lane:recent(x.sort_date,now)?'current':'background',reason:'자료 기준일 '+date(x.sort_date)+' · 기존 분석의 후속 확인',sources:sources(x.sources)}));
+ const old=canonical.filter(x=>!x.sources?.some(s=>used.has(s.url))).map(x=>({...x,lane:['gp_repeat','gp_lp_shift','lp_rule_change','kvic_plan_change','formation_gap','formation_pattern','market_pattern','cross_source'].includes(x.detector)?'background':recent(x.sort_date,now)?'current':'background',reason:'자료 기준일 '+date(x.sort_date)+' · 기존 분석의 후속 확인',sources:sources(x.sources)}));
  const out=[...fresh,...old].filter(x=>x.sources.length),seen=new Set();
  for(const clue of out){
   if(clue.detector!=='dart_deal'&&clue.detector!=='reporting_opportunity')continue;

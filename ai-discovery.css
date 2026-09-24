@@ -63,3 +63,12 @@
 
 #discoveryDesk .discovery-actions .discovery-research-button{margin-left:0;background:#fff;color:#45566a;border:1px solid #d8dfe5}#discoveryDesk .discovery-research-button:disabled{opacity:.6;cursor:wait}
 #discoveryDesk .discovery-pitch-detail{font-size:12px;line-height:1.65;color:#536071;margin:8px 0}#discoveryDesk .discovery-pitch-detail b{color:#344155}
+
+/* Explain evidence and follow-up links within AI discovery only. */
+#discoveryDesk .discovery-pattern-summary{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 12px;margin:14px 0;font-size:12px;line-height:1.65}
+#discoveryDesk .discovery-pattern-summary dt{font-weight:650;color:#536071}
+#discoveryDesk .discovery-pattern-summary dd{margin:0;overflow-wrap:anywhere}
+#discoveryDesk .discovery-baseline{font-size:11px;color:#7a684f;line-height:1.6}
+#discoveryDesk .discovery-pattern-link button{background:#fff7fa;color:#96315d;border:1px solid #e8d3dd;border-radius:7px;padding:9px 12px;font:inherit;font-size:12px;cursor:pointer}
+#discoveryDesk [data-discovery-card]:focus{outline:2px solid #b43a70;outline-offset:3px}
+@media(max-width:600px){#discoveryDesk .discovery-tabs{flex-wrap:wrap}#discoveryDesk .discovery-pattern-summary{grid-template-columns:1fr;gap:3px}#discoveryDesk .discovery-pattern-summary dd{margin-bottom:7px}}

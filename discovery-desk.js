@@ -6,7 +6,7 @@ const REVIEW_KEY='ib_dart_reviews_v1',PROJECT_KEY='pef_my_reporting_projects_v1'
 const endpoints={canonical:['출자공고·기존 분석','/api/signals?mode=clues&days=14'],news:['국내 뉴스','/api/news?feed=reader&days=7&limit=500'],foreign:['외신','/api/news?scope=foreign&days=7&limit=100'],dart:['DART 공시','/api/dart-feed?days=7&limit=800'],calendar:['취재일정','/api/news?feed=calendar']};
 let state={},status={},reviews={},data=[],view='current',query='',expanded=false,run=0,controller,reading=false,failures=new Set();
 const UPDATE_MS=5*60*1000;
-const B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
+const P=globalThis.DiscoveryPatterns,B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
 let researchCache=stored(RESEARCH_KEY,{}),researching=false,researchPending=new Set(),researchRequests=new Map();
 let loading=false,lastStarted=0,lastChecked=0,updateTimer=null,pendingData=null,renderedCards='';
 const away=()=>document.hidden||globalThis.navigator?.onLine===false;
@@ -23,16 +23,23 @@ function scheduleUpdate(){
 function stored(k,fallback){try{return JSON.parse(localStorage.getItem(k)||'null')??fallback;}catch(_){return fallback;}}
 function list(rows){return rows?.length?'<ul>'+rows.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>현재 확보한 내용이 없습니다.</p>';}
 function links(rows){return (rows||[]).filter(s=>C.safeUrl(s.url)).map(s=>`<a href="${esc(C.safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.label||'원문')} ↗</a>`).join('');}
+function patternSummary(x){
+ if(!P)return '';
+ const s=P.summary(x),ref=x.pattern_ref;
+ const jump=ref?`<button data-discovery-jump="${esc(ref.clue_id)}">기존 특징과 근거 보기 →</button>`:x.linked_update?`<button data-discovery-jump="${esc(x.linked_update.clue_id)}">연결된 새 자료 ${x.linked_update.count}건 →</button>`:'';
+ return `<dl class="discovery-pattern-summary"><dt>발견한 특징</dt><dd>${esc(s.feature)}</dd><dt>비교한 자료</dt><dd>${esc(s.comparison)}</dd><dt>새로 확인된 내용</dt><dd>${esc(s.update)}</dd></dl>${s.asOf?`<p class="discovery-baseline">기존 자료 기준 ${esc(s.asOf)} · 오늘 다시 검증한 결과는 아닙니다.</p>`:''}${jump?`<div class="discovery-pattern-link">${jump}</div>`:''}`;
+}
 function card(x){
  const pitch=x.research?.status==='ready'&&x.article_brief?.angles?.[0];
  const research=pitch?(B?.renderBriefHtml({...x.research,headline_in_card:true})||''):'',researchDetails=(B?.renderDetails(x.research,x.clue_id)||'')+(!pitch?(B?.renderBriefHtml(x.research)||''):'');
  const heading=pitch?.headline||x.one_line_signal||x.headline;
  const evidence=(x.evidence||[]).map(f=>`${f.label}: ${f.before!==undefined?f.before+' → '+f.after:f.value+(f.unit?' '+f.unit:'')} · ${f.source?.location||'원문 위치 확인'}`);
- return `<article class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}<div class="discovery-actions">${B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
+ return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}${patternSummary(x)}<div class="discovery-actions">${B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.pattern_ref?'<h4>기존 분석의 비교 자료</h4>'+links(x.pattern_ref.sources):''}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
 }
 function render({accept=false}={}){
  const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
- const next=C.build({...state,reviews}).map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>Date.now()?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
+ let next=C.build({...state,reviews}).map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>Date.now()?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
+ if(P)next=P.connect(next,state);
  if(!accept&&data.length&&readingCard()&&JSON.stringify(next)!==JSON.stringify(data))pendingData=next;
  else {data=next;pendingData=null;}
  $('#discoveryUpdates').hidden=!pendingData;
@@ -41,12 +48,13 @@ function render({accept=false}={}){
  const total=rows.length;if(view==='current'&&!expanded&&!query)rows=B?B.shortlist(rows):C.shortlist(rows);
  const proposals=rows.filter(x=>x.research?.status==='ready'&&x.article_brief?.angles?.length),references=rows.filter(x=>!proposals.includes(x));
  const group=(title,items)=>items.length?'<h3 class="discovery-section-title">'+title+' <span>'+items.length+'</span></h3>'+items.map(card).join(''):'';
- const html=rows.length?group('발제 후보',proposals)+group(view==='background'?'보관된 분석':'살펴볼 자료',references):`<div class="discovery-empty">${Object.values(status).some(s=>s.state==='loading')?'자료를 읽는 중입니다. 도착한 자료부터 표시합니다.':'현재 조건에서 추린 취재거리가 없습니다. 아래 수집 상태를 확인해 주세요.'}</div>`;
+ const html=rows.length?group('발제 후보',proposals)+group(view==='background'?'누적자료에서 찾은 특징':'살펴볼 자료',references):`<div class="discovery-empty">${Object.values(status).some(s=>s.state==='loading')?'자료를 읽는 중입니다. 도착한 자료부터 표시합니다.':'현재 조건에서 추린 취재거리가 없습니다. 아래 수집 상태를 확인해 주세요.'}</div>`;
  if(html!==renderedCards){$('#discoveryCards').innerHTML=html;renderedCards=html;for(const el of document.querySelectorAll('[data-detail]'))if(open.has(el.dataset.detail))el.open=true;}
  const ready=data.filter(x=>x.lane==='current'&&x.article_brief?.angles?.length).length;
- $('#discoveryCounts').textContent=`발제 후보 ${ready}건 · 최근 참고자료 ${counts.current-ready}건`;
+ $('#discoveryViewNote').textContent=view==='background'?'여러 기록을 비교해 찾은 특징입니다. 기존 자료 기준일과 새 자료 연결 여부를 함께 확인하세요.':'최근 자료에서 찾은 변화와, 기존 특징에 연결된 새 근거를 봅니다. 자료가 연결됐다고 기존 가설이 확인된 것은 아닙니다.';
+ $('#discoveryCounts').textContent=view==='background'?`누적 특징 ${counts.background}건 · 새 자료 연결 ${data.filter(x=>x.lane==='background'&&x.linked_update).length}건`:`발제 후보 ${ready}건 · 최근 참고자료 ${counts.current-ready}건`;
  const blocked=data.some(x=>/model_/.test(x.research?.error||''));
- $('#discoveryResearchStatus').textContent=researching?'최신 이슈의 원문과 마켓인 보도를 대조하고 있습니다.':blocked?'AI 분석 연결이 지연되고 있습니다. 확보한 원문은 아래에서 볼 수 있습니다.':!ready?'새 기사로 발전시킬 근거를 확보한 이슈부터 발제 후보에 올립니다.':'';
+ $('#discoveryResearchStatus').textContent=researching?'새 자료의 원문과 마켓인 보도를 대조하고 있습니다.':blocked?'AI 분석 연결이 지연되고 있습니다. 확보한 원문은 아래에서 볼 수 있습니다.':!ready?'새 기사로 발전시킬 근거를 확보한 이슈부터 발제 후보에 올립니다.':'';
  $('#discoveryMore').hidden=!(view==='current'&&!expanded&&!query&&total>rows.length);$('#discoveryMore').textContent=`나머지 ${total-rows.length}건 보기`;
  $('#discoverySources').innerHTML=Object.entries(endpoints).map(([key,[name]])=>{const s=status[key]||{state:'loading'};return `<span class="${s.state}">${esc(name)} · ${esc(s.state==='loading'?'수집 중':s.state==='failed'?'불러오기 실패':s.detail||'연결됨')}</span>`;}).join('');
  const candidates=C.dartCandidates(state.dart),valid=candidates.filter(x=>C.validReview(x,reviews[x.rcept_no])).length,pending=candidates.filter(x=>!C.validReview(x,reviews[x.rcept_no])&&!failures.has(x.rcept_no)).length;
@@ -113,6 +121,12 @@ $('#refresh').onclick=()=>load();$('#discoveryRetry').onclick=()=>load();$('#dis
 $('#discoveryUpdates').onclick=()=>render({accept:true});
 $('#discoveryMore').onclick=()=>{expanded=true;render({accept:true});};$('#discoverySearch').oninput=e=>{query=e.target.value.trim().toLowerCase();render({accept:true});};
 root.addEventListener('click',e=>{
+ const jump=e.target.closest('[data-discovery-jump]');if(jump){
+  const target=data.find(x=>x.clue_id===jump.dataset.discoveryJump);if(!target)return;
+  view=target.lane;query='';expanded=true;$('#discoverySearch').value='';
+  for(const b of document.querySelectorAll('[data-discovery-view]')){b.classList.toggle('on',b.dataset.discoveryView===view);b.setAttribute('aria-pressed',String(b.dataset.discoveryView===view));}
+  render({accept:true});const card=[...document.querySelectorAll('[data-discovery-card]')].find(el=>el.dataset.discoveryCard===target.clue_id);card?.scrollIntoView({block:'center'});card?.focus({preventScroll:true});return;
+ }
  const tab=e.target.closest('[data-discovery-view]');if(tab){view=tab.dataset.discoveryView;for(const b of document.querySelectorAll('[data-discovery-view]')){b.classList.toggle('on',b===tab);b.setAttribute('aria-pressed',String(b===tab));}render({accept:true});}
  const researchButton=e.target.closest('[data-discovery-research]');if(researchButton){const clue=data.find(x=>x.clue_id===researchButton.dataset.discoveryResearch);if(clue)readResearch(run,clue);return;}
  const button=e.target.closest('[data-discovery-project]');if(!button)return;

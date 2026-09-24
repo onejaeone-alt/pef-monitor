@@ -8,7 +8,7 @@ function harness(){
  const context={IBDiscovery:C,document,Date:class extends Date{static now(){return now;}},navigator:{onLine:true},setTimeout:(fn,ms)=>{const id=++timerId;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:id=>timers.delete(id),addEventListener:(k,fn)=>{events[k]=fn;},AbortController,URL,console,location:{},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},fetch:async url=>{
   requests.push(url);if(defer)await defer;
   if(fail&&url.includes('signals'))throw Error('Offline source');
-  const clue={clue_id:'clue-1',headline:'취재거리 '+version,sort_date:C.today(),sources:[{url:'https://example.com/'+version}],detector:'lp_rule_change',lane:'current',questions:['확인 질문']};
+  const clue={clue_id:'clue-1',headline:'취재거리 '+version,sort_date:C.today(),sources:[{url:'https://example.com/'+version}],detector:'official_followup',lane:'current',questions:['확인 질문']};
   return {ok:true,json:async()=>({ok:true,items:url.includes('signals')?[clue]:[],events:[]})};
  }};
  const settle=()=>new Promise(r=>setImmediate(r));

@@ -52,7 +52,7 @@ function requestFor(x){
  return {key,url:'/api/signals?mode=research&topic='+encodeURIComponent(x.research_topic)+'&seeds='+encodeURIComponent(JSON.stringify(sources))};
 }
 function shortlist(rows,limit=6){
- const weight=x=>x.article_brief?.angles?.length?100:x.article_brief?80:x.detector==='news_followup'&&x.research_topic?50:x.research_topic?30:x.detector==='dart_deal'?10:0;
+ const weight=x=>x.article_brief?.angles?.length?100:x.article_brief?80:x.detector==='pattern_followup'?60:x.detector==='news_followup'&&x.research_topic?50:x.research_topic?30:x.detector==='dart_deal'?10:0;
  return [...rows].sort((a,b)=>weight(b)-weight(a)||String(b.sort_date||'').localeCompare(String(a.sort_date||''))).slice(0,limit);
 }
 function attach(x,result){
