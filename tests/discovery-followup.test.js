@@ -27,16 +27,17 @@ test('research searches previous tender terms instead of only broad company news
  assert.ok(queries.every(([q])=>q.includes('공개매수')));assert.ok(queries.some(([q,p])=>p==='previous_terms'&&q.includes('결과보고서')));
  assert.equal(R.marketinLinks('<a href="/News/ReadE?newsId=123">가비아 공개매수</a>','가비아').length,1);
 });
-test('desk gives a specific unverified task, hides raw news, and saves the source and plan together',async()=>{
+test('desk keeps unanalysed news as collapsed sources without inventing a follow-up checklist',async()=>{
  const vm=require('node:vm'),fs=require('node:fs'),nodes=new Map(),storage=new Map();
  const node=s=>{if(!nodes.has(s))nodes.set(s,{innerHTML:'',textContent:'',dataset:{},classList:{toggle(){}},setAttribute(){},addEventListener(k,fn){this[k]=fn;}});return nodes.get(s);};
  const core={...C};B.install({IBDiscovery:core});
  const items=[article,news('피자헛, 15억달러에 사모펀드에 매각','https://www.hankyung.com/article/5','피자헛')];
  vm.runInNewContext(fs.readFileSync('discovery-desk.js','utf8'),{IBDiscovery:core,MarketInStoryBrief:B,DiscoveryFollowup:F,document:{querySelector:node,querySelectorAll:()=>[],addEventListener(){}},addEventListener(){},setTimeout:()=>1,clearTimeout(){},AbortController,location:{},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},fetch:async url=>({ok:true,json:async()=>url.includes('mode=research')?{ok:true,version:B.VERSION,status:'sources_only',error:'insufficient_sources',sources:[]}:{ok:true,items:url.includes('feed=reader')?items:[],events:[]}})});
  await new Promise(r=>setImmediate(r));const html=node('#discoveryCards').innerHTML;
- for(const label of ['살펴볼 이유','후속 취재 질문','공개매수결과보고서','본문 대조 전','추천에서 보류한 자료'])assert.ok(html.includes(label),label);
- assert.doesNotMatch(html,/발견한 특징|새 보도를 확보했습니다|전후 조건을 비교할 자료는|data-recommendation-open/);
- assert.equal((html.match(/data-discovery-card=/g)||[]).length,1);assert.match(html,/<details class="discovery-inbox" data-discovery-inbox >/);
- node('#discoveryDesk').click({target:{closest:s=>s==='[data-discovery-project]'?{dataset:{discoveryProject:'issue-가비아-tender'},hasAttribute:()=>false}:null}});
- const saved=JSON.parse(storage.get('pef_my_reporting_projects_v1'))[0];assert.equal(saved.clue.followup_plan.kind,'tender_failure');assert.match(saved.clue.next_action,/공개매수결과보고서/);assert.equal(saved.clue.sources[0].url,article.source_url);
+ assert.match(html,/수집한 자료 2건/);
+ assert.doesNotMatch(html,/후속 확인 후보|발제 확정 전|대조할 공개자료|발제로 올릴 조건|공개매수결과보고서|data-recommendation-open|data-discovery-project/);
+ assert.equal((html.match(/data-discovery-card=/g)||[]).length,0);
+ assert.match(html,/<details class="discovery-inbox" data-discovery-inbox >/);
+ assert.ok(html.includes(article.source_url));
+ assert.equal(node('#discoveryCounts').textContent,'추천 기사 0건');
 });

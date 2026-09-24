@@ -21,7 +21,7 @@ test('find today refreshes sources, waits for research, suppresses duplicate cli
  const calls=h.requests.length;await h.node('#findToday').onclick();assert.equal(h.requests.length,calls);
  h.release();await finding;
  assert.equal(h.requests.filter(x=>x.includes('mode=research')).length,2);
- assert.match(h.node('#todayPitchStatus').textContent,/발제 후보 1건/);assert.equal(h.node('#findToday').disabled,false);
+ assert.match(h.node('#todayPitchStatus').textContent,/추천 기사 1건/);assert.equal(h.node('#findToday').disabled,false);
  assert.match(h.node('#discoveryCards').innerHTML,/추천기사 열기/);
  h.clickOpen();assert.equal(h.node('#recommendationDialog').open,true);assert.equal(h.node('#recommendationTitle').textContent,'추천 제목 2');
  assert.match(h.node('#recommendationBody').innerHTML,/공개된 결성 규모/);assert.match(h.node('#recommendationBody').innerHTML,/최종 배분은 미공개/);
@@ -34,10 +34,10 @@ test('model failure never produces a recommendation and finishes with a recovera
 });
 test('successful research without new angles is an honest empty result',async()=>{
  const h=harness({empty:true});await h.settle();await h.node('#findToday').onclick();
- assert.match(h.node('#todayPitchStatus').textContent,/새 발제 후보를 찾지 못/);assert.doesNotMatch(h.node('#discoveryCards').innerHTML,/data-recommendation-open/);
+ assert.match(h.node('#todayPitchStatus').textContent,/추천할 기사 방향을 찾지 못/);assert.doesNotMatch(h.node('#discoveryCards').innerHTML,/data-recommendation-open/);
 });
 
 test('unread sources are distinct from a completed search without article angles',async()=>{
  const h=harness({error:'insufficient_sources'});await h.settle();await h.node('#findToday').onclick();
- assert.match(h.node('#todayPitchStatus').textContent,/원문을 충분히 확보하지 못/);assert.doesNotMatch(h.node('#todayPitchStatus').textContent,/새 발제 후보를 찾지 못/);
+ assert.match(h.node('#todayPitchStatus').textContent,/원문을 충분히 확보하지 못/);assert.doesNotMatch(h.node('#todayPitchStatus').textContent,/추천할 기사 방향을 찾지 못/);
 });
