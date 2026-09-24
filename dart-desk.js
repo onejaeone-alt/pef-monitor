@@ -213,9 +213,14 @@ function init(){
       const n=x.rcept_no,r=reviews[n],delta=rowDelta(x,r),reason=priorityReason(x,r);
       const state=loading.has(n)?'원문 읽는 중…':failed.has(n)?'자동 추출 실패 · 원문 확인':delta.text;
       return `<tr data-receipt="${n}" class="${open.has(n)?'dd-open':''}"><td class="dd-when"><span>${date(x.rcept_dt)} · ${esc(groupDisplay(x))}</span><b>${esc(x.corp_name)}</b><a class="dd-filing-name" href="${url(n)}" target="_blank" rel="noopener noreferrer">${esc(base(x.report_nm))}</a>${correction(x)?'<span class="dd-repeat">정정</span>':''}</td><td class="dd-delta"><small>${delta.state==='confirmed'?'원문 추출':esc(x.event_label||'공시 내용')}</small><strong class="${delta.state==='confirmed'?'is-confirmed':'is-pending'}">${esc(state)}</strong>${familyBadge(x,stats)}</td><td class="dd-investor">${investorHtml(x,r)}</td><td class="dd-follow"><a href="${url(n)}" target="_blank" rel="noopener noreferrer">원문 ↗</a><button type="button" data-toggle="${n}" aria-expanded="${open.has(n)}" aria-controls="dart-detail-${n}">${open.has(n)?'접기':'내용 확인'}</button></td></tr>${open.has(n)?detail(x):''}`;
-    }).join(''):'<tr><td colspan="4" class="dd-no-rows">이 범위에서 취재에 연결된 공시가 없습니다. 새 거래나 전체 자료도 확인할 수 있습니다.</td></tr>';
+    }).join(''):'<tr><td colspan="4" class="dd-no-rows">선택한 조건에 맞는 공시가 없습니다. 전체 분류·전체 자료를 선택하거나 조회 기간을 늘려보세요.</td></tr>';
     const total=items.length,priority=filteredItems(items,{feed:'priority',reviews}).length,market=filteredItems(items,{feed:'market',reviews}).length;
     $('#rawCount').textContent=`${all.length}건`;
+    const categoryItems=filteredItems(items,{query,feed,reviews}),categoryCounts={ALL:categoryItems.length};
+    for(const x of categoryItems)categoryCounts[x.group_id]=(categoryCounts[x.group_id]||0)+1;
+    document.querySelectorAll('[data-category]').forEach(b=>{const on=b.dataset.category===group;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
+    document.querySelectorAll('[data-category-count]').forEach(s=>{s.textContent=String(categoryCounts[s.dataset.categoryCount]||0);});
+    $('#categoryTitle').textContent=group==='ALL'?'공시 목록':groupDisplay({group_id:group})+' 공시';
     const labels={priority:'취재 연결',market:'새 거래',all:'전체 자료'},counts={priority,market,all:total};
     document.querySelectorAll('[data-feed] b').forEach(b=>{const f=b.parentElement.dataset.feed;b.textContent=labels[f]+' '+counts[f];});
     $('#more').hidden=all.length<=shown;
@@ -265,7 +270,7 @@ function init(){
   $('#readMoreSources').addEventListener('click',readVisibleSources);
   $('#refresh').addEventListener('click',()=>load(true));
   $('#search').addEventListener('input',e=>{query=e.target.value;shown=60;render();});
-  $('#groups').addEventListener('change',e=>{group=e.target.value;shown=60;render();});
+  document.querySelectorAll('[data-category]').forEach(b=>b.addEventListener('click',()=>{group=b.dataset.category;shown=60;render();}));
   document.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{days=Number(b.dataset.days)||3;document.querySelectorAll('[data-days]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',String(on));});load(true);}));
   document.querySelectorAll('[data-feed]').forEach(b=>b.addEventListener('click',()=>{feed=b.dataset.feed;shown=60;render();}));
   $('#more').addEventListener('click',()=>{shown+=60;render();});

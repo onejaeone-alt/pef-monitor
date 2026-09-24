@@ -37,3 +37,15 @@
 .dd-briefing-grid article b{font-size:14px}.dd-briefing-grid article p,.dd-briefing-grid li{font-size:14px;line-height:1.65}
 .dd-footer{font-size:12px;line-height:1.7;color:#7e838b}
 @media(max-width:760px){.dd-feed-tabs{gap:5px}.dd-feed-tabs button{padding:10px}.dd-feed-tabs button b{font-size:14px}.dd-feed-tabs button span{display:none}.dd-briefing-grid{grid-template-columns:1fr}.dd-source-progress{flex-wrap:wrap}.dd-list-head>div span{display:none}}
+
+/* Categories remain visible, including zero-count categories, across feed/search changes. */
+.dd-categories{margin:16px 0 20px;padding:14px 0;border-top:1px solid #e5e5df;border-bottom:1px solid #e5e5df}
+.dd-category-heading{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.dd-category-heading b{font-size:14px;color:#303730}.dd-category-heading>span{font-size:12px;color:#7b838d}
+.dd-category-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.dd-category-buttons button{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:7px 12px;border:1px solid #e1e4e7;border-radius:20px;background:#fff;color:#4c596c;font:inherit;font-size:13px;white-space:nowrap}
+.dd-category-buttons button:hover{border-color:#cb92ac;background:#fff8fb}
+.dd-category-buttons button.on{background:#f9eaf1;border-color:#dca3be;color:#92385f;font-weight:700}
+.dd-category-buttons button span{font-size:12px;font-variant-numeric:tabular-nums;color:#7d8590}
+.dd-category-buttons button.on span{color:#92385f}
+@media(max-width:700px){.dd-categories{margin:12px 0}.dd-category-buttons{gap:6px}.dd-category-buttons button{padding:7px 10px;min-height:40px}}
