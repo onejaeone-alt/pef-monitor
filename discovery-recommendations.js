@@ -24,7 +24,7 @@ const SECTORS=[['외식·식품',/외식|프랜차이즈|식품|급식|식자재
 const METHODS=[['공개매수',/공개매수/],['기업공개',/IPO|기업공개|상장/],['부분 매각',/부분매각|일부.{0,8}매각|소수지분|잔여지분/],['분리 매각',/분리|분할|쪼개|독립매각/],['경영권 매각',/경영권.{0,6}매각|매각|손절/]];
 function keyEntity(v){return norm(v).replace(/^맥쿼리(?:자산운용그룹한국|pe)?$/,'맥쿼리').replace(/^mbk파트너스$/,'mbk').replace(/^배달의민족$/,'배민').replace(/^(?:한국산업은행|산은|kdb)$/,'산업은행').replace(/^(?:ibk기업은행|기은|ibk)$/,'기업은행');}
 function validEntity(v){return v&&v.length>=2&&v.length<=35&&!GENERIC.test(v)&&!/^\d/.test(v)&&!/[?!…]/.test(v)&&!/(?:억|조|만)(?:달러|원)|규모$|^투자\s*뒤|^금리\s*오르자|^(?:커지는|짧아진|높아진|늘어난|줄어든|불거진|할인해|참여해|확보해|취득해|넘겨|받아|팔아|사들여|할인가|회생기업|나선|자본|달러|원화|엔화|만기|후순위|부채|계약|최종|독립매각|수익증권|차입금|부분|분리|상환|최대주주로)$/.test(v);}
-function mentioned(text,name){const n=keyEntity(name);if(/^[a-z0-9]+$/.test(n))return new RegExp('(^|[^a-z0-9])'+n+'([^a-z0-9]|$)','i').test(text);return norm(text).includes(norm(name))||norm(text).includes(n);}
+function mentioned(text,name){const n=keyEntity(name);if(/^[a-z0-9]+$/.test(n))return new RegExp('(^|[^a-z0-9가-힣])'+n+'([^a-z0-9가-힣]|$)','i').test(text);return norm(text).includes(norm(name))||norm(text).includes(n);}
 function plainTitle(v){return clean(v).replace(/\[[^\]]*\]/g,'').replace(/[‘’“”"'「」『』]/g,'').replace(/\((?:종합|종합\d보|속보)\)/g,'').trim();}
 function lexicalEntities(title){
  const t=plainTitle(title),out=[];
@@ -52,14 +52,9 @@ function collect(input,now){
  // Old analytical claims are not re-labelled as today's news. Only an actual
  // dated source title can enter the same evidence path as a collected article.
  for(const c of arr(input.canonical))for(const s of arr(c?.sources))if(s?.title){const r=normalize({...s,source_name:s.label},'canonical',now);if(r)rows.push(r);}
- for(const d of arr(input.dart)){
-  const review=input.reviews?.[d?.rcept_no];if(!review?.ok||review.rcept_no!==d?.rcept_no)continue;
-  const fields=arr(review.current_fields).filter(f=>f?.evidence_id&&f.source?.source_id==='dart:'+d.rcept_no);
-  if(fields.length<2||!fields.some(f=>f.topic==='money')||!fields.some(f=>f.topic==='party'))continue;
-  if(!/타법인.*(?:취득|처분)|합병|영업양수도|최대주주변경/.test(d.report_nm||''))continue;
-  const r=normalize({title:clean(d.corp_name)+' '+clean(d.report_nm),source_url:review.url||'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='+d.rcept_no,published_at:d.rcept_dt,source_name:'DART',summary:fields.slice(0,5).map(f=>clean(f.label)+': '+String(f.value??'')+(f.unit?' '+clean(f.unit):'' )).join(' · '),target:{name:d.corp_name,category:'company'}},'dart',now);
-  if(r){r.actions=['투자'];r.read_level='body';rows.push(r);}
- }
+ // DART form fields alone do not identify the issuer's role or the target of
+ // a transaction. They remain available in the DART/inbox views, but cannot
+ // originate editorial pitches until those roles have been resolved.
  // Entity mentions must occur in the title/text. Feed target metadata often
  // describes a watchlist institution, not the company in this particular deal.
  const vocabulary=unique(rows.flatMap(r=>r.entities)).filter(validEntity).sort((a,b)=>b.length-a.length);

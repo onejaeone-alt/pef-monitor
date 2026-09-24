@@ -64,3 +64,15 @@ test('insurer recommitment is LP money management and sector window is 30 days',
 test('a shareholder participating in a tender does not turn a verb into the subject',()=>{
  const p=build({news:[news('가격 낮다 반대하더니…차파트너스, 리파인 공개매수 참여해 지분 매각','a')]})[0];assert.match(p.headline,/^리파인 공개매수/);
 });
+test('reviewed DART forms cannot originate a sale or acquisition pitch from issuer names',()=>{
+ const dart=[{rcept_no:'20260923000001',rcept_dt:'20260923',corp_name:'금호개발상사',report_nm:'타법인주식및출자증권취득결정'},{rcept_no:'20260923000002',rcept_dt:'20260923',corp_name:'핑거',report_nm:'타법인주식및출자증권취득결정'}];
+ const reviews=Object.fromEntries(dart.map((d,i)=>[d.rcept_no,{ok:true,rcept_no:d.rcept_no,current_fields:[{label:'취득금액',value:'100',unit:'억원',topic:'money',evidence_id:'money',source:{source_id:'dart:'+d.rcept_no}},{label:'대상회사',value:i?'회사명(국적)':'(주)STX',topic:'party',evidence_id:'party',source:{source_id:'dart:'+d.rcept_no}},{label:'취득목적',value:i?'신규 투자':'(주)STX 회생계획에 따른 당사 채권 출자전환',topic:'purpose',evidence_id:'purpose',source:{source_id:'dart:'+d.rcept_no}}]}]));
+ assert.deepEqual(build({dart,reviews}),[]);
+ const article=news('SK, 회사채 1500억원 발행…기존 차입금 차환','sk');
+ assert.deepEqual(build({news:[article],dart,reviews}),build({news:[article]}));
+});
+test('a Latin company name does not swallow a different company with a Korean suffix',()=>{
+ const rows=build({news:[news('SK, 회사채 1500억원 발행…기존 차입금 차환','sk'),news('SK리츠, 회사채 1000억원 발행…차입금 차환','skreit')]});
+ assert.equal(rows.length,2);
+ for(const topic of ['SK','SK리츠']){const p=rows.find(r=>r.research_topic===topic);assert.ok(p);assert.equal(p.source_count,1);assert.equal(p.evidence[0].text.startsWith(topic+','),true);}
+});
