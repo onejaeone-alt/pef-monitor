@@ -8,7 +8,7 @@
 // DART is a daily-report material selector, not an automatic article-value judge.
 // Bounded background reads enrich public filings; private notes stay in this browser.
 const STORE='ib_dart_reviews_v1',PROJECTS='pef_my_reporting_projects_v1';
-const REVIEW_VERSION='dart-review-1.7',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
+const REVIEW_VERSION='dart-review-1.8',DEFAULT_VIEW='raw',DEFAULT_FEED='priority';
 const staleNotice='이전 분석 버전의 보관 결과입니다. 새로 읽기 전에는 원문과 직접 대조해주세요.';
 const isCurrentReview=r=>Boolean(r?.ok&&r.version===REVIEW_VERSION);
 const hasChanges=r=>Boolean(isCurrentReview(r)&&Array.isArray(r.changes)&&r.changes.length);
@@ -54,6 +54,10 @@ function fieldValue(f){
 }
 function summaryValue(f){
   const value=String(f.value||''),n=Number(value.replace(/,/g,''));
+  if(f.label==='분할비율'){
+    const parts=[...value.matchAll(/분할(존속|신설)회사\s*[:：]\s*([0-9]+(?:\.[0-9]+)?)/g)];
+    if(parts.length===2)return parts.map(m=>m[1]+' '+m[2]).join(' / ');
+  }
   if(f.unit==='원'&&/^[\d,]+$/.test(value)&&Number.isSafeInteger(n)&&n>=100000000)return (n%100000000?'약 ':'')+(n/100000000).toLocaleString('ko-KR',{maximumFractionDigits:1})+'억원';
   return fieldValue(f);
 }
@@ -86,12 +90,17 @@ function rowDelta(item,review){
   if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&Array.isArray(review.changes)&&review.changes.length){
     return {label:'달라진 것',state:'confirmed',text:review.changes.slice(0,2).map(d=>`${compact(d.label,24)} ${compact(d.before,38)} → ${compact(d.after,38)}`).join(' · ')};
   }
-  if(correction(item))return {label:'달라진 것',state:'pending',text:'정정공시 · 변경값 확인 전'};
   if(isCurrentReview(review)&&review.rcept_no===item.rcept_no&&Array.isArray(review.current_fields)&&review.current_fields.length){
-    const facts=review.current_fields.filter(f=>f.topic!=='party');
-    if(facts.length)return {label:'이번 공시',state:'confirmed',text:facts.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(summaryValue(f),65)}`).join(' · ')};
+    const rank=f=>/계약 해소 종류/.test(f.label)?0:/이번 보고 보유비율|변경 후 지분율|공개매수 매수수량/.test(f.label)?1:/양수도 대금|취득금액|처분금액|납입 예정총액|사건명|신청사유|분할비율|합병비율/.test(f.label)?2:f.topic==='money'?3:f.topic==='schedule'?4:/직전 보고|변경 전/.test(f.label)?8:5;
+    const facts=review.current_fields.filter(f=>f.topic!=='party').sort((a,b)=>rank(a)-rank(b));
+    if(facts.length)return {label:'이번 공시',state:'confirmed',text:(correction(item)?'현재 기재값 · ':'')+facts.slice(0,2).map(f=>`${compact(f.label||f.raw_label,24)} ${compact(summaryValue(f),65)}`).join(' · ')};
   }
-  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no)return {label:'원문 확인',state:'pending',text:'거래 수치를 자동 추출하지 못했습니다 · 원문 확인'};
+  if(isCurrentReview(review)&&review.rcept_no===item.rcept_no){
+    const parties=(review.current_fields||[]).filter(f=>f.topic==='party');
+    if(parties.length)return {label:'이번 공시',state:'confirmed',text:parties.slice(0,2).map(f=>`${f.label} ${compact(f.value,65)}`).join(' · ')};
+    return {label:'원문 확인',state:'pending',text:review.warnings?.length?'원문 항목을 구분하지 못했습니다 · 상세에서 확인':'본문을 읽었습니다 · 요약할 항목은 원문에서 확인'};
+  }
+  if(correction(item))return {label:'달라진 것',state:'pending',text:'정정공시 · 변경값 확인 전'};
   return {label:'원문 확인',state:'pending',text:'본문에서 거래 조건을 확인합니다'};
 }
 

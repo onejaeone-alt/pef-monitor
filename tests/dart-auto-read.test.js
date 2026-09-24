@@ -14,7 +14,7 @@ test('screen loads, reads public sources two at a time, renders values and keeps
   if(!url.includes('action=review'))return {ok:true,json:async()=>({ok:true,items,coverage:{complete:true},range:{}})};
   active++;max=Math.max(max,active);await new Promise(r=>setTimeout(r,1));active--;
   const n=new URL(url,'https://example.test').searchParams.get('rcept_no');
-  return {ok:!n.endsWith('000001'),json:async()=>n.endsWith('000001')?{ok:false,error:'원문 실패'}:{ok:true,rcept_no:n,version:'dart-review-1.7',changes:[],current_fields:[{label:'처분금액',value:'100',unit:'억원',topic:'money'}]}};
+  return {ok:!n.endsWith('000001'),json:async()=>n.endsWith('000001')?{ok:false,error:'원문 실패'}:{ok:true,rcept_no:n,version:'dart-review-1.8',changes:[],current_fields:[{label:'처분금액',value:'100',unit:'억원',topic:'money'}]}};
  }};
  vm.runInNewContext(fs.readFileSync('dart-desk.js','utf8'),context);
  for(let i=0;i<150&&!node('#sourceProgress').textContent.includes('대기');i++)await new Promise(r=>setTimeout(r,10));

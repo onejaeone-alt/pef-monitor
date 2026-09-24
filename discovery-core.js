@@ -1,6 +1,6 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./news-reader-core'));else root.IBDiscovery=factory(root.NewsReaderCore);})(typeof globalThis!=='undefined'?globalThis:this,function(News){
 'use strict';
-const VERSION='dart-review-1.7',DAY=86400000;
+const VERSION='dart-review-1.8',DAY=86400000;
 const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
 const norm=v=>clean(v).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
 const unique=a=>[...new Set(a.filter(Boolean))];

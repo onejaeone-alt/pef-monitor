@@ -7,7 +7,7 @@ const table=rows=>'<TABLE>'+rows.map(row).join('')+'</TABLE>';
 const head=['항목','정정사유','정정 전','정정 후'];
 const run=xml=>R.analyzeMarkup(xml,{rcept_no:n,entry:n+'.xml'});
 const fixed=()=>run(table([head,['납입일','일정 정정','2026-09-10','2026-10-05']]));
-test('review version matches client cache policy',()=>{assert.equal(R.VERSION,'dart-review-1.7');assert.equal(UI.REVIEW_VERSION,R.VERSION);assert.equal(UI.isCurrentReview(fixed()),true);});
+test('review version matches client cache policy',()=>{assert.equal(R.VERSION,'dart-review-1.8');assert.equal(UI.REVIEW_VERSION,R.VERSION);assert.equal(UI.isCurrentReview(fixed()),true);});
 test('old, missing, invalid and future versions never qualify as current evidence',()=>{for(const r of [null,{ok:false,version:R.VERSION},{ok:true},{ok:true,version:'dart-review-1.4'},{ok:true,version:'dart-review-9'}]){assert.equal(UI.isCurrentReview(r),false);assert.equal(UI.hasChanges({...r,changes:[{}]}),false);}});
 test('current changes qualify without article value scoring',()=>{assert.equal(UI.hasChanges(fixed()),true);assert.equal(UI.hasChanges({...fixed(),changes:[]}),false);assert.equal(fixed().story_score,undefined);});
 test('nested old conditions never become current even when no current field exists',()=>{const old=table([['납입일','2026-09-10']]),later=table([['납입일','2026-10-05']]);const r=run(table([head,['납입일','변경',old,later]]));assert.equal(r.current_fields.length,0);assert.equal(r.changes.length,0);assert.ok(r.warnings.length);});
