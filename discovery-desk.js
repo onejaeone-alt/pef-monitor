@@ -151,8 +151,9 @@ async function findToday(){
   const count=data.filter(x=>x.lane==='current'&&x.research?.status==='ready'&&x.article_brief?.angles?.length).length;
   const incomplete=Object.values(status).some(s=>s.state==='failed'||s.state==='partial');
   const unavailable=data.some(x=>/model_|research_unavailable/.test(x.research?.error||''));
+  const sourceMissing=data.some(x=>x.research?.status==='sources_only');
   const clock=new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
-  todayMessage=count?`${clock} 확인 · 발제 후보 ${count}건. 추천기사 열기에서 방향과 근거를 볼 수 있습니다.`:unavailable?'AI 분석을 완료하지 못했습니다. 확보한 자료와 수집 상태를 확인해 주세요.':'이번에 확인한 자료에서는 새 발제 후보를 찾지 못했습니다. 참고자료는 아래에서 볼 수 있습니다.';
+  todayMessage=count?`${clock} 확인 · 발제 후보 ${count}건. 추천기사 열기에서 방향과 근거를 볼 수 있습니다.`:unavailable?'AI 분석을 완료하지 못했습니다. 확보한 자료와 수집 상태를 확인해 주세요.':sourceMissing?'비교할 원문을 충분히 확보하지 못했습니다. 원문 확보 상태는 각 참고자료의 근거 보기에서 확인할 수 있습니다.':'이번에 확인한 자료에서는 새 발제 후보를 찾지 못했습니다. 참고자료는 아래에서 볼 수 있습니다.';
   if(incomplete)todayMessage+=' 일부 수집원은 확인하지 못했습니다.';
  }catch{todayMessage='발제 찾기를 완료하지 못했습니다. 현재 결과를 유지했습니다. 다시 눌러 주세요.';}
  finally{findingToday=false;syncTodayStatus();scheduleUpdate();}
