@@ -11,11 +11,11 @@ const source = '<html><head><link rel="stylesheet" href="/site-header.css?v=old"
 test('main navigation overrides legacy compact font size without changing body text', () => {
   const rules = [...css.matchAll(/\.topbar\[data-site-header\] \.nav > a\s*\{([^}]*)\}/g)].map(m => m[1]);
   assert.ok(rules.length >= 2);
-  assert.match(rules[0], /font-size:1rem !important/);
-  assert.match(rules[0], /min-height:48px/);
-  assert.match(rules[0], /padding:11px 16px !important/);
+  assert.match(rules[0], /font-size:14px !important/);
+  assert.match(rules[0], /min-height:46px/);
+  assert.match(rules[0], /padding:0 12px !important/);
   assert.ok(rules.slice(1).every(rule => !/font-size:/.test(rule)), 'Narrow screens must not shrink tab text');
-  assert.match(rules.at(-1), /min-height:44px/);
+  assert.match(rules.at(-1), /min-height:46px/);
 });
 
 test('long menu labels stay whole and the navigation scrolls rather than shrinking', () => {
@@ -27,7 +27,7 @@ test('long menu labels stay whole and the navigation scrolls rather than shrinki
 
 test('existing stylesheet links are refreshed once and repeated builds are idempotent', () => {
   const page = H.page(source);
-  assert.match(page, /href="\/site-header\.css\?v=20260924-naver-font1(?:&[^"]*)?"/);
+  assert.match(page, /href="\/site-header\.css\?v=20260924-naver-type2(?:&[^"]*)?"/);
   assert.equal((page.match(/href="\/site-header\.css/g) || []).length, 1);
   assert.equal(H.page(page), page);
 });
@@ -42,14 +42,14 @@ test('menu text, destinations, current header controls and page body are preserv
   assert.match(page, /class="site-brand-home" href="\/"/);
 });
 
-test('all actual internal header pages use the larger navigation stylesheet', () => {
+test('all actual internal header pages use the shared navigation stylesheet', () => {
   const pages = fs.readdirSync(root).filter(name => name.endsWith('.html'));
   let checked = 0;
   for (const name of pages) {
     const source = fs.readFileSync(path.join(root, name), 'utf8');
     if (!/<header\b[^>]*class="[^"]*\btopbar\b/.test(source)) continue;
     const page = H.page(source);
-    assert.match(page, /href="\/site-header\.css\?v=20260924-naver-font1(?:&[^"]*)?"/, name);
+    assert.match(page, /href="\/site-header\.css\?v=20260924-naver-type2(?:&[^"]*)?"/, name);
     checked++;
   }
   assert.ok(checked >= 8, 'Expected at least the existing eight internal header pages');
