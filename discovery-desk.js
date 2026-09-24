@@ -6,7 +6,7 @@ const REVIEW_KEY='ib_dart_reviews_v1',PROJECT_KEY='pef_my_reporting_projects_v1'
 const endpoints={canonical:['출자공고·기존 분석','/api/signals?mode=clues&days=14'],news:['국내 뉴스','/api/news?feed=reader&days=7&limit=500'],foreign:['외신','/api/news?scope=foreign&days=7&limit=100'],dart:['DART 공시','/api/dart-feed?days=7&limit=800'],calendar:['취재일정','/api/news?feed=calendar']};
 let state={},status={},reviews={},data=[],view='current',query='',expanded=false,run=0,controller,reading=false,failures=new Set();
 const UPDATE_MS=5*60*1000;
-const P=globalThis.DiscoveryPatterns,B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
+const P=globalThis.DiscoveryPatterns,F=globalThis.DiscoveryFollowup,B=globalThis.MarketInStoryBrief,RESEARCH_KEY='ib_discovery_research_v1';
 let researchCache=stored(RESEARCH_KEY,{}),researching=false,researchPending=new Set(),researchRequests=new Map();
 let findingToday=false,todayMessage='',loadJob=null,reviewJob=null,researchJob=null,recommendationId=null,returnFocus=null;
 let loading=false,lastStarted=0,lastChecked=0,updateTimer=null,pendingData=null,renderedCards='';
@@ -22,40 +22,53 @@ function scheduleUpdate(){
  if(!away()&&!loading&&!reading&&!findingToday&&!researching)updateTimer=setTimeout(()=>load({automatic:true}),Math.max(1000,UPDATE_MS-(Date.now()-lastStarted)));
 }
 function stored(k,fallback){try{return JSON.parse(localStorage.getItem(k)||'null')??fallback;}catch(_){return fallback;}}
-function list(rows){return rows?.length?'<ul>'+rows.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>현재 확보한 내용이 없습니다.</p>';}
+function list(rows){const values=(rows||[]).filter(x=>typeof x==='string'&&x.trim());return values.length?'<ul>'+values.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'';}
 function links(rows){return (rows||[]).filter(s=>C.safeUrl(s.url)).map(s=>`<a href="${esc(C.safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.label||'원문')} ↗</a>`).join('');}
 function patternSummary(x){
- if(!P)return '';
+ if(!P||x.lane!=='background'&&x.detector!=='pattern_followup')return '';
  const s=P.summary(x),ref=x.pattern_ref;
  const jump=ref?`<button data-discovery-jump="${esc(ref.clue_id)}">기존 특징과 근거 보기 →</button>`:x.linked_update?`<button data-discovery-jump="${esc(x.linked_update.clue_id)}">연결된 새 자료 ${x.linked_update.count}건 →</button>`:'';
  return `<dl class="discovery-pattern-summary"><dt>발견한 특징</dt><dd>${esc(s.feature)}</dd><dt>비교한 자료</dt><dd>${esc(s.comparison)}</dd><dt>새로 확인된 내용</dt><dd>${esc(s.update)}</dd></dl>${s.asOf?`<p class="discovery-baseline">기존 자료 기준 ${esc(s.asOf)} · 오늘 다시 검증한 결과는 아닙니다.</p>`:''}${jump?`<div class="discovery-pattern-link">${jump}</div>`:''}`;
 }
+function followupSummary(p){
+ if(!p)return '';
+ return `<p class="discovery-verification-label">${esc(p.provisional)}</p><dl class="discovery-pattern-summary"><dt>살펴볼 이유</dt><dd>${esc(p.reason)}</dd><dt>후속 취재 질문</dt><dd>${esc(p.question)}</dd><dt>대조할 공개자료</dt><dd><ul>${p.checks.map(c=>'<li><b>'+esc(c.document)+'</b> · '+esc(c.fields)+'</li>').join('')}</ul></dd></dl><p class="discovery-promotion-rule"><b>발제로 올릴 조건</b> ${esc(p.promotion)}</p>`;
+}
+function inbox(rows){
+ if(!rows.length)return '';
+ const open=document.querySelector('[data-discovery-inbox]')?.open;
+ return `<details class="discovery-inbox" data-discovery-inbox ${open?'open':''}><summary>추천에서 보류한 자료 ${rows.length}건</summary><p>추천 이유와 후속 취재 근거를 확보하지 못한 자료입니다. 제목을 수집한 것만으로는 발제로 올리지 않습니다.</p>${rows.map(x=>`<div class="discovery-inbox-row"><strong>${esc(x.one_line_signal||x.headline)}</strong><span>${esc(x.research?.status==='ready'?'원문을 읽었지만 새 기사 방향을 찾지 못함':x.research?.error==='insufficient_sources'?'비교할 원문 부족':/model_/.test(x.research?.error||'')?'AI 분석 미완료':'원문 분석 대기')}</span>${links((x.sources||[]).slice(0,2))}${B?.requestFor(x)?`<button data-discovery-research="${esc(x.clue_id)}">원문 대조</button>`:''}</div>`).join('')}</details>`;
+}
 function card(x){
  const pitch=x.research?.status==='ready'&&x.article_brief?.angles?.[0];
- const research=pitch?'<p class="discovery-pitch-reason">'+esc(pitch.reason)+'</p>':'',researchDetails=(B?.renderDetails(x.research,x.clue_id)||'')+(!pitch?(B?.renderBriefHtml(x.research)||''):'');
- const heading=pitch?.headline||x.one_line_signal||x.headline;
+ const followup=x.followup_plan;
+ const research=pitch?'<dl class="discovery-pattern-summary"><dt>추천 이유</dt><dd>'+esc(pitch.reason)+'</dd><dt>후속 취재 질문</dt><dd>'+esc(pitch.question)+'</dd></dl>':'',researchDetails=(B?.renderDetails(x.research,x.clue_id)||'')+(!pitch?(B?.renderBriefHtml(x.research)||''):'');
+ const heading=pitch?.headline||followup?.headline||x.one_line_signal||x.headline;
  const evidence=(x.evidence||[]).map(f=>`${f.label}: ${f.before!==undefined?f.before+' → '+f.after:f.value+(f.unit?' '+f.unit:'')} · ${f.source?.location||'원문 위치 확인'}`);
- return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}${pitch?'':patternSummary(x)}<div class="discovery-actions">${pitch?`<button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button>`:''}${!pitch&&B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links((x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.pattern_ref?'<h4>기존 분석의 비교 자료</h4>'+links(x.pattern_ref.sources):''}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
+ return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'발제 후보':followup?'후속 확인 후보':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}${followupSummary(followup)}${pitch?'':patternSummary(x)}<div class="discovery-actions">${pitch?`<button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button>`:''}${!pitch&&B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links(followup?[followup.source]:(x.sources||[]).slice(0,2))}<button data-discovery-project="${esc(x.clue_id)}" ${pitch?'data-discovery-angle="0"':''}>취재에 담기 →</button></div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.pattern_ref?'<h4>기존 분석의 비교 자료</h4>'+links(x.pattern_ref.sources):''}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.hypothesis?'<h4>아직 확인하지 않은 가설</h4><p>'+esc(x.hypothesis)+'</p><p>'+esc(x.falsification)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
 }
 function render({accept=false}={}){
  const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
  let next=C.build({...state,reviews}).map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>Date.now()?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
  if(P)next=P.connect(next,state);
+ next=next.map(x=>{const p=F?.plan(x);return p?{...x,followup_plan:p,reason:p.reason,questions:[p.question],next_action:p.checks.map(c=>c.document+'：'+c.fields).join(' ／ '),unknowns:[p.promotion],stage:'공개자료 확인 전'}:x;});
  if(!accept&&!findingToday&&data.length&&readingCard()&&JSON.stringify(next)!==JSON.stringify(data))pendingData=next;
  else {data=next;pendingData=null;}
  $('#discoveryUpdates').hidden=!pendingData;
  const counts={current:data.filter(x=>x.lane==='current').length,background:data.filter(x=>x.lane==='background').length};
  let rows=data.filter(x=>x.lane===view&&(!query||[x.headline,x.article_pitch,x.one_line_signal,...(x.entities||[])].join(' ').toLowerCase().includes(query)));
+ const raw=view==='current'?rows.filter(x=>!(x.research?.status==='ready'&&x.article_brief?.angles?.length)&&!x.followup_plan&&x.detector!=='pattern_followup'):[];
+ if(view==='current')rows=rows.filter(x=>!raw.includes(x));
  const total=rows.length;if(view==='current'&&!expanded&&!query)rows=B?B.shortlist(rows):C.shortlist(rows);
  const proposals=rows.filter(x=>x.research?.status==='ready'&&x.article_brief?.angles?.length),references=rows.filter(x=>!proposals.includes(x));
  const group=(title,items)=>items.length?'<h3 class="discovery-section-title">'+title+' <span>'+items.length+'</span></h3>'+items.map(card).join(''):'';
- const html=rows.length?group('발제 후보',proposals)+group(view==='background'?'누적자료에서 찾은 특징':'살펴볼 자료',references):`<div class="discovery-empty">${Object.values(status).some(s=>s.state==='loading')?'자료를 읽는 중입니다. 도착한 자료부터 표시합니다.':'현재 조건에서 추린 취재거리가 없습니다. 아래 수집 상태를 확인해 주세요.'}</div>`;
+ const html=(rows.length?group('발제 후보',proposals)+group(view==='background'?'누적자료에서 찾은 특징':'후속 확인 후보 · 발제 확정 전',references):`<div class="discovery-empty">${Object.values(status).some(s=>s.state==='loading')?'자료를 읽고 있습니다. 추천 근거를 확인한 결과부터 표시합니다.':'추천 이유와 후속 취재 근거를 갖춘 후보가 아직 없습니다.'}</div>`)+inbox(raw);
  if(html!==renderedCards){$('#discoveryCards').innerHTML=html;renderedCards=html;for(const el of document.querySelectorAll('[data-detail]'))if(open.has(el.dataset.detail))el.open=true;}
  const ready=data.filter(x=>x.lane==='current'&&x.article_brief?.angles?.length).length;
- $('#discoveryViewNote').textContent=view==='background'?'여러 기록을 비교해 찾은 특징입니다. 기존 자료 기준일과 새 자료 연결 여부를 함께 확인하세요.':'최근 자료에서 찾은 변화와, 기존 특징에 연결된 새 근거를 봅니다. 자료가 연결됐다고 기존 가설이 확인된 것은 아닙니다.';
- $('#discoveryCounts').textContent=view==='background'?`누적 특징 ${counts.background}건 · 새 자료 연결 ${data.filter(x=>x.lane==='background'&&x.linked_update).length}건`:`발제 후보 ${ready}건 · 최근 참고자료 ${counts.current-ready}건`;
- const blocked=data.some(x=>/model_/.test(x.research?.error||''));
- $('#discoveryResearchStatus').textContent=researching?'새 자료의 원문과 마켓인 보도를 대조하고 있습니다.':blocked?'AI 분석 연결이 지연되고 있습니다. 확보한 원문은 아래에서 볼 수 있습니다.':!ready?'새 기사로 발전시킬 근거를 확보한 이슈부터 발제 후보에 올립니다.':'';
+ $('#discoveryViewNote').textContent=view==='background'?'여러 기록을 비교해 찾은 특징입니다. 기존 자료 기준일과 새 자료 연결 여부를 함께 확인하세요.':'발제 후보는 원문과 기보도를 대조한 결과입니다. 후속 확인 후보는 공개자료로 검증할 질문이며, 새 사실을 확인했다는 뜻은 아닙니다.';
+ $('#discoveryCounts').textContent=view==='background'?`누적 특징 ${counts.background}건 · 새 자료 연결 ${data.filter(x=>x.lane==='background'&&x.linked_update).length}건`:`발제 후보 ${ready}건 · 후속 확인 후보 ${data.filter(x=>x.lane==='current'&&(x.followup_plan||x.detector==='pattern_followup')).length}건`;
+ const blocked=data.some(x=>/model_/.test(x.research?.error||'')),sourceMissing=data.some(x=>x.research?.error==='insufficient_sources');
+ $('#discoveryResearchStatus').textContent=researching?'새 자료의 원문과 마켓인 보도를 대조하고 있습니다.':blocked?'AI 분석을 완료하지 못해 발제 추천을 보류했습니다. 아래 확인 과제는 원문 검증 전입니다.':sourceMissing?'비교할 원문이 부족해 일부 발제 추천을 보류했습니다.':!ready?'새 기사로 발전시킬 근거를 확보한 이슈부터 발제 후보에 올립니다.':'';
  $('#discoveryMore').hidden=!(view==='current'&&!expanded&&!query&&total>rows.length);$('#discoveryMore').textContent=`나머지 ${total-rows.length}건 보기`;
  $('#discoverySources').innerHTML=Object.entries(endpoints).map(([key,[name]])=>{const s=status[key]||{state:'loading'};return `<span class="${s.state}">${esc(name)} · ${esc(s.state==='loading'?'수집 중':s.state==='failed'?'불러오기 실패':s.detail||'연결됨')}</span>`;}).join('');
  const candidates=C.dartCandidates(state.dart),valid=candidates.filter(x=>C.validReview(x,reviews[x.rcept_no])).length,pending=candidates.filter(x=>!C.validReview(x,reviews[x.rcept_no])&&!failures.has(x.rcept_no)).length;
@@ -153,7 +166,7 @@ async function findToday(){
   const unavailable=data.some(x=>/model_|research_unavailable/.test(x.research?.error||''));
   const sourceMissing=data.some(x=>x.research?.status==='sources_only');
   const clock=new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'});
-  todayMessage=count?`${clock} 확인 · 발제 후보 ${count}건. 추천기사 열기에서 방향과 근거를 볼 수 있습니다.`:unavailable?'AI 분석을 완료하지 못했습니다. 확보한 자료와 수집 상태를 확인해 주세요.':sourceMissing?'비교할 원문을 충분히 확보하지 못했습니다. 원문 확보 상태는 각 참고자료의 근거 보기에서 확인할 수 있습니다.':'이번에 확인한 자료에서는 새 발제 후보를 찾지 못했습니다. 참고자료는 아래에서 볼 수 있습니다.';
+  todayMessage=count?`${clock} 확인 · 발제 후보 ${count}건. 추천기사 열기에서 방향과 근거를 볼 수 있습니다.`:unavailable?'AI 분석을 완료하지 못했습니다. 확보한 자료와 수집 상태를 확인해 주세요.':sourceMissing?'비교할 원문을 충분히 확보하지 못했습니다. 확보하지 못한 자료를 분석한 것처럼 추천하지 않았습니다.':'이번에 확인한 자료에서는 새 발제 후보를 찾지 못했습니다. 후속 확인 과제와 보류 자료를 구분해 표시했습니다.';
   if(incomplete)todayMessage+=' 일부 수집원은 확인하지 못했습니다.';
  }catch{todayMessage='발제 찾기를 완료하지 못했습니다. 현재 결과를 유지했습니다. 다시 눌러 주세요.';}
  finally{findingToday=false;syncTodayStatus();scheduleUpdate();}
@@ -165,7 +178,7 @@ function openRecommendation(clue,trigger){
  $('#recommendationTitle').textContent=p.headline;
  const facts=(a.facts||[]).filter(f=>p.basis_ids?.includes(f.id));
  const basis=facts.map(f=>{const source=clue.research.sources?.find(s=>s.source_id===f.source_id);return '<li>'+esc(f.text)+links(source?[{...source,label:source.publisher||source.title}]:[])+'</li>';}).join('');
- $('#recommendationBody').innerHTML='<section><h3>기사 방향</h3><p>'+esc(p.reason)+'</p></section><section><h3>기존 보도에서 더 나아갈 부분</h3><p>'+esc(p.new_information)+'</p></section>'+(a.why_now?.text?'<section><h3>지금 볼 이유</h3><p>'+esc(a.why_now.text)+'</p></section>':'')+'<section><h3>근거로 삼은 사실</h3><ul>'+basis+'</ul></section>'+(p.missing?'<section class="recommendation-missing"><h3>아직 확인할 내용</h3><p>'+esc(p.missing)+'</p></section>':'')+'<details><summary>모든 근거와 기존 보도 확인</summary>'+B.renderDetails(clue.research,clue.clue_id)+'</details>'+(clue.research.as_of?'<p class="recommendation-asof">분석 기준 '+esc(new Date(clue.research.as_of).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 한국시간</p>':'');
+ $('#recommendationBody').innerHTML='<section><h3>기사 방향</h3><p>'+esc(p.reason)+'</p></section><section><h3>기존 보도에서 더 나아갈 부분</h3><p>'+esc(p.new_information)+'</p></section>'+(a.why_now?.text?'<section><h3>지금 볼 이유</h3><p>'+esc(a.why_now.text)+'</p></section>':'')+(p.question?'<section><h3>후속 취재 질문</h3><p>'+esc(p.question)+'</p></section>':'')+(p.first_action?'<section><h3>먼저 확인할 자료</h3><p>'+esc(p.first_action)+'</p></section>':'')+'<section><h3>근거로 삼은 사실</h3><ul>'+basis+'</ul></section>'+(p.missing?'<section class="recommendation-missing"><h3>아직 확인할 내용</h3><p>'+esc(p.missing)+'</p></section>':'')+'<details><summary>모든 근거와 기존 보도 확인</summary>'+B.renderDetails(clue.research,clue.clue_id)+'</details>'+(clue.research.as_of?'<p class="recommendation-asof">분석 기준 '+esc(new Date(clue.research.as_of).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 한국시간</p>':'');
  $('#saveRecommendation').dataset.discoveryProject=clue.clue_id;$('#saveRecommendation').dataset.discoveryAngle='0';
  if(!dialog.open)dialog.showModal();$('#recommendationTitle').focus();
 }

@@ -1,9 +1,9 @@
 (function(root,factory){
- const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;
+ const api=factory(typeof module==='object'&&module.exports?require('./discovery-followup'):root.DiscoveryFollowup);if(typeof module==='object'&&module.exports)module.exports=api;
  else{root.MarketInStoryBrief=api;api.install(root);}
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(F){
 'use strict';
-const VERSION='marketin-research-4';
+const VERSION='marketin-research-5';
 const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>clean(v).toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
@@ -12,6 +12,7 @@ const scope=/사모펀드|PEF|프라이빗|벤처(?:캐피탈|투자)|인수금�
 const noise=/수목원|국가정원|축제|기념식|업무협약|MOU|목표주가|투자의견|주가.{0,12}(?:상승|급등|하락)|프로모션|할인행사|봉사활동|채용공고|교육과정|실무교육|과정\s*개설|기관\s*이전|이전기관|유치전|민생법안|무더기\s*적발|미공개정보.{0,15}(?:고발|통보|조치)/i;
 const meaningful=/경영권|공개매수|인수금융|재매각|회생|워크아웃|EOD|기한이익|약정|차환|신용등급|부실|매각|인수|투자|출자|결성|모집|개편|규제|시행|세컨더리|buyout|acquisition|fundrais/i;
 function primaryEntity(x){
+ const explicit=F?.subject(clean(x.headline));if(explicit)return explicit;
  const known=(x.entities||[]).map(clean).find(e=>e.length>=2&&!generic.test(e));if(known)return known;
  const title=clean(x.headline);
  if(/의무공개매수/.test(title))return '의무공개매수';
@@ -23,25 +24,32 @@ function eligible(x){
  if(['story_pitch','reporting_opportunity'].includes(x.detector))return false;
  if(x.detector==='dart_deal')return true;
  const text=clean(x.headline+' '+(x.one_line_signal||''));
- if(noise.test(text))return false;
+ if(noise.test(text)||F?.roundup.test(text))return false;
  if(x.detector==='official_followup'&&/공고|선정결과/.test(text)&&!/변경|확대|축소|신설|폐지|경쟁률/.test(text))return false;
  return scope.test(text)&&meaningful.test(text);
 }
 function select(rows,input={}){
- const out=[],groups=new Map(),allNews=[...(input.news||[]),...(input.foreign||[])];
+ const out=[],groups=new Map(),allNews=[...(input.news||[]),...(input.foreign||[])].filter(n=>n.source_type!=='press_release'&&Date.parse(n.published_at)<=Date.now()&&Date.parse(n.published_at)>Date.now()-7*86400000);
  const seenUrls=new Set(rows.filter(x=>x.detector==='news_followup').flatMap(x=>(x.sources||[]).map(s=>s.url)));
  const extra=allNews.filter(n=>!seenUrls.has(n.source_url)&&n.source_type!=='press_release'&&Date.parse(n.published_at)<=Date.now()&&Date.parse(n.published_at)>Date.now()-7*86400000).map(n=>({clue_id:'news-'+norm(n.title_ko||n.title),detector:'news_followup',headline:n.title_ko||n.title,entities:[n.target?.name,...(n.related_entities||[]).map(e=>e.canonical_name)].filter(Boolean),sort_date:n.published_at,lane:'current',fact_status:'보도',sources:[{url:n.source_url,label:n.source_name,title:n.title_ko||n.title,date:n.published_at}]}));
- for(const x of [...rows,...extra].sort((a,b)=>String(b.sort_date||'').localeCompare(String(a.sort_date||'')))){
+ const deduped=[],byTitle=new Map(),byUrl=new Map();
+ for(const row of [...rows,...extra]){
+  if(row.detector!=='news_followup'){deduped.push(row);continue;}
+  const title=norm(row.headline),old=byTitle.get(title)||(row.sources||[]).map(s=>byUrl.get(s.url)).find(Boolean);
+  if(old){old.sources=[...new Map([...(old.sources||[]),...(row.sources||[])].map(s=>[s.url,s])).values()];continue;}
+  const copy={...row,sources:[...(row.sources||[])]};deduped.push(copy);byTitle.set(title,copy);for(const s of copy.sources)byUrl.set(s.url,copy);
+ }
+ for(const x of deduped.sort((a,b)=>(Date.parse(b.sort_date)||0)-(Date.parse(a.sort_date)||0))){
   if(x.lane==='background'){out.push({...x,article_brief:null});continue;}
   if(!eligible(x))continue;
   const entity=primaryEntity(x),topic=entity||'';
   if(x.detector!=='news_followup'){out.push({...x,article_pitch:undefined,article_brief:null,research_topic:topic});continue;}
-  const key=entity?norm(entity):x.clue_id;
+  const key=entity?norm(entity)+'-'+(F?.family(x.headline)||'other'):x.clue_id;
   if(groups.has(key))continue;groups.set(key,true);
-  const related=entity?allNews.filter(n=>norm(n.title_ko||n.title).includes(norm(entity))&&!noise.test(n.title_ko||n.title)):[];
-  const sources=[...related.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))).map(n=>({label:n.source_name,title:n.title_ko||n.title,url:n.source_url,date:n.published_at})),...(x.sources||[])];
+  const related=entity?allNews.filter(n=>norm(n.title_ko||n.title).includes(norm(entity))&&!noise.test(n.title_ko||n.title)&&(!F||F.related(x.headline,n.title_ko||n.title))):[];
+  const sources=[...(x.sources||[]).map(s=>({...s,title:s.title||x.headline})),...related.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))).map(n=>({label:n.source_name,title:n.title_ko||n.title,url:n.source_url,date:n.published_at}))];
   const unique=[...new Map(sources.map(s=>[s.url,s])).values()];
-  out.push({...x,clue_id:entity?'issue-'+norm(entity):x.clue_id,sort_date:related[0]?.published_at||x.sort_date,headline:entity||x.headline,one_line_signal:entity?(related[0]?.title_ko||related[0]?.title||x.headline):'',detector_label:'관련 보도',reason:'본문 대조 전 · 기사 제안은 원문을 읽은 뒤 표시합니다.',article_pitch:undefined,article_brief:null,research_topic:topic,sources:unique.slice(0,12),reported:unique.slice(0,6).map(s=>(s.label||'보도')+': '+(s.title||x.headline))});
+  out.push({...x,clue_id:entity?'issue-'+key:x.clue_id,headline:entity||x.headline,one_line_signal:x.headline,detector_label:'관련 보도',reason:'본문 대조 전 · 기사 제안은 원문을 읽은 뒤 표시합니다.',article_pitch:undefined,article_brief:null,research_topic:topic,sources:unique.slice(0,12),reported:unique.slice(0,6).map(s=>(s.label||'보도')+': '+(s.title||x.headline))});
  }
  return out;
 }
@@ -52,14 +60,14 @@ function requestFor(x){
  return {key,url:'/api/signals?mode=research&topic='+encodeURIComponent(x.research_topic)+'&seeds='+encodeURIComponent(JSON.stringify(sources))};
 }
 function shortlist(rows,limit=6){
- const weight=x=>x.article_brief?.angles?.length?100:x.article_brief?80:x.detector==='pattern_followup'?60:x.detector==='news_followup'&&x.research_topic?50:x.research_topic?30:x.detector==='dart_deal'?10:0;
+ const weight=x=>x.article_brief?.angles?.length?100:x.article_brief?80:x.detector==='pattern_followup'?60:F?.plan(x)?55:x.detector==='news_followup'&&x.research_topic?50:x.research_topic?30:x.detector==='dart_deal'?10:0;
  return [...rows].sort((a,b)=>weight(b)-weight(a)||String(b.sort_date||'').localeCompare(String(a.sort_date||''))).slice(0,limit);
 }
 function attach(x,result){
  if(!result||result.version!==VERSION)return x;
  if(result.status==='out_of_scope')return null;
  const a=result.analysis;if(result.status!=='ready'||!a)return {...x,research:result};
- return {...x,research:result,detector_label:a.angles?.length?'후속 기사 제안':'이슈 브리핑',fact_status:'보도',one_line_signal:a.summary?.text||x.one_line_signal,reason:a.why_now?.text||'',article_pitch:a.angles?.[0]?.headline,article_brief:a,changed_fact:(a.changes||[]).map(c=>c.text).join(' · '),previous_state:a.previous_state?.text||'비교할 이전 상태를 원문에서 확인하지 못했습니다.',reported:(a.facts||[]).map(f=>f.text),questions:(a.angles||[]).map(p=>p.question).filter(Boolean),unknowns:[...(a.uncertainties||[]).map(u=>u.text),...(a.angles||[]).map(p=>p.missing).filter(Boolean)],sources:[...new Map([...(result.sources||[]).map(s=>({...s,label:s.publisher||s.title})),...(x.sources||[])].map(s=>[s.url,s])).values()]};
+ return {...x,research:result,detector_label:a.angles?.length?'후속 기사 제안':'이슈 브리핑',fact_status:'보도',one_line_signal:a.summary?.text||x.one_line_signal,reason:a.why_now?.text||'',article_pitch:a.angles?.[0]?.headline,article_brief:a,changed_fact:(a.changes||[]).map(c=>c.text).join(' · '),previous_state:a.previous_state?.text||'',reported:(a.facts||[]).map(f=>f.text),questions:(a.angles||[]).map(p=>p.question).filter(Boolean),unknowns:[...(a.uncertainties||[]).map(u=>u.text),...(a.angles||[]).map(p=>p.missing).filter(Boolean)],sources:[...new Map([...(result.sources||[]).map(s=>({...s,label:s.publisher||s.title})),...(x.sources||[])].map(s=>[s.url,s])).values()]};
 }
 function href(url){try{const u=new URL(url);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
 function citation(ids,result){const a=result.analysis;return [...new Set((ids||[]).map(id=>a?.facts?.find(f=>f.id===id)?.source_id).filter(Boolean))].map(id=>{const s=result.sources.find(s=>s.source_id===id),url=href(s?.url);return url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(s.publisher||s.title||'원문')} ↗</a>`:'';}).join(' · ');}

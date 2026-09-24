@@ -13,6 +13,11 @@ test('invented citations, unattested quotations and fabricated amounts cannot qu
  for(const change of [o=>o.facts[1].source_id='invented',o=>o.facts[1].quote='원문에 없는 문장',o=>o.facts[1].text='매출은 9000억원이다.']){const o=valid();change(o);assert.throws(()=>R.validate(o,docs),/insufficient_evidence/);}
  const o=valid();o.angles[0].coverage_ids=['invented'];assert.equal(R.validate(o,docs).angles.length,0);
 });
+test('repeated source headlines and source-count explanations cannot qualify as article angles',()=>{
+ for(const mutate of [a=>a.headline=docs[0].title,a=>a.reason=a.headline,a=>a.new_information='새 보도를 확보했습니다.']){
+  const output=valid();mutate(output.angles[0]);assert.equal(R.validate(output,docs).angles.length,0);
+ }
+});
 test('selection keeps own reporting and official sources ahead of repeated news; filters unrelated and future material',()=>{
  const rows=[{title:'홈플러스 최신',url:'https://www.hankyung.com/article/1',published_at:'2026-09-17T01:00:00Z'},{title:'홈플러스 기보도',url:'https://news.google.com/rss/articles/abc',search_purpose:'marketin_coverage',published_at:'2026-09-16T01:00:00Z'},{title:'홈플러스 미래',url:'https://www.hankyung.com/article/2',published_at:'2027-09-17'},{title:'다른 기업',url:'https://www.hankyung.com/article/3'}];
  const selected=R.chooseSources(rows,'홈플러스',now);assert.equal(selected[0].search_purpose,'marketin_coverage');assert.equal(selected.length,2);

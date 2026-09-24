@@ -96,3 +96,15 @@
 #discoveryDesk .recommendation-footer{border-top:1px solid #edf0f2;padding-top:20px;margin-top:24px}
 #discoveryDesk .recommendation-footer>button{border:0;border-radius:8px;background:#a92e63;color:#fff;padding:13px 18px;font-size:14px;cursor:pointer}
 @media(max-width:600px){#discoveryDesk .recommendation-dialog{padding:20px;width:calc(100vw - 20px);max-height:calc(100dvh - 24px)}#discoveryDesk #recommendationTitle{font-size:21px}.page-head .actions{flex-wrap:wrap}}
+
+#discoveryDesk .discovery-verification-label{font-size:12px;color:#8a5713;margin:8px 0 14px}
+#discoveryDesk .discovery-pattern-summary ul{margin:0;padding-left:16px}
+#discoveryDesk .discovery-pattern-summary li{margin:0 0 8px}
+#discoveryDesk .discovery-promotion-rule{font-size:12px;line-height:1.7;color:#5e6573;border-top:1px solid #e5e7eb;padding-top:12px}
+#discoveryDesk .discovery-inbox{grid-column:1/-1;border-top:1px solid #e5e7eb;margin-top:16px;padding:18px 0;color:#596273}
+#discoveryDesk .discovery-inbox summary{font-size:14px;font-weight:650;cursor:pointer}
+#discoveryDesk .discovery-inbox>p{font-size:13px;line-height:1.6}
+#discoveryDesk .discovery-inbox-row{padding:14px 0;border-bottom:1px solid #edf0f3;font-size:12px;line-height:1.7}
+#discoveryDesk .discovery-inbox-row strong{display:block;font-size:14px;color:#273246}
+#discoveryDesk .discovery-inbox-row span{display:block;margin:5px 0}
+#discoveryDesk .discovery-inbox-row a,#discoveryDesk .discovery-inbox-row button{margin-right:14px}
