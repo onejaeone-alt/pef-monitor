@@ -11,8 +11,9 @@ test('before and after require distinct valid evidence, never substitute an unsu
  o.previous_state.fact_ids=['missing'];o.changes[0].before_ids=['f2'];const a=R.validate(o,docs);assert.equal(a.previous_state,null);assert.equal(a.changes.length,0);
  o.changes=[{text:'요건 9000억원',before_ids:['f1'],after_ids:['f2']}];assert.equal(R.validate(o,docs).changes.length,0);
 });
-test('directions need a concrete question, gap, action and falsification; duplicate questions and invented numbers are excluded',()=>{
- for(const field of ['question','missing','first_action','falsification','direction_key']){const o=output();delete o.angles[0][field];assert.equal(R.validate(o,docs).angles.length,0);}
+test('directions need a concrete article question; optional reporting notes are not recommendation gates',()=>{
+ for(const field of ['question','direction_key']){const o=output();delete o.angles[0][field];assert.equal(R.validate(o,docs).angles.length,0);}
+ for(const field of ['missing','first_action','falsification']){const o=output();delete o.angles[0][field];assert.equal(R.validate(o,docs).angles.length,1);}
  const o=output();o.angles.push({...angle,headline:'다른 제목'});assert.equal(R.validate(o,docs).angles.length,1);
  o.angles=[{...angle,question:'9000억원 요건에 지원 가능한가?'}];assert.equal(R.validate(o,docs).angles.length,0);
 });
@@ -25,7 +26,7 @@ test('selected direction reaches project with sources and leaves existing notes,
 test('direction controls remain available through timeline wrapper and escape content',()=>{
  const root={IBDiscovery:{build:()=>[],calendarClues:()=>[]},MarketInStoryBrief:{...B}};T.install(root);
  const r={...result(),story_timeline:[{phase:'다음',trigger:'선정',pitch:'결과 확인'}]};
- const html=root.MarketInStoryBrief.renderBriefHtml(r,'issue-"<img>');assert.match(html,/data-discovery-angle="0"/);assert.match(html,/가장 큰 빈칸/);assert.match(html,/첫 취재/);assert.doesNotMatch(html,/<img>/);assert.match(html,/marketin-story-timeline/);
+ const html=root.MarketInStoryBrief.renderBriefHtml(r,'issue-"<img>');assert.match(html,/data-discovery-angle="0"/);assert.match(html,/추천 근거/);assert.doesNotMatch(html,/검증 전|가장 큰 빈칸|첫 취재/);assert.doesNotMatch(html,/<img>/);assert.match(html,/marketin-story-timeline/);
 });
 test('daily-report export is gated by judgment and retains unconfirmed status, notes and original URLs',()=>{
  const p=C.mergeProject([],B.selectAngle(clue(),0)).rows[0];assert.throws(()=>P.dailyReport(p),/기사화/);assert.doesNotMatch(P.render(p),/data-daily-report/);

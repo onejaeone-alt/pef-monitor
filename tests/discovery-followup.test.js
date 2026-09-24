@@ -22,9 +22,9 @@ test('source selection follows tender evidence, excludes cyber news and prefers 
  const records=[{title,url:'https://news.google.com/rss/articles/abc'},{title,url:article.source_url},{title:'가비아 고객 개인정보 유출…공개매수 불발 이어 악재',url:'https://www.hankyung.com/article/2'},{title:'가비아 공개매수신고서 최소 매수수량',url:'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000001'}];
  const rows=R.chooseSources(records,'가비아',Date.now(),[{title}]);assert.equal(rows.length,2);assert.ok(rows.some(s=>s.url===article.source_url));assert.ok(rows.every(s=>!s.title.includes('개인정보')));
 });
-test('research searches previous tender terms instead of only broad company news',async()=>{
+test('research searches tender participants and background without prescribing document comparison',async()=>{
  const queries=[];await R.research({topic:'가비아',seeds:[{title,url:article.source_url}]},{key:'',search:async(q,p)=>{queries.push([q,p]);return {records:[],log:[]};},index:async()=>[],read:async d=>({...d,read_ok:false})});
- assert.ok(queries.every(([q])=>q.includes('공개매수')));assert.ok(queries.some(([q,p])=>p==='previous_terms'&&q.includes('결과보고서')));
+ assert.ok(queries.every(([q])=>q.includes('공개매수')));assert.ok(queries.some(([q,p])=>p==='event_context'&&q.includes('주주')&&q.includes('배경')));assert.ok(queries.every(([q])=>!q.includes('결과보고서')));
  assert.equal(R.marketinLinks('<a href="/News/ReadE?newsId=123">가비아 공개매수</a>','가비아').length,1);
 });
 test('desk keeps unanalysed news as collapsed sources without inventing a follow-up checklist',async()=>{

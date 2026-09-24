@@ -18,8 +18,8 @@ function patch(source){
   const q2=q+'\n    `(한국투자공사 OR KIC OR 전략투자계정 OR "한국판 국부펀드" OR 인내자본) ${suffix}`,';
   s=replaceOnce(s,q,q2,'query');
 
-  const theme="  if (/모태펀드|한국벤처투자|한국성장금융|산업은행|국민연금|공제회|정책금융|출자사업|앵커LP/.test(t)) return ['lp','LP·정책자금'];";
-  const theme2="  if (/모태펀드|한국벤처투자|한국성장금융|산업은행|국민연금|공제회|정책금융|출자사업|앵커LP|한국투자공사|\\bKIC\\b|한국판\\s*국부펀드|전략형\\s*국부펀드|인내자본|전략투자계정|전략산업\\s*투자계정|앵커투자자/.test(t)) return ['lp','LP·정책자금'];";
+  const theme="  if (/모태펀드|정책금융|출자사업|앵커LP/.test(t)) return ['lp','LP·정책자금'];";
+  const theme2="  if (KOREAN_POLICY_LP_STRATEGY.test(t) || /모태펀드|정책금융|출자사업|앵커LP|한국판\\s*국부펀드|전략형\\s*국부펀드|인내자본|전략투자계정|전략산업\\s*투자계정|앵커투자자/.test(t)) return ['lp','LP·정책자금'];";
   s=replaceOnce(s,theme,theme2,'theme');
 
   const event="  if (/출자|선정|모태펀드|공제회|국민연금|산업은행|한국성장금융/.test(t)) return 'LP·출자';";
@@ -31,7 +31,7 @@ function patch(source){
   s=replaceOnce(s,gateAnchor,gate,'gate insertion');
 
   const keep=`function shouldKeep(item, target, jakMembers = FALLBACK_JAK_MEMBERS) {\n  const text = \`\${item.title || ''} \${item.snippet || ''}\`;\n  if (hasNoise(text)) return false;\n  const [themeId] = theme(text);\n  if (themeId === 'other') return false;\n  if (!isJakMemberSource(item.source_name, jakMembers)) return false;\n  return true;\n}`;
-  const keep2=`function shouldKeep(item, target, jakMembers = FALLBACK_JAK_MEMBERS) {\n  const title = String(item.title || '');\n  const text = \`\${title} \${item.snippet || ''}\`;\n  if (hasNoise(text) || isPriceReactionHeadline(title) || isMarketOpinionHeadline(title)) return false;\n  if (isUnrelatedForeignSovereignFund(text) || isStandaloneTreasuryShareStory(text) || isLocalPropertyDisposal(text) || isForeignOnlyDeal(text,target)) return false;\n  const [themeId] = theme(text);\n  if (themeId === 'other') return false;\n  if (!isJakMemberSource(item.source_name, jakMembers)) return false;\n  // KIC/Korean strategic-fund mandate changes are reporting signals even when\n  // phrased as an official strategy statement rather than a deal verb.\n  if (KOREAN_POLICY_LP_STRATEGY.test(text)) return true;\n  return hasConcreteIbEvent(text);\n}`;
+  const keep2=`function shouldKeep(item, target, jakMembers = FALLBACK_JAK_MEMBERS) {\n  const title = String(item.title || '');\n  const text = \`\${title} \${item.snippet || ''}\`;\n  if (hasNoise(text) || isPriceReactionHeadline(title) || isMarketOpinionHeadline(title)) return false;\n  if (isUnrelatedForeignSovereignFund(text) || isStandaloneTreasuryShareStory(text) || isLocalPropertyDisposal(text) || isForeignOnlyDeal(text,target)) return false;\n  const [themeId] = theme(text);\n  if (themeId === 'other') return false;\n  if (!isJakMemberSource(item.source_name, jakMembers)) return false;\n  // KIC/Korean strategic-fund mandate changes are reporting signals even when\n  // phrased as an official strategy statement rather than a deal verb.\n  if (KOREAN_POLICY_LP_STRATEGY.test(text)) return true;\n  return isLpActivity(text) || hasConcreteIbEvent(text);\n}`;
   s=replaceOnce(s,keep,keep2,'shouldKeep');
 
   return MARK+'\n'+s;
