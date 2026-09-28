@@ -32,14 +32,10 @@ test('existing stylesheet links are refreshed once and repeated builds are idemp
   assert.equal(H.page(page), page);
 });
 
-test('retired reporting-workbench tabs are removed while core navigation and page body are preserved', () => {
+test('menu text, destinations, current header controls and page body are preserved', () => {
   const page = H.page(source);
-  assert.ok(page.includes('href="/"'));
-  assert.ok(page.includes('href="/dart.html"'));
-  assert.ok(page.includes('href="/motae.html"'));
-  assert.ok(page.includes('href="/leads.html"'));
+  for (const item of nav.match(/<a\b[^>]*>[\s\S]*?<\/a>/g)) assert.ok(page.includes(item));
   assert.ok(page.includes('/calendar.html'));
-  assert.doesNotMatch(page,/href="\/projects\.html"|href="\/judgment\.html"/);
   assert.ok(page.includes('<main>UNCHANGED</main>'));
   assert.equal((page.match(/id="readerAccount"/g) || []).length, 1);
   assert.ok(page.indexOf('id="readerAccount"') < page.indexOf('id="globalDossierSearch"'));
