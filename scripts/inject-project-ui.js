@@ -37,10 +37,6 @@ for (const file of ['leads.html','motae.html']) {
   const target=path.join(root,file);if(!fs.existsSync(target))continue;
   const original=fs.readFileSync(target,'utf8');
   let next=removeOldDossierQuick(original);
-  // AI 발견은 취재관리함으로 넘기지 않는다. 발견 카드 안에서 변화·의미·확인 질문까지 끝낸다.
-  if(file==='leads.html') next=next
-    .replace(/<button class="project-send-btn"[\s\S]*?<\/button>/g,'')
-    .replace(/<style id="project-send-style">[\s\S]*?<\/style>/g,'')
-    .replace(/<script id="project-handoff-script">[\s\S]*?<\/script>/g,'');
+  if(file==='leads.html') next=addLeadHandoff(next);
   if(next!==original) fs.writeFileSync(target,next,'utf8');
 }
