@@ -76,3 +76,18 @@ test('a Latin company name does not swallow a different company with a Korean su
  assert.equal(rows.length,2);
  for(const topic of ['SK','SK리츠']){const p=rows.find(r=>r.research_topic===topic);assert.ok(p);assert.equal(p.source_count,1);assert.equal(p.evidence[0].text.startsWith(topic+','),true);}
 });
+test('GP policy commentary is not a second transaction target',()=>{
+ const rows=[news('(사모펀드 민낯)②MBK 사태에 LBO 200% 규제…“일률 제한보다 인수·사후관리”','policy'),news('MBK, 네파 손절…K2그룹에 매각','sale')];
+ const evidence=R.evidenceRows({news:rows},{now});
+ assert.equal(evidence.some(r=>r.entities.includes('제한보다')),false);
+ assert.equal(build({news:rows}).some(r=>r.type==='gp_sequence'),false);
+ const noTarget=news('MBK, 인수·사후관리 규제 논의','without-target');
+ assert.equal(build({news:[noTarget,rows[1]]}).some(r=>r.type==='gp_sequence'),false);
+});
+test('merging a summary-only duplicate preserves previously collected body evidence',()=>{
+ const title='MBK, 네파 인수 완료',body='MBK가 네파 인수를 완료했다. 원문에는 인수 후 사업 계획이 있다.',summary='네파 인수 완료 요약';
+ const rich=news(title,'body',{body_text:body}),brief=news(title,'summary',{published_at:'2026-09-22T04:00:00Z',summary});
+ for(const rows of [[rich,brief],[{...rich,published_at:brief.published_at},{...brief,published_at:rich.published_at}]]){
+  const result=R.evidenceRows({news:rows},{now});assert.equal(result.length,1);assert.equal(result[0].body,body);assert.equal(result[0].summary,summary);assert.equal(result[0].read_level,'body');assert.ok(result[0].text.includes(body));assert.ok(result[0].text.includes(summary));
+ }
+});

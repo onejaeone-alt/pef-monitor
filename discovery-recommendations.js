@@ -13,7 +13,7 @@ function day(v){if(/^\d{8}$/.test(String(v)))return String(v).replace(/(\d{4})(\
 const age=(d,now)=>(Date.parse(day(now))-Date.parse(day(d)))/DAY;
 const recent=(r,now,days=7)=>age(r.date,now)>=0&&age(r.date,now)<=days;
 const NOISE=/농지|국가정원|수목원|재개장|소각장|국고채|국채\s*(?:모집|발행|매각)|목표주가|투자의견|상한가|주가.{0,12}(?:급등|상승|하락)|소식에.{0,8}(?:들썩|上)|\[(?:사설|그래픽|포토)|채용|봉사활동|할인행사|기념식|업무협약|MOU|교육과정|실무교육|홈오너|임차인|경품|발표평가\s*통과자|기업\s*설명회|수주|신축공사|총괄책임자\s*선임/i;
-const GENERIC=/^(?:PEF?|VC|GP|LP|M&A|IB|사모펀드|펀드|금융위(?:원회)?|공정위|공정거래위원회|금융감독원|금융당국|당국|정부|업계|국내|해외|기업|회사|운용사|대주주|최대주주|사모펀드와|한국|韓|中|美|시그널|단독|속보|공식|지분|경영권|기업금융|인수금융|잔여지분|위탁운용사|브랜드|부동산|골프장|시장|행동주의|주주배정|제3자배정|기업결합|독립|통|분리|부분|지분매각|서브웨이샌드위치|금리|고금리|벤처투자회사|의무|국민성장펀드에|약국체인|국민|유망|혁신기업|인수의향서|공모채|출자사업|총|기존|본격화|본사|온라인|생산적금융)$/i;
+const GENERIC=/^(?:PEF?|VC|GP|LP|M&A|IB|사모펀드|펀드|금융위(?:원회)?|공정위|공정거래위원회|금융감독원|금융당국|당국|정부|업계|국내|해외|기업|회사|운용사|대주주|최대주주|사모펀드와|한국|韓|中|美|시그널|단독|속보|공식|지분|경영권|기업금융|인수금융|잔여지분|위탁운용사|브랜드|부동산|골프장|시장|행동주의|주주배정|제3자배정|기업결합|독립|통|분리|부분|지분매각|서브웨이샌드위치|금리|고금리|벤처투자회사|의무|국민성장펀드에|약국체인|국민|유망|혁신기업|인수의향서|공모채|출자사업|총|기존|본격화|본사|온라인|생산적금융|제한보다)$/i;
 const LP=/국민연금|교직원공제회|행정공제회|군인공제회|과학기술인공제회|공무원연금|사학연금|한국벤처투자|모태펀드|한국성장금융|성장금융|산업은행|기업은행|\bIBK\b|\bKDB\b|산은|기은|우정사업본부|국부펀드|한국투자공사|\bKIC\b|삼성생명|삼성화재|한화생명|교보생명|보험사/i;
 const GP=/파트너스|인베스트먼트|프라이빗에쿼티|캐피탈|벤처스|벤처투자|맥쿼리|한앤컴퍼니|어피니티|칼라일|블랙스톤|(?:^|\s)(?:MBK|IMM|KKR|TPG|EQT|CVC|베인|스틱)(?:\b|$)|PE$/i;
 const CORE=/사모펀드|PEF|프라이빗|벤처투자|위탁운용|출자|모태펀드|펀드레이징|세컨더리|컨티뉴에이션|블라인드펀드|인수금융|경영권|공개매수|\bBDC\b|private equity|private credit|buyout|fundrais/i;
@@ -74,7 +74,13 @@ function collect(input,now){
   r.case_key=r.category==='lp'?keyEntity(r.lp)+'-'+r.lp_track+'-'+(r.lp_formation?'formation':'selection'):asset?keyEntity(asset):r.gps[0]?keyEntity(r.gps[0]):norm(plainTitle(r.title));
  }
  const result=[],byUrl=new Map(),byTitle=new Map();
- for(const r of rows.sort((a,b)=>b.date.localeCompare(a.date))){const titleKey=norm(plainTitle(r.title)),old=byUrl.get(r.url)||byTitle.get(titleKey);if(old){if(r.body&&!old.body||r.summary&&!old.summary)Object.assign(old,{body:r.body,summary:r.summary,text:r.text,read_level:r.read_level});continue;}result.push(r);byUrl.set(r.url,r);byTitle.set(titleKey,r);}
+ for(const r of rows.sort((a,b)=>b.date.localeCompare(a.date))){const titleKey=norm(plainTitle(r.title)),old=byUrl.get(r.url)||byTitle.get(titleKey);if(old){
+  if(r.body&&!old.body)old.body=r.body;
+  if(r.summary&&!old.summary)old.summary=r.summary;
+  old.text=[old.title,old.summary,old.body.slice(0,3000)].filter(Boolean).join(' ');
+  old.read_level=old.body?'body':old.summary?'summary':'title';
+  byUrl.set(r.url,old);byTitle.set(titleKey,old);continue;
+ }result.push(r);byUrl.set(r.url,r);byTitle.set(titleKey,r);}
  return result;
 }
 function uniqueTitles(rows){const seen=new Set();return rows.filter(r=>{const k=norm(plainTitle(r.title));if(seen.has(k))return false;seen.add(k);return true;});}
@@ -118,7 +124,7 @@ function allocationPitches(rows,now){
 }
 function groupedPitches(rows,now){
  const out=[];
- for(const [gp,set] of groups(rows,r=>r.gps.map(keyEntity))){
+ for(const [gp,set] of groups(rows.filter(r=>r.subject&&r.assets.some(a=>keyEntity(a)===keyEntity(r.subject))),r=>r.gps.filter(gp=>keyEntity(gp)!==keyEntity(r.subject)).map(keyEntity))){
   const actionSet=unique(set.flatMap(r=>r.actions)),cases=unique(set.map(r=>r.case_key));if(cases.length<2||actionSet.length<2||!set.some(r=>recent(r,now)))continue;
   const name=set.flatMap(r=>r.gps).filter(e=>keyEntity(e)===gp).sort((a,b)=>a.length-b.length)[0],labels=actionSet.slice(0,2).join('·'),assets=unique(set.map(r=>r.subject).filter(e=>keyEntity(e)!==gp)).slice(0,2);
   out.push(make('gp_sequence','GP 거래 비교',set,{identity:gp,category:'pef',topic:name,headline:`${name}의 ${assets.length>=2?assets.join('·')+' 거래':labels}, 추진 상황이 갈린 이유는`,summary:`${name}가 최근 관여한 서로 다른 거래를 묶습니다. 보도된 대상 사업과 진행 상태를 비교하고, 거래마다 달랐던 조건과 투자 판단의 근거를 취재하는 기사입니다.`,axis:'거래별 대상 사업 · 진행 상황 · 투자 판단의 근거',questions:['각 거래에서 운용사가 우선하는 조건은 무엇인가?','서로 다른 거래에 공통으로 적용한 투자 기준이 있나?'],reason:`한 GP의 서로 다른 ${cases.length}개 사건에서 ${labels} 관련 자료를 확보했습니다.`},now));
@@ -175,10 +181,15 @@ function choose(candidates,limit){
  }
  return selected;
 }
+function evidenceRows(input={},options={}){
+ if(!input||typeof input!=='object')return [];
+ const parsed=options.now===undefined?Date.now():options.now instanceof Date?options.now.getTime():typeof options.now==='number'?options.now:Date.parse(options.now),now=Number.isFinite(parsed)?parsed:Date.now();
+ return collect(input,new Date(now).toISOString());
+}
 function build(input={},options={}){
  if(!input||typeof input!=='object')return [];const parsed=options.now===undefined?Date.now():options.now instanceof Date?options.now.getTime():typeof options.now==='number'?options.now:Date.parse(options.now);const now=Number.isFinite(parsed)?parsed:Date.now(),limit=Number.isFinite(options.limit)?Math.max(0,Math.min(30,Math.floor(options.limit))):5;
- const rows=collect(input,new Date(now).toISOString());const proposals=[...allocationPitches(rows,now),...groupedPitches(rows,now),...eventPitches(rows,now),...schedulePitches(rows,now)];
+ const rows=evidenceRows(input,{now});const proposals=[...allocationPitches(rows,now),...groupedPitches(rows,now),...eventPitches(rows,now),...schedulePitches(rows,now)];
  return choose(proposals,limit);
 }
-return {VERSION,build};
+return {VERSION,build,evidenceRows};
 });

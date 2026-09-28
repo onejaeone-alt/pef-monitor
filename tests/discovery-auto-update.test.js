@@ -21,7 +21,7 @@ test('five-minute refresh retains existing cards until successful replacement, r
  h.setFail(true);await h.advance(300000);assert.match(h.node('#discoveryCards').innerHTML,/취재거리 2/);assert.match(h.node('#discoveryMessage').textContent,/이전 자료/);
  h.setFail(false);h.setVersion(3);await h.advance(300000);assert.match(h.node('#discoveryCards').innerHTML,/취재거리 3/);
  h.node('#discoverySearch').oninput({target:{value:'없는 검색어'}});await h.advance(300000);assert.doesNotMatch(h.node('#discoveryCards').innerHTML,/취재거리 3/);
- assert.match(h.node('#discoveryAutoStatus').textContent,/5분마다 자동 업데이트/);
+ assert.match(h.node('#discoveryAutoStatus').textContent,/5분마다 새 자료 확인/);
 });
 test('hidden/offline tabs pause polling, overdue return and reconnection refresh once without overlapping requests',async()=>{
  const h=harness();await h.settle();h.document.hidden=true;await h.docEvents.visibilitychange();await h.advance(600000);assert.equal(h.requests.length,5);

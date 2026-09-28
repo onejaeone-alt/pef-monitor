@@ -48,3 +48,12 @@ test('desk renders all three explanations and jumps between a pattern and its ne
  click(pattern.clue_id);html=node('#discoveryCards').innerHTML;assert.match(html,/2020-01-01/);assert.match(html,/오늘 다시 검증한 결과는 아닙니다/);assert.match(html,/연결된 새 자료 1건/);assert.match(node('#discoveryCounts').textContent,/누적 특징 1건/);
  click('pattern-update-'+pattern.clue_id);assert.match(node('#discoveryCards').innerHTML,/신규 펀드 1000억원 결성/);
 });
+
+test('same-day new references are linked and retained beyond a seven-day feed window',()=>{
+ const current={...pattern,sort_date:'2026-09-22',sources:[{url:'https://example.com/baseline',title:'시험투자파트너스, 최초 펀드 결성',date:'2026-09-22'}]};
+ const sameDay={...news,published_at:'2026-09-22T09:00:00+09:00'};
+ assert.equal(P.connect([current],{news:[sameDay]},now).length,2);
+ assert.equal(P.connect([current],{news:[sameDay]},now+10*86400000).length,2);
+ const copy={...sameDay,title:'[종합] 시험투자파트너스, 최초 펀드 결성'};assert.equal(P.connect([current],{news:[copy]},now).length,1);
+ assert.equal(P.connect([current],{news:[sameDay]},now+100*86400000).length,1);
+});
