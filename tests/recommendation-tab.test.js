@@ -51,7 +51,7 @@ test('grounded rule recommendations remain visible after AI failure and their ev
  h.click('[data-recommendation-open]',{recommendationOpen:'lp-proposal'});
  assert.equal(h.node('#recommendationDialog').open,true);
  assert.equal(h.node('#recommendationTitle').textContent,proposal(source).headline);
- assert.match(h.node('#recommendationBody').innerHTML,/어떤 기사인가/);
+ assert.match(h.node('#recommendationBody').innerHTML,/무엇이 달라졌나/);\n assert.match(h.node('#recommendationBody').innerHTML,/왜 중요한가/);\n assert.match(h.node('#recommendationBody').innerHTML,/확인할 것/);
  assert.ok(h.node('#recommendationBody').innerHTML.includes('href="'+source.source_url+'"'));
  assert.match(h.node('#recommendationBody').innerHTML,/기관 공고/);
 });
@@ -68,19 +68,12 @@ test('find today finishes once collection is ready while AI enrichment is still 
  assert.match(h.node('#discoveryCards').innerHTML,/추천기사 열기/);
 });
 
-test('saving a rule recommendation preserves that article direction when AI has proposed another angle',async t=>{
+test('AI discovery no longer creates a reporting-workbench handoff',async t=>{
  const h=harness();t.after(h.dispose);await h.settle();
  h.click('[data-recommendation-open]',{recommendationOpen:'lp-proposal'});
  assert.equal(h.node('#recommendationTitle').textContent,proposal(source).headline);
- h.click('[data-discovery-project]','#saveRecommendation');
- const saved=JSON.parse(h.storage.get('pef_my_reporting_projects_v1'));
- assert.equal(saved.length,1);
- assert.equal(saved[0].title,proposal(source).headline);
- assert.equal(saved[0].clue.clue_id,'lp-proposal');
- assert.equal(saved[0].clue.research.analysis.angles[0].headline,'AI가 제안한 별개의 후속 기사');
- assert.equal(saved[0].clue.selected_angle,undefined);
- assert.equal(saved[0].clue.evidence[0].url,source.source_url);
- assert.match(h.context.location.href,/project=project-lp-proposal/);
+ assert.doesNotMatch(h.node('#discoveryCards').innerHTML,/data-discovery-project|취재에 담기/);
+ assert.equal(h.storage.get('pef_my_reporting_projects_v1'),undefined);
 });
 
 test('category filters show matching article directions and can return to all recommendations',async t=>{
@@ -137,9 +130,5 @@ test('actual rule engine turns collected LP and PEF news into selectable article
  assert.ok(h.node('#recommendationBody').innerHTML.includes('href="'+feedRows[0].source_url+'"'));
  assert.ok(h.node('#recommendationBody').innerHTML.includes(feedRows[0].title));
  assert.match(h.node('#recommendationBody').innerHTML,/제목 확인/);
- h.click('[data-discovery-project]','#saveRecommendation');
- const [saved]=JSON.parse(h.storage.get('pef_my_reporting_projects_v1'));
- assert.equal(saved.title,lp.headline);
- assert.equal(saved.clue.type,lp.type);
- assert.equal(saved.clue.evidence[0].url,feedRows[0].source_url);
+ assert.doesNotMatch(h.node('#discoveryCards').innerHTML,/data-discovery-project|취재에 담기/);
 });
