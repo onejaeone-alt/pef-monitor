@@ -96,6 +96,17 @@
     document.body.style.overflow = "";
   }
 
+  async function load(entityKey) {
+    if (!entityKey) throw new Error("취재파일 대상이 없습니다.");
+    let data = CACHE.get(entityKey);
+    if (data) return data;
+    const response = await fetch(`${ENTITY}?entity_key=${encodeURIComponent(entityKey)}`);
+    data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "조회 실패");
+    CACHE.set(entityKey, data);
+    return data;
+  }
+
   async function open(entityKey) {
     if (!entityKey) return;
     const backdrop = ensureDrawer();
@@ -104,13 +115,7 @@
     document.body.style.overflow = "hidden";
     content.innerHTML = '<div class="empty">취재파일을 만드는 중…</div>';
     try {
-      let data = CACHE.get(entityKey);
-      if (!data) {
-        const response = await fetch(`${ENTITY}?entity_key=${encodeURIComponent(entityKey)}`);
-        data = await response.json();
-        if (!response.ok || !data.ok) throw new Error(data.error || "조회 실패");
-        CACHE.set(entityKey, data);
-      }
+      const data = await load(entityKey);
       content.innerHTML = dossierHTML(data);
       backdrop.querySelector(".dossier-drawer").scrollTop = 0;
     } catch (error) {
@@ -136,5 +141,5 @@
     if (event.key === "Escape") close();
   });
 
-  window.DossierDrawer = { chips, close, open };
+  window.DossierDrawer = { chips, close, load, open };
 })();
