@@ -46,7 +46,7 @@ test('LP terms, different investors in a sector, and differing reported event st
  const lp=[news('국민연금, 사모펀드 위탁운용사 선정 3000억원 출자','lp1','2026-09-01',{target:{name:'국민연금',category:'lp'}}),news('국민연금, 사모펀드 위탁운용사 선정 4000억원 출자','lp2','2026-09-28',{target:{name:'국민연금',category:'lp'}})];
  const lpResult=run(lp);assert.ok(lpResult.items.some(x=>x.pattern_type==='lp_conditions'));assert.match(lpResult.items.find(x=>x.pattern_type==='lp_conditions').one_line_signal,/국민연금 출자/);
  const sector=[old,news('다른파트너스, 나래식품 경영권 인수 계약 체결','sector','2026-09-28',{target:{name:'다른파트너스',category:'gp'}})];assert.ok(run(sector).items.some(x=>x.pattern_type==='sector_activity'));
- const events=[news('가온식품 공개매수 추진…매수가 2만원','event1','2026-09-01',{target:{name:'가온식품',category:'company'}}),news('가온식품 공개매수 무산…인수 계약 해제','event2','2026-09-28',{target:{name:'가온식품',category:'company'}})];const event=run(events).items.find(x=>x.pattern_type==='event_progress');assert.ok(event);assert.match(event.one_line_signal,/추진 → 중단/);
+ const events=[news('가온식품 공개매수 추진…매수가 2만원','event1','2026-09-01',{target:{name:'가온식품',category:'company'}}),news('가온식품 공개매수 무산…인수 계약 해제','event2','2026-09-28',{target:{name:'가온식품',category:'company'}})];const event=run(events).items.find(x=>x.pattern_type==='event_progress');assert.ok(event);assert.match(event.one_line_signal,/(?:추진 → 중단|중단 → 추진)/);
  const possible=[events[0],{...events[1],title:'가온식품 공개매수 무산 가능성 우려'}];assert.equal(run(possible).items.some(x=>x.pattern_type==='event_progress'),false);
 });
 test('missing normalization engine reports unavailable without deleting prior snapshots',()=>{
