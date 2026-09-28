@@ -75,6 +75,16 @@ function groupDefinitions(rows){
   const name=set[0].subject;
   groups.push({key:'event-'+key,type:'event_progress',rows:set,headline:name+' '+family(set[0])+' 관련 보도 흐름',feature:name+' 관련 자료에서 '+stages.join('·')+' 단계의 보도가 함께 확인됩니다. 같은 거래의 진행 순서인지는 각 원문으로 확인해야 합니다.',axis:'보도된 거래 단계와 시점',entities:uniq(set.flatMap(r=>r.entities))});
  }
+ // A change of shareholder and capital raising can be a useful connection
+ // even when neither title names a formal transaction stage. Keep the same
+ // concrete target and two distinct documents; do not infer the funding use.
+ for(const [key,set]of by(rows.filter(r=>r.category!=='lp'&&r.subject&&list(r.assets).some(a=>norm(a)===norm(r.subject))),r=>[r.case_key])){
+  const ownership=r=>/인수(?!금융)|매각|경영권|(?:새|신규)\s*최대주주|최대주주\s*변경/.test(r.text),capital=r=>/유상증자|자본\s*확충|신주\s*발행/.test(r.text);
+  const owners=set.filter(ownership),funding=set.filter(capital);
+  if(!owners.some(a=>funding.some(b=>a.url!==b.url)))continue;
+  const related=set.filter(r=>ownership(r)||capital(r)),name=related[0].subject,joined=related.map(r=>r.text).join(' '),ownerLabel=/(?:새|신규)\s*최대주주|최대주주\s*변경/.test(joined)?'새 주주':'지분 거래',capitalLabel=/유상증자/.test(joined)?'유상증자':'자본 확충';
+  groups.push({key:'financing-'+key,type:'event_financing',rows:related,headline:name+'의 '+ownerLabel+'와 자본 확충',feature:name+'에 관한 서로 다른 자료에서 '+ownerLabel+'와 '+capitalLabel+' 관련 내용을 함께 찾았습니다. 자금 용도나 두 활동의 인과관계는 확인하지 않았습니다.',axis:'지분 거래·주주 변경 보도와 자본 확충 계획',entities:uniq(related.flatMap(r=>r.entities))});
+ }
  return groups;
 }
 function sourceRef(row,oldSources){

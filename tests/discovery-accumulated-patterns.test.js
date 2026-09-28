@@ -59,3 +59,14 @@ test('a GP policy discussion without a concrete target cannot create a cumulativ
   assert.equal(run([sale,commentary]).items.some(x=>x.pattern_type==='gp_activity'),false);
  }
 });
+
+test('same concrete company shareholder change and rights issue are linked without formal deal-phase words or entity metadata',()=>{
+ const sale={title:'MBK, 네파 손절…K2그룹에 매각',source_url:'https://example.com/nepa-sale',source_name:'매체1',published_at:'2026-09-23'};
+ const capital={title:'네파, K2코리아그룹 새 최대주주로…주주배정 유상증자 추진',source_url:'https://example.com/nepa-capital',source_name:'매체2',published_at:'2026-09-24'};
+ const first=run([sale,capital]),item=first.items.find(x=>x.pattern_type==='event_financing');assert.ok(item);assert.equal(item.sources.length,2);assert.equal(item.headline,'네파의 새 주주와 자본 확충');assert.match(item.one_line_signal,/유상증자/);assert.match(item.one_line_signal,/인과관계는 확인하지/);assert.deepEqual(item.confirmed_facts,[]);
+ const noop=run([sale,capital],first.snapshot,now+300000).items.find(x=>x.pattern_type==='event_financing');assert.equal(noop.clue_id,item.clue_id);assert.equal(noop.changed_at,item.changed_at);assert.equal(noop.evidence_added,0);
+ const added={title:'네파 유상증자 계획, 새 최대주주 투자 규모 주목',source_url:'https://example.com/nepa-plan',source_name:'매체3',published_at:'2026-09-28'};
+ const next=run([sale,capital,added],first.snapshot,now+600000).items.find(x=>x.pattern_type==='event_financing');assert.equal(next.clue_id,item.clue_id);assert.equal(next.evidence_added,1);assert.equal(next.sources.length,3);
+ const unrelated={...capital,title:'다른식품, K2코리아그룹 새 최대주주로…주주배정 유상증자 추진'};assert.equal(run([sale,unrelated]).items.some(x=>x.pattern_type==='event_financing'),false);
+ assert.equal(run([capital,{...capital,source_url:'https://example.net/nepa-reprint'}]).items.some(x=>x.pattern_type==='event_financing'),false);
+});
