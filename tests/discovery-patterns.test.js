@@ -35,7 +35,7 @@ test('saving a follow-up preserves both baseline and new source evidence',()=>{
  const saved=C.mergeProject([],update).rows[0];assert.equal(saved.clue.pattern_ref.sources[0].url,pattern.sources[0].url);assert.equal(saved.clue.sources[0].url,news.source_url);
  const next=C.mergeProject([{...saved,notes:'기자 메모'}],update);assert.equal(next.rows.length,1);assert.equal(next.rows[0].notes,'기자 메모');
 });
-test('desk renders all three explanations and jumps between a pattern and its new evidence',async()=>{
+test('desk shows only the finding summary and keeps links to connected evidence',async()=>{
  const vm=require('node:vm'),fs=require('node:fs'),nodes=new Map();
  const node=s=>{if(!nodes.has(s))nodes.set(s,{innerHTML:'',textContent:'',dataset:{},classList:{toggle(){}},setAttribute(){},addEventListener(k,fn){this[k]=fn;}});return nodes.get(s);};
  const core={...C};B.install({IBDiscovery:core});
@@ -43,9 +43,9 @@ test('desk renders all three explanations and jumps between a pattern and its ne
  const current={...news,published_at:new Date().toISOString()};
  vm.runInNewContext(fs.readFileSync('discovery-desk.js','utf8'),{IBDiscovery:core,MarketInStoryBrief:B,DiscoveryPatterns:P,document:{querySelector:node,querySelectorAll:()=>[],addEventListener(){}},addEventListener(){},setTimeout:()=>1,clearTimeout(){},AbortController,localStorage:{getItem:()=>null,setItem(){}},fetch:async url=>({ok:true,json:async()=>({ok:true,items:url.includes('mode=clues')?[old]:url.includes('feed=reader')?[current]:[],events:[]})})});
  await new Promise(r=>setImmediate(r));
- let html=node('#discoveryCards').innerHTML;for(const label of ['발견한 특징','비교한 자료','새로 확인된 내용','기존 특징과 근거 보기'])assert.ok(html.includes(label),label);
+ let html=node('#discoveryCards').innerHTML;assert.ok(html.includes('발견한 특징'));assert.ok(html.includes('기존 특징과 근거 보기'));assert.doesNotMatch(html,/비교한 자료|새로 확인된 내용/);
  const click=id=>node('#discoveryDesk').click({target:{closest:s=>s==='[data-discovery-jump]'?{dataset:{discoveryJump:id}}:null}});
- click(pattern.clue_id);html=node('#discoveryCards').innerHTML;assert.match(html,/2020-01-01/);assert.match(html,/오늘 다시 검증한 결과는 아닙니다/);assert.match(html,/연결된 새 자료 1건/);assert.match(node('#discoveryCounts').textContent,/누적 특징 1건/);
+ click(pattern.clue_id);html=node('#discoveryCards').innerHTML;assert.match(html,/2020-01-01/);assert.doesNotMatch(html,/오늘 다시 검증한 결과는 아닙니다/);assert.match(html,/연결된 새 자료 1건/);assert.match(node('#discoveryCounts').textContent,/누적 특징 1건/);
  click('pattern-update-'+pattern.clue_id);assert.match(node('#discoveryCards').innerHTML,/신규 펀드 1000억원 결성/);
 });
 
