@@ -61,11 +61,20 @@ function patternSummary(x){
  const jump=ref?`<button data-discovery-jump="${esc(ref.clue_id)}">기존 특징과 근거 보기 →</button>`:x.linked_update?`<button data-discovery-jump="${esc(x.linked_update.clue_id)}">연결된 새 자료 ${x.linked_update.count}건 →</button>`:'';
  return `<dl class="discovery-pattern-summary"><dt>발견한 특징</dt><dd>${esc(s.feature)}</dd><dt>비교한 자료</dt><dd>${esc(s.comparison)}</dd><dt>새로 확인된 내용</dt><dd>${esc(s.update)}</dd></dl>${s.asOf?`<p class="discovery-baseline">기존 자료 기준 ${esc(s.asOf)} · 오늘 다시 검증한 결과는 아닙니다.</p>`:''}${jump?`<div class="discovery-pattern-link">${jump}</div>`:''}`;
 }
+function pointText(x){
+ const values=[x.changed_fact,x.one_line_signal,x.pitch_summary,x.why_now,x.reason]
+  .filter(v=>typeof v==='string'&&v.trim()).map(v=>v.replace(/\s+/g,' ').trim());
+ const picked=[];
+ for(const value of values){
+  const n=value.replace(/[^0-9A-Za-z가-힣]/g,'');
+  if(!n||picked.some(old=>{const o=old.replace(/[^0-9A-Za-z가-힣]/g,'');return o===n||o.includes(n)||n.includes(o)}))continue;
+  picked.push(value);
+  if(picked.length===2)break;
+ }
+ return picked.join(' ');
+}
 function discoveryBrief(x){
- const change=x.changed_fact||x.one_line_signal||x.pitch_summary||'—';
- const importance=x.why_now||x.reason||x.pitch_summary||'—';
- const questions=Array.isArray(x.questions)?x.questions.slice(0,4):[];
- return '<dl class="discovery-pattern-summary discovery-reporting-brief"><dt>무엇이 달라졌나</dt><dd>'+esc(change)+'</dd><dt>왜 중요한가</dt><dd>'+esc(importance)+'</dd><dt>확인할 것</dt><dd>'+(questions.length?list(questions):'추가 확인 질문은 근거 자료를 연 뒤 정리하세요.')+'</dd></dl>';
+ return '<dl class="discovery-pattern-summary discovery-reporting-brief"><dt>포인트</dt><dd>'+esc(pointText(x)||'근거 자료에서 실제 변화를 확인하세요.')+'</dd></dl>';
 }
 function inbox(rows){
  if(!rows.length)return '';
@@ -80,7 +89,7 @@ function scoreDetails(x){
  return '<p>추천 순위를 정하는 점수입니다. 사실의 확실성을 뜻하지 않습니다.</p><div class="pitch-score-grid">'+Object.entries(x.score_breakdown||{}).map(([key,value])=>'<span>'+esc(names[key]||key)+' <b>'+esc(typeof value==='object'?value.score:value)+'</b></span>').join('')+'</div>'+list(x.ranking_reasons);
 }
 function recommendationCard(x){
- return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card discovery-proposal"><div class="discovery-meta"><span>${esc(x.type_label||'기사 추천')}</span><span>${esc(categories[x.category]||'IB')}</span><time>${esc(C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3><p class="pitch-summary">${esc(x.pitch_summary)}</p>${discoveryBrief(x)}<div class="pitch-basis"><b>추천 근거</b>${pitchEvidence(x,3)}</div>${x.retained_at?'<p class="discovery-note">이전 추천 · '+esc(new Date(x.retained_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' 기준</p>':''}<div class="discovery-actions"><button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button></div><details data-detail="${esc(x.clue_id)}"><summary>추천 기준 · ${esc(x.score)}점</summary><div class="discovery-detail">${scoreDetails(x)}</div></details></article>`;
+ return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card discovery-proposal"><div class="discovery-meta"><span>${esc(x.type_label||'기사 추천')}</span><span>${esc(categories[x.category]||'IB')}</span><time>${esc(C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3>${discoveryBrief(x)}<div class="pitch-basis"><b>추천 근거</b>${pitchEvidence(x,3)}</div>${x.retained_at?'<p class="discovery-note">이전 추천 · '+esc(new Date(x.retained_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' 기준</p>':''}<div class="discovery-actions"><button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button></div><details data-detail="${esc(x.clue_id)}"><summary>추천 기준 · ${esc(x.score)}점</summary><div class="discovery-detail">${scoreDetails(x)}</div></details></article>`;
 }
 function accumulatedCard(x){
  const sourceList=rows=>(rows||[]).length?'<ul class="pitch-evidence">'+rows.map(r=>'<li>'+esc(r.title||r.label||'근거 자료')+links([{url:r.url,label:[r.label,r.date?C.date(r.date):'',r.read_level==='title'?'제목 확인':r.read_level==='summary'?'제목·요약 확인':r.read_level==='body'?'본문 확인':'확인 범위 미표시'].filter(Boolean).join(' · ')}])+'</li>').join('')+'</ul>':'';
@@ -238,7 +247,7 @@ function openRecommendation(clue,trigger){
   const dialog=$('#recommendationDialog');if(!dialog)return;
   recommendationId=clue.clue_id;returnFocus=trigger;
   $('#recommendationTitle').textContent=clue.headline;
-  $('#recommendationBody').innerHTML='<section><h3>한 줄 신호</h3><p>'+esc(clue.pitch_summary)+'</p></section><section><h3>무엇이 달라졌나</h3><p>'+esc(clue.changed_fact||clue.one_line_signal||clue.pitch_summary)+'</p></section><section><h3>왜 중요한가</h3><p>'+esc(clue.why_now||clue.reason||clue.pitch_summary)+'</p></section>'+((clue.questions||[]).length?'<section><h3>확인할 것</h3>'+list(clue.questions.slice(0,4))+'</section>':'')+(clue.comparison_axis?'<section><h3>기사를 구성할 비교축</h3><p>'+esc(clue.comparison_axis)+'</p></section>':'')+'<section><h3>추천 근거</h3>'+pitchEvidence(clue,8)+'</section>'+'<details><summary>추천 순위의 근거 · '+esc(clue.score)+'점</summary>'+scoreDetails(clue)+'</details>'+(clue.research?.status==='ready'?'<details><summary>추가로 읽은 본문과 기사 방향</summary>'+B.renderDetails(clue.research)+'</details>':'')+'<p class="recommendation-asof">기존 기사와 같은 질문·사례를 다뤘는지는 발제 선택 때 원문과 함께 살펴보세요.</p>';
+  $('#recommendationBody').innerHTML='<section><h3>포인트</h3><p>'+esc(pointText(clue)||clue.pitch_summary||clue.headline)+'</p></section>'+'<section><h3>추천 근거</h3>'+pitchEvidence(clue,8)+'</section>'+'<details><summary>추천 순위의 근거 · '+esc(clue.score)+'점</summary>'+scoreDetails(clue)+'</details>'+(clue.research?.status==='ready'?'<details><summary>추가로 읽은 본문과 기사 방향</summary>'+B.renderDetails(clue.research)+'</details>':'')+'<p class="recommendation-asof">기존 기사와 같은 질문·사례를 다뤘는지는 발제 선택 때 원문과 함께 살펴보세요.</p>';
   if(!dialog.open)dialog.showModal();$('#recommendationTitle').focus();return;
  }
  const a=clue?.article_brief,p=a?.angles?.[0],dialog=$('#recommendationDialog');
@@ -247,7 +256,8 @@ function openRecommendation(clue,trigger){
  $('#recommendationTitle').textContent=p.headline;
  const facts=(a.facts||[]).filter(f=>p.basis_ids?.includes(f.id));
  const basis=facts.map(f=>{const source=clue.research.sources?.find(s=>s.source_id===f.source_id);return '<li>'+esc(f.text)+links(source?[{...source,label:source.publisher||source.title}]:[])+'</li>';}).join('');
- $('#recommendationBody').innerHTML='<section><h3>한 줄 신호</h3><p>'+esc(p.reason)+'</p></section><section><h3>무엇이 달라졌나</h3><p>'+esc(p.new_information||clue.one_line_signal||p.reason)+'</p></section>'+(a.why_now?.text?'<section><h3>왜 중요한가</h3><p>'+esc(a.why_now.text)+'</p></section>':'')+'<section><h3>추천 근거</h3><ul>'+basis+'</ul></section>'+(p.question?'<section><h3>확인할 것</h3><ul><li>'+esc(p.question)+'</li>'+(p.missing?'<li>'+esc(p.missing)+'</li>':'')+'</ul></section>':'')+'<details><summary>모든 근거와 기존 보도 확인</summary>'+B.renderDetails(clue.research,clue.clue_id)+'</details>'+(clue.research.as_of?'<p class="recommendation-asof">분석 기준 '+esc(new Date(clue.research.as_of).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 한국시간</p>':'');
+ const point=[p.new_information,a.why_now?.text,p.reason].filter(Boolean).filter((v,i,all)=>all.findIndex(t=>String(t).trim()===String(v).trim())===i).slice(0,2).join(' ');
+ $('#recommendationBody').innerHTML='<section><h3>포인트</h3><p>'+esc(point||p.reason)+'</p></section>'+'<section><h3>추천 근거</h3><ul>'+basis+'</ul></section>'+'<details><summary>모든 근거와 기존 보도 확인</summary>'+B.renderDetails(clue.research,clue.clue_id)+'</details>'+(clue.research.as_of?'<p class="recommendation-asof">분석 기준 '+esc(new Date(clue.research.as_of).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 한국시간</p>':'');
  if(!dialog.open)dialog.showModal();$('#recommendationTitle').focus();
 }
 $('#findToday').onclick=findToday;
