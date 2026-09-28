@@ -34,7 +34,7 @@ function harness({archived=[archiveArticle],news=[freshArticle],canonical=[basel
   const value=JSON.parse(storage.get('ib_accumulated_patterns_v1')||'null');
   return value?.snapshot?{key:'ib_accumulated_patterns_v1',value:value.snapshot,items:value.items,stats:value.stats}:null;
  };
- return {node,storage,accumulationCalls,context,settle,background,cardHtml,patternSnapshot,setNews:value=>currentNews=value,setCanonical:value=>currentCanonical=value,setNow:value=>now=value,refresh:async()=>{await node('#refresh').onclick();await settle();}};
+ return {node,storage,accumulationCalls,context,settle,background,cardHtml,patternSnapshot,setNews:value=>currentNews=value,setCanonical:value=>currentCanonical=value,setNow:value=>now=value,refresh:async()=>{await node('#findToday').onclick();await settle();background();}};
 }
 
 test('background accumulation combines locally archived and newly collected news, retaining exact source URLs',async()=>{

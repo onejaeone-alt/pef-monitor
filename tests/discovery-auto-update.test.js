@@ -28,8 +28,8 @@ test('hidden/offline tabs pause polling, overdue return and reconnection refresh
  h.document.hidden=false;await h.docEvents.visibilitychange();assert.equal(h.requests.length,10);
  h.context.navigator.onLine=false;h.events.offline();await h.advance(600000);assert.equal(h.requests.length,10);
  let resolve;h.setDefer(new Promise(r=>resolve=r));h.context.navigator.onLine=true;const running=h.events.online();await h.settle();assert.equal(h.requests.length,15);
- await h.events.pageshow();await h.docEvents.visibilitychange();await h.node('#refresh').onclick();assert.equal(h.requests.length,15);
- resolve();h.setDefer(null);await running;assert.equal(h.node('#refresh').disabled,false);
+ await h.events.pageshow();await h.docEvents.visibilitychange();const finding=h.node('#findToday').onclick();await h.settle();assert.equal(h.requests.length,15);
+ resolve();h.setDefer(null);await running;await finding;assert.equal(h.node('#findToday').disabled,false);
 });
 test('open evidence remains stable until new results are accepted; accepting preserves the open card',async()=>{
  const h=harness();await h.settle();h.setOpen(true);h.setVersion(2);await h.advance(300000);
