@@ -29,8 +29,7 @@ function harness({archived=[archiveArticle],news=[freshArticle],canonical=[basel
  const settle=async()=>{for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));};
  const click=(selector,dataset)=>node('#discoveryDesk').click({target:{closest:query=>query===selector?{dataset,hasAttribute(){return false;}}:null}});
  const background=()=>click('[data-discovery-view]',{discoveryView:'background'});
- const saved=()=>JSON.parse(storage.get('pef_my_reporting_projects_v1')||'[]');
- const save=id=>{click('[data-discovery-project]',{discoveryProject:id});return saved().find(project=>project.clue.clue_id===id)?.clue;};
+ const cardHtml=()=>node('#discoveryCards').innerHTML;
  const patternSnapshot=()=>{
   const value=JSON.parse(storage.get('ib_accumulated_patterns_v1')||'null');
   return value?.snapshot?{key:'ib_accumulated_patterns_v1',value:value.snapshot,items:value.items,stats:value.stats}:null;
