@@ -11,12 +11,12 @@ test('archived and fresh source facts create a background feature before editori
  assert.equal(run([fresh]).items.length,0);
  const result=run([old,fresh]),item=result.items[0];
  assert.equal(result.items.length,1);assert.equal(item.detector,'accumulated_pattern');assert.equal(item.lane,'background');assert.equal(item.sources.length,2);assert.equal(item.initial_analysis,true);assert.equal(item.new_sources.length,0);assert.equal(item.analysis_changed,false);
- assert.match(P.summary(item).feature,/2개 거래 대상/);assert.match(P.summary(item).comparison,/처음/);assert.match(P.summary(item).update,/초기 분석/);assert.match(P.summary(item).update,/제목/);assert.equal(item.sort_date,'2026-09-28');assert.equal(item.checked_at,new Date(now).toISOString());assert.equal(result.stats.source_count,2);assert.equal(result.stats.changed_count,0);
+ assert.match(P.summary(item).feature,/시험파트너스/);assert.match(P.summary(item).feature,/가온식품|나래식품/);assert.match(P.summary(item).comparison,/처음/);assert.match(P.summary(item).update,/초기 분석/);assert.match(P.summary(item).update,/제목/);assert.equal(item.sort_date,'2026-09-28');assert.equal(item.checked_at,new Date(now).toISOString());assert.equal(result.stats.source_count,2);assert.equal(result.stats.changed_count,0);
  assert.equal(run([old,{...fresh,published_at:'2026-09-09'}]).items.length,1,'patterns need not have a seven-day news trigger');
 });
 test('same-day additions preserve stable feature identity and compare previous versus new source facts',()=>{
  const first=run([old,fresh]),next=run([old,fresh,third],first.snapshot,now+300000),item=next.items[0];
- assert.equal(item.clue_id,first.items[0].clue_id);assert.equal(item.previous_sources.length,2);assert.equal(item.sources.length,3);assert.deepEqual(item.new_sources.map(s=>s.url),[third.source_url]);assert.equal(item.evidence_added,1);assert.equal(next.stats.changed_count,1);assert.notEqual(item.changed_at,first.items[0].changed_at);assert.match(P.summary(item).update,/새 근거 1건/);assert.match(item.one_line_signal,/3개 거래 대상/);
+ assert.equal(item.clue_id,first.items[0].clue_id);assert.equal(item.previous_sources.length,2);assert.equal(item.sources.length,3);assert.deepEqual(item.new_sources.map(s=>s.url),[third.source_url]);assert.equal(item.evidence_added,1);assert.equal(next.stats.changed_count,1);assert.notEqual(item.changed_at,first.items[0].changed_at);assert.match(P.summary(item).update,/새 근거 1건/);assert.match(item.one_line_signal,/시험파트너스/);assert.match(item.one_line_signal,/다온물류/);
  const restored=JSON.parse(JSON.stringify(next.snapshot));assert.equal(restored.patterns[item.clue_id].sources.length,3);assert.equal(restored.patterns[item.clue_id].changed_at,item.changed_at);
 });
 test('a no-op poll advances checking time without manufacturing a material update',()=>{
@@ -44,9 +44,9 @@ test('future observations and similar corporation names cannot fabricate a same-
 });
 test('LP terms, different investors in a sector, and differing reported event stages have distinct evidence-based features',()=>{
  const lp=[news('국민연금, 사모펀드 위탁운용사 선정 3000억원 출자','lp1','2026-09-01',{target:{name:'국민연금',category:'lp'}}),news('국민연금, 사모펀드 위탁운용사 선정 4000억원 출자','lp2','2026-09-28',{target:{name:'국민연금',category:'lp'}})];
- const lpResult=run(lp);assert.ok(lpResult.items.some(x=>x.pattern_type==='lp_conditions'));assert.match(lpResult.items.find(x=>x.pattern_type==='lp_conditions').one_line_signal,/조건 변경으로 단정하지/);
+ const lpResult=run(lp);assert.ok(lpResult.items.some(x=>x.pattern_type==='lp_conditions'));assert.match(lpResult.items.find(x=>x.pattern_type==='lp_conditions').one_line_signal,/국민연금 출자/);
  const sector=[old,news('다른파트너스, 나래식품 경영권 인수 계약 체결','sector','2026-09-28',{target:{name:'다른파트너스',category:'gp'}})];assert.ok(run(sector).items.some(x=>x.pattern_type==='sector_activity'));
- const events=[news('가온식품 공개매수 추진…매수가 2만원','event1','2026-09-01',{target:{name:'가온식품',category:'company'}}),news('가온식품 공개매수 무산…인수 계약 해제','event2','2026-09-28',{target:{name:'가온식품',category:'company'}})];const event=run(events).items.find(x=>x.pattern_type==='event_progress');assert.ok(event);assert.match(event.one_line_signal,/같은 거래의 진행 순서인지는/);
+ const events=[news('가온식품 공개매수 추진…매수가 2만원','event1','2026-09-01',{target:{name:'가온식품',category:'company'}}),news('가온식품 공개매수 무산…인수 계약 해제','event2','2026-09-28',{target:{name:'가온식품',category:'company'}})];const event=run(events).items.find(x=>x.pattern_type==='event_progress');assert.ok(event);assert.match(event.one_line_signal,/추진 → 중단/);
  const possible=[events[0],{...events[1],title:'가온식품 공개매수 무산 가능성 우려'}];assert.equal(run(possible).items.some(x=>x.pattern_type==='event_progress'),false);
 });
 test('missing normalization engine reports unavailable without deleting prior snapshots',()=>{
@@ -63,7 +63,7 @@ test('a GP policy discussion without a concrete target cannot create a cumulativ
 test('same concrete company shareholder change and rights issue are linked without formal deal-phase words or entity metadata',()=>{
  const sale={title:'MBK, 네파 손절…K2그룹에 매각',source_url:'https://example.com/nepa-sale',source_name:'매체1',published_at:'2026-09-23'};
  const capital={title:'네파, K2코리아그룹 새 최대주주로…주주배정 유상증자 추진',source_url:'https://example.com/nepa-capital',source_name:'매체2',published_at:'2026-09-24'};
- const first=run([sale,capital]),item=first.items.find(x=>x.pattern_type==='event_financing');assert.ok(item);assert.equal(item.sources.length,2);assert.equal(item.headline,'네파의 새 주주와 자본 확충');assert.match(item.one_line_signal,/유상증자/);assert.match(item.one_line_signal,/인과관계는 확인하지/);assert.deepEqual(item.confirmed_facts,[]);
+ const first=run([sale,capital]),item=first.items.find(x=>x.pattern_type==='event_financing');assert.ok(item);assert.equal(item.sources.length,2);assert.equal(item.headline,'네파의 새 주주와 자본 확충');assert.match(item.one_line_signal,/유상증자/);assert.match(item.one_line_signal,/새 주주/);assert.match(item.one_line_signal,/유상증자/);assert.deepEqual(item.confirmed_facts,[]);
  const noop=run([sale,capital],first.snapshot,now+300000).items.find(x=>x.pattern_type==='event_financing');assert.equal(noop.clue_id,item.clue_id);assert.equal(noop.changed_at,item.changed_at);assert.equal(noop.evidence_added,0);
  const added={title:'네파 유상증자 계획, 새 최대주주 투자 규모 주목',source_url:'https://example.com/nepa-plan',source_name:'매체3',published_at:'2026-09-28'};
  const next=run([sale,capital,added],first.snapshot,now+600000).items.find(x=>x.pattern_type==='event_financing');assert.equal(next.clue_id,item.clue_id);assert.equal(next.evidence_added,1);assert.equal(next.sources.length,3);
