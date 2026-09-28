@@ -171,7 +171,7 @@
           make('p', { class: 'site-account-note', text: '번호 없이 링크만 오면 링크를 누르지 말고 주소를 복사해 붙여넣으세요. 인증번호와 링크는 다른 사람에게 보내지 마세요.' }));
       }
       parts.push(make('p', { id: 'siteAccountMessage', role: 'status', text: authError }),
-        make('p', { class: 'site-account-note', text: '계정 저장은 뉴스 보관·읽음·추적 기록에 적용합니다. 기존 브라우저 기록은 자동으로 옮기지 않습니다. 공용 기기에서는 로그아웃해 주세요.' }));
+        make('p', { class: 'site-account-note', text: '계정 저장은 뉴스 보관·읽음·추적 기록에 적용합니다. 진행중 취재 메모와 기존 브라우저 기록은 자동으로 옮기지 않습니다. 공용 기기에서는 로그아웃해 주세요.' }));
       dialogNumber++; dialog.replaceChildren(...parts);
       if (!dialog.open) dialog.showModal();
       if (!s.user) dialog.querySelector('input')?.focus();
