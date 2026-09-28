@@ -59,21 +59,21 @@ function groupDefinitions(rows){
   const cases=uniq(set.map(r=>r.case_key)),actions=uniq(set.flatMap(r=>r.actions));
   if(cases.length<2||!actions.some(a=>['투자','회수','거래 중단','펀드 조성'].includes(a)))continue;
   const name=set.flatMap(r=>r.gps).find(n=>norm(n)===key),subjects=uniq(set.map(r=>r.subject).filter(n=>norm(n)!==key));
-  const pairs=uniq(set.map(r=>r.subject+(r.actions?.length?' '+r.actions[0]:''))).slice(0,4); groups.push({key:'gp-'+key,type:'gp_activity',rows:set,headline:name+'의 복수 거래',feature:name+': '+pairs.join(' · '),axis:'거래 대상과 진행 상황',entities:[name,...subjects]});
+  const pairs=uniq(set.map(r=>r.subject+(r.actions?.length?' '+r.actions[0]:''))).slice(0,4); const actionText=uniq(set.flatMap(r=>r.actions)).slice(0,3).join('·'); groups.push({key:'gp-'+key,type:'gp_activity',rows:set,headline:name+'의 복수 거래',feature:name+'이 '+pairs.join(', ')+'에 각각 등장했다. 한 운용사 안에서 '+actionText+' 관련 거래가 함께 포착된다.',axis:'거래 대상과 진행 상황',entities:[name,...subjects]});
  }
  for(const [sector,set]of by(rows.filter(r=>r.sector&&r.category!=='lp'&&list(r.actions).includes('투자')),r=>[r.sector])){
   const cases=uniq(set.map(r=>r.case_key)),gps=uniq(set.flatMap(r=>r.gps).map(norm));if(cases.length<2||gps.length<2)continue;
-  const targets=uniq(set.map(r=>r.subject)).slice(0,4),managers=uniq(set.flatMap(r=>r.gps)).slice(0,4); groups.push({key:'sector-'+sector,type:'sector_activity',rows:set,headline:sector+' 기업에 투자한 운용사들',feature:sector+': '+targets.join('·')+'에 '+managers.join('·')+'가 투자·인수 주체로 등장',axis:'기업별 투자 대상과 운용사',entities:uniq(set.flatMap(r=>r.entities))});
+  const targets=uniq(set.map(r=>r.subject)).slice(0,4),managers=uniq(set.flatMap(r=>r.gps)).slice(0,4); const links=uniq(set.map(r=>{const gp=(r.gps||[])[0];return [gp,r.subject].filter(Boolean).join('→')})).slice(0,4); groups.push({key:'sector-'+sector,type:'sector_activity',rows:set,headline:sector+' 기업에 투자한 운용사들',feature:sector+'에서는 '+links.join(', ')+'가 각각 확인됐다. 서로 다른 운용사가 같은 업종의 다른 기업에 동시에 들어온 점이 겹친다.',axis:'기업별 투자 대상과 운용사',entities:uniq(set.flatMap(r=>r.entities))});
  }
  for(const [key,set]of by(rows.filter(r=>r.category==='lp'&&r.lp&&/출자|위탁운용|선정|자산배분|약정/.test(r.text)),r=>[norm(r.lp)+'-'+(r.lp_track||'일반')])){
   if(set.length<2)continue;const name=set[0].lp,fields=uniq(set.flatMap(r=>[...r.text.matchAll(/\d[\d,.]*(?:\s*(?:조|천|억|만))+(?:\s*원|\s*달러)?|\d[\d,.]*\s*%|세컨더리|크레딧|벤처|블라인드|선정|위탁운용|자산배분|약정/g)].map(m=>m[0])));
   if(fields.length<2)continue;
-  const titles=uniq(set.map(r=>r.title)).slice(0,3); groups.push({key:'lp-'+key,type:'lp_conditions',rows:set,headline:name+' 출자 분야와 조건',feature:name+' 출자: '+fields.slice(0,5).join('·')+' 확인 · '+titles.join(' / '),axis:'사업별 투자 분야·규모·선정 조건',entities:[name]});
+  const titles=uniq(set.map(r=>r.title)).slice(0,3); groups.push({key:'lp-'+key,type:'lp_conditions',rows:set,headline:name+' 출자 분야와 조건',feature:name+' 출자 자료에서 '+fields.slice(0,5).join('·')+'가 함께 확인된다. 사업별 규모·분야·선정 조건이 어떻게 갈리는지 볼 수 있다.',axis:'사업별 투자 분야·규모·선정 조건',entities:[name]});
  }
  for(const [key,set]of by(rows.filter(r=>r.category!=='lp'&&r.subject&&family(r)&&phase(r)),r=>[r.case_key+'-'+family(r)])){
   const stages=uniq(set.map(phase));if(stages.length<2||set.length<2)continue;
   const name=set[0].subject;
-  groups.push({key:'event-'+key,type:'event_progress',rows:set,headline:name+' '+family(set[0])+' 관련 보도 흐름',feature:name+' '+family(set[0])+': '+stages.join(' → '),axis:'보도된 거래 단계와 시점',entities:uniq(set.flatMap(r=>r.entities))});
+  groups.push({key:'event-'+key,type:'event_progress',rows:set,headline:name+' '+family(set[0])+' 관련 보도 흐름',feature:name+' '+family(set[0])+' 관련 보도가 '+stages.join(' → ')+' 순서로 이어졌다. 같은 거래가 다음 단계로 넘어갔는지 확인할 수 있는 흐름이다.',axis:'보도된 거래 단계와 시점',entities:uniq(set.flatMap(r=>r.entities))});
  }
  // A change of shareholder and capital raising can be a useful connection
  // even when neither title names a formal transaction stage. Keep the same
@@ -83,7 +83,7 @@ function groupDefinitions(rows){
   const owners=set.filter(ownership),funding=set.filter(capital);
   if(!owners.some(a=>funding.some(b=>a.url!==b.url)))continue;
   const related=set.filter(r=>ownership(r)||capital(r)),name=related[0].subject,joined=related.map(r=>r.text).join(' '),ownerLabel=/(?:새|신규)\s*최대주주|최대주주\s*변경/.test(joined)?'새 주주':'지분 거래',capitalLabel=/유상증자/.test(joined)?'유상증자':'자본 확충';
-  groups.push({key:'financing-'+key,type:'event_financing',rows:related,headline:name+'의 '+ownerLabel+'와 자본 확충',feature:name+': '+ownerLabel+'와 '+capitalLabel+' 연이어 확인',axis:'지분 거래·주주 변경 보도와 자본 확충 계획',entities:uniq(related.flatMap(r=>r.entities))});
+  groups.push({key:'financing-'+key,type:'event_financing',rows:related,headline:name+'의 '+ownerLabel+'와 자본 확충',feature:name+'에서 '+ownerLabel+' 등장 뒤 '+capitalLabel+' 계획이 이어졌다. 경영권 변화와 자본 확충이 같은 시기에 맞물린 점이 보인다.',axis:'지분 거래·주주 변경 보도와 자본 확충 계획',entities:uniq(related.flatMap(r=>r.entities))});
  }
  return groups;
 }
