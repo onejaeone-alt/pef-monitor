@@ -25,7 +25,9 @@ test('find today refreshes sources, waits for research, suppresses duplicate cli
  assert.match(h.node('#discoveryCards').innerHTML,/추천기사 열기/);
  h.clickOpen();assert.equal(h.node('#recommendationDialog').open,true);assert.equal(h.node('#recommendationTitle').textContent,'추천 제목 2');
  assert.match(h.node('#recommendationBody').innerHTML,/공개된 결성 규모/);assert.match(h.node('#recommendationBody').innerHTML,/최종 배분은 미공개/);
- assert.match(h.node('#recommendationBody').innerHTML,/무엇이 달라졌나/);\n assert.match(h.node('#recommendationBody').innerHTML,/왜 중요한가/);\n assert.match(h.node('#recommendationBody').innerHTML,/확인할 것/);
+ assert.match(h.node('#recommendationBody').innerHTML,/무엇이 달라졌나/);
+ assert.match(h.node('#recommendationBody').innerHTML,/왜 중요한가/);
+ assert.match(h.node('#recommendationBody').innerHTML,/확인할 것/);
  h.node('#closeRecommendation').onclick();assert.equal(h.node('#recommendationDialog').open,false);
 });
 test('model failure never produces a recommendation and finishes with a recoverable message',async()=>{
