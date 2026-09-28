@@ -1,0 +1,18 @@
+{
+  "version": "ib-editorial-v1",
+  "as_of": "2026-09-24T04:00:00Z",
+  "description": "고정된 편집 기준 회귀 평가. 예시 입력이며 실제 기사 정확도나 기자 채택률을 측정하지 않는다.",
+  "cases": [
+    {"id":"empty", "purpose":"자료가 없으면 추천을 만들지 않음", "titles":[], "expected":{"count":0}},
+    {"id":"outside-beat", "purpose":"생활·주가·홍보 기사 제외", "titles":["가을 할인행사 시작…경품 증정", "네파 목표주가 상향, 주가 급등", "농지 강제매각 추진"], "expected":{"count":0}},
+    {"id":"hypothetical", "purpose":"가정형 인수를 실제 거래로 바꾸지 않음", "titles":["한화가 KAI를 인수한다면…K국방 득실은?"], "expected":{"count":0}},
+    {"id":"stale", "purpose":"오래된 소식을 새 취재거리로 추천하지 않음", "date":"2026-07-01T04:00:00Z", "titles":["맥쿼리, 가비아 인수 최종 무산…공개매수 실패"], "expected":{"count":0}},
+    {"id":"future", "purpose":"미래 날짜 기사를 이미 나온 보도로 사용하지 않음", "date":"2026-10-01T04:00:00Z", "titles":["맥쿼리, 가비아 인수 최종 무산…공개매수 실패"], "expected":{"count":0}},
+    {"id":"tender-failure", "purpose":"공개매수 무산을 놓치지 않음", "titles":["맥쿼리, 가비아 인수 최종 무산…공개매수 실패"], "expected":{"count":1,"headline":"가비아","case_count":1,"read_level":"title"}},
+    {"id":"duplicate-event", "purpose":"같은 사건의 재전송 보도를 별도 사례로 세지 않음", "titles":["맥쿼리, 가비아 인수 최종 무산…공개매수 실패", "[속보] 맥쿼리, 가비아 인수 최종 무산…공개매수 실패 (종합)"], "expected":{"count":1,"case_count":1,"source_count":1}},
+    {"id":"deal-and-capital", "purpose":"인수와 증자를 연결하되 같은 거래로 집계", "titles":["MBK, 네파 손절…K2그룹에 매각", "네파, K2그룹 새 최대주주로…주주배정 유상증자 추진"], "expected":{"count":1,"headline":"유상증자","case_count":1}},
+    {"id":"distinct-entities", "purpose":"SK와 SK리츠를 구분", "titles":["SK, 회사채 1500억원 발행…기존 차입금 차환", "SK리츠, 회사채 1000억원 발행…차입금 차환"], "expected":{"count":2,"topics":["SK","SK리츠"],"source_count":1}},
+    {"id":"proposal", "purpose":"가능성을 완료된 거래로 바꾸지 않음", "titles":["베인, 에코마케팅서 '알짜' 안다르 분리한다…독립매각 가능성"], "expected":{"count":1,"headline":"구상","forbidden":"매각 완료"}},
+    {"id":"no-market-trend-from-two", "purpose":"두 사례로 업종 전체 투자 추세를 만들지 않음", "titles":["MBK파트너스, 식품기업 푸드원 인수 계약", "한앤컴퍼니, 식품기업 푸드투 인수 계약"], "expected":{"forbidden_type":"sector_investment"}}
+  ]
+}
