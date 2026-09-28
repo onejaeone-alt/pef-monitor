@@ -2,7 +2,7 @@ const { buildEntityDossier } = require('../lib/entity-dossier');
 const { fetchLatestEntityNews } = require('../lib/entity-news');
 const { buildOntology } = require('../lib/ontology');
 const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
-const { mergeDriveDossiers, searchDriveDossiers } = require('../lib/drive-dossiers');
+const { mergeDriveDossiers, searchDriveDossiers, matchDossiersInText } = require('../lib/drive-dossiers');
 const { collectReportingSignals } = require('../lib/reporting-signals');
 const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
 const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
@@ -45,6 +45,13 @@ module.exports = async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit || '12', 10), 1), 30);
     if (!query) return res.status(200).json({ ok:true, items:[], count:0 });
     const items = searchDriveDossiers(query, limit);
+    return res.status(200).json({ ok:true, items, count:items.length });
+  }
+  if (req.query.action === 'match') {
+    const text = String(req.query.text || '').trim().slice(0, 2000);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '3', 10), 1), 6);
+    if (!text) return res.status(200).json({ ok:true, items:[], count:0 });
+    const items = matchDossiersInText(text, limit);
     return res.status(200).json({ ok:true, items, count:items.length });
   }
   const entityKey = String(req.query.entity_key || '').trim();
