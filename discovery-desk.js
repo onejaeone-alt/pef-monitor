@@ -165,7 +165,7 @@ function load(options={}){
 async function performLoad({automatic=false,today=false}={}){
  if(loading){scheduleUpdate();return;}
  if(automatic&&away()){scheduleUpdate();return;}
- loading=true;lastStarted=Date.now();clearTimeout(updateTimer);$('#refresh').disabled=true;
+ loading=true;lastStarted=Date.now();clearTimeout(updateTimer);
  const token=++run;controller?.abort();controller=new AbortController();status=Object.fromEntries(Object.keys(endpoints).map(k=>[k,{state:'loading'}]));failures=new Set();reviews={...stored(REVIEW_KEY,{}),...reviews};$('#discoveryMessage').textContent='';render();
  await Promise.allSettled(Object.entries(endpoints).map(async([key,[,url]])=>{
   try{const d=await json(url+(today&&key==='news'?'&refresh=1':''),controller.signal);if(token!==run)return;
@@ -180,7 +180,7 @@ async function performLoad({automatic=false,today=false}={}){
   }catch(e){if(token!==run)return;status[key]={state:'failed'};if(state[key]?.length)$('#discoveryMessage').textContent='일부 수집원에 연결하지 못해 해당 항목은 이전 자료를 유지했습니다. 다음 자동 갱신 때 다시 확인합니다.';render();}
  }));
  if(token===run&&!away())readBatch(token);
- if(token===run){loading=false;lastChecked=Date.now();refreshAccumulated();$('#refresh').disabled=false;render({accept:!automatic});if(today&&!R){await readBatch(token);render({accept:true});await readResearch(token,null,6);}else{if(today)render({accept:true});scheduleUpdate();readResearch(token,null,today?5:3);}}
+ if(token===run){loading=false;lastChecked=Date.now();refreshAccumulated();render({accept:!automatic});if(today&&!R){await readBatch(token);render({accept:true});await readResearch(token,null,6);}else{if(today)render({accept:true});scheduleUpdate();readResearch(token,null,today?5:3);}}
 }
 function readResearch(token,requested,limit=3){
  if(researching){if(requested){const r=B?.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);render();}}return researchJob;}
@@ -253,7 +253,7 @@ function openRecommendation(clue,trigger){
 $('#findToday').onclick=findToday;
 $('#closeRecommendation').onclick=()=>$('#recommendationDialog').close();
 $('#recommendationDialog').addEventListener('close',()=>{recommendationId=null;if(returnFocus?.isConnected)returnFocus.focus();else $('#findToday').focus();if(pendingData&&!readingCard())render({accept:true});});
-$('#refresh').onclick=()=>load();$('#discoveryRetry').onclick=()=>load();$('#discoveryReadMore').onclick=()=>readBatch(run);
+$('#discoveryRetry').onclick=()=>load();$('#discoveryReadMore').onclick=()=>readBatch(run);
 $('#discoveryUpdates').onclick=()=>render({accept:true});
 $('#discoveryMore').onclick=()=>{expanded=true;render({accept:true});};$('#discoverySearch').oninput=e=>{query=e.target.value.trim().toLowerCase();render({accept:true});};
 root.addEventListener('click',e=>{
