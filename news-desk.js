@@ -102,7 +102,7 @@
     return data;
   }
   async function loadDossierContext(row){
-    let matched=[];
+    let matched=[],archiveMatches=[];
     const direct=C.directEntityKeys(row);
     if(direct.length<3){
       const text=C.contextText(row);
@@ -113,8 +113,20 @@
           if(response.ok&&data.ok&&Array.isArray(data.items))matched=data.items;
         }catch{}
       }
+      const anchorNames=[...(row.related_entities||[]),...(row.items||[]).flatMap(item=>item.related_entities||[])]
+        .map(entity=>String(entity?.canonical_name||'').trim()).filter(Boolean).filter((name,index,all)=>all.indexOf(name)===index).slice(0,2);
+      if(anchorNames.length){
+        const found=await Promise.all(anchorNames.map(async name=>{
+          try{
+            const response=await fetch('/api/entity?action=search&limit=5&q='+encodeURIComponent(name),{cache:'default'});
+            const data=await response.json();
+            return response.ok&&data.ok&&Array.isArray(data.items)?data.items:[];
+          }catch{return [];}
+        }));
+        archiveMatches=found.flat();
+      }
     }
-    const keys=C.mergeEntityKeys(row,matched,3);
+    const keys=C.mergeEntityKeys(row,[...matched,...archiveMatches],3);
     let dossiers=(await Promise.all(keys.map(key=>dossierData(key).catch(()=>null)))).filter(Boolean);
     if(dossiers.length<3){
       const extras=C.relationKeys(dossiers,keys,3-dossiers.length);
