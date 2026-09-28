@@ -51,7 +51,9 @@ test('grounded rule recommendations remain visible after AI failure and their ev
  h.click('[data-recommendation-open]',{recommendationOpen:'lp-proposal'});
  assert.equal(h.node('#recommendationDialog').open,true);
  assert.equal(h.node('#recommendationTitle').textContent,proposal(source).headline);
- assert.match(h.node('#recommendationBody').innerHTML,/무엇이 달라졌나/);\n assert.match(h.node('#recommendationBody').innerHTML,/왜 중요한가/);\n assert.match(h.node('#recommendationBody').innerHTML,/확인할 것/);
+ assert.match(h.node('#recommendationBody').innerHTML,/무엇이 달라졌나/);
+ assert.match(h.node('#recommendationBody').innerHTML,/왜 중요한가/);
+ assert.match(h.node('#recommendationBody').innerHTML,/확인할 것/);
  assert.ok(h.node('#recommendationBody').innerHTML.includes('href="'+source.source_url+'"'));
  assert.match(h.node('#recommendationBody').innerHTML,/기관 공고/);
 });
