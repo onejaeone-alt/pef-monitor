@@ -37,6 +37,9 @@ for (const file of ['leads.html','motae.html']) {
   const target=path.join(root,file);if(!fs.existsSync(target))continue;
   const original=fs.readFileSync(target,'utf8');
   let next=removeOldDossierQuick(original);
-  if(file==='leads.html') next=addLeadHandoff(next);
+  if(file==='leads.html') next=next
+    .replace(/<button class="project-send-btn"[\s\S]*?<\/button>/g,'')
+    .replace(/<style id="project-send-style">[\s\S]*?<\/style>/g,'')
+    .replace(/<script id="project-handoff-script">[\s\S]*?<\/script>/g,'');
   if(next!==original) fs.writeFileSync(target,next,'utf8');
 }
