@@ -54,7 +54,10 @@ test('Drive dossier matcher can return several files named in one news context',
 test('news page loads dossier context before the desk and no longer sends users back to top search',()=>{
   const html=fs.readFileSync('index.html','utf8'),desk=fs.readFileSync('news-desk.js','utf8'),api=fs.readFileSync('api/entity.js','utf8');
   assert.ok(html.indexOf('/news-detail-context.js')>html.indexOf('/news-taxonomy.js'));
-  assert.ok(html.indexOf('/news-detail-context.js')<html.indexOf('/news-desk.js'));
+  // The production build replaces news-desk.js with news-reader.js.
+  const entry=Math.max(html.indexOf('/news-desk.js'),html.indexOf('/news-reader.js'));
+  assert.ok(entry>=0,'the news entrypoint must be present');
+  assert.ok(html.indexOf('/news-detail-context.js')<entry);
   assert.match(desk,/연결된 취재파일 · 최대 3개/);
   assert.match(desk,/취재파일 관련 최신뉴스/);
   assert.doesNotMatch(desk,/상단 취재파일 검색에서/);
