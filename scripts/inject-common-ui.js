@@ -21,20 +21,12 @@ function normalizeNav(html, file) {
   next = next.replace(/<a(?:\s+class="on")?\s+href="\/relations\.html">취재파일<\/a>/g, '');
   next = next.replace(/(<a[^>]*href="\/motae\.html"[^>]*>)(?:모태펀드|출자공고)(<\/a>)/g, '$1출자공고$2');
   next = next.replace(/(<a[^>]*href="\/leads\.html"[^>]*>)(?:AI 취재단서|AI 발견)(<\/a>)/g, '$1AI 발견$2');
-  next = next.replace(/(<a[^>]*href="\/projects\.html"[^>]*>)(?:내 취재|진행중 취재)(<\/a>)/g, '$1진행중 취재$2');
-  next = next.replace(/(<a[^>]*href="\/judgment\.html"[^>]*>)(?:기사판단기|기사화 판단)(<\/a>)/g, '$1기사화 판단$2');
+  next = next.replace(/<a[^>]*href="\/projects\.html"[^>]*>[\s\S]*?<\/a>/g, '');
+  next = next.replace(/<a[^>]*href="\/judgment\.html"[^>]*>[\s\S]*?<\/a>/g, '');
 
   if (!next.includes('href="/leads.html"')) {
     const anchor = /(<a[^>]*href="\/motae\.html"[^>]*>출자공고<\/a>)/;
     next = next.replace(anchor, '$1<a href="/leads.html">AI 발견</a>');
-  }
-  if (!next.includes('href="/projects.html"')) {
-    const anchor = /(<a[^>]*href="\/leads\.html"[^>]*>AI 발견<\/a>)/;
-    next = next.replace(anchor, '$1<a href="/projects.html">진행중 취재</a>');
-  }
-  if (!next.includes('href="/judgment.html"')) {
-    const anchor = /(<a[^>]*href="\/projects\.html"[^>]*>진행중 취재<\/a>)/;
-    next = next.replace(anchor, '$1<a href="/judgment.html">기사화 판단</a>');
   }
 
   const href = file === 'index.html' ? '/' : file === 'dart.html' ? '/dart.html' : file === 'motae.html' ? '/motae.html' : file === 'leads.html' ? '/leads.html' : file === 'projects.html' ? '/projects.html' : file === 'judgment.html' ? '/judgment.html' : '';
@@ -86,8 +78,7 @@ function workflowMini(file) {
 }
 
 function addWorkflowMini(html, file) {
-  if (!['leads.html','projects.html','judgment.html'].includes(file) || html.includes('class="workflow-mini"')) return html;
-  return html.replace('<main class="page">', `<main class="page">${workflowMini(file)}`);
+  return html.replace(/<div class="workflow-mini"[\s\S]*?<\/div>/g, '');
 }
 
 function tightenLeadUi(html) {
