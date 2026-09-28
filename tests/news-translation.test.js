@@ -51,6 +51,13 @@ test('backup corrects finance terminology only when the English source contains 
  const F=require('../lib/news-translation-fallback');
  assert.equal(F.clean('개인 신용 혼란 완화','Private credit turmoil eases'),'사모대출 혼란 완화');
  assert.equal(F.clean('개인 신용 평가','Personal credit checks'),'개인 신용 평가');
+ assert.equal(F.clean('프라이빗 크레딧 펀드 상환이 쉬워짐','Private credit fund sees redemptions ease'),'사모대출 펀드 환매 요청 감소');
+});
+
+test('backup preserves the meaning of mulls as considers, without changing the original headline',async()=>{
+ const F=require('../lib/news-translation-fallback'),source='Ingenia mulls an improved buyout offer';
+ const title=await F.translateText(source,{fetcher:async url=>{assert.equal(new URL(url).searchParams.get('q'),'Ingenia considers an improved buyout offer');return {ok:true,json:async()=>({responseStatus:200,responseData:{translatedText:'인제니아, 상향 인수 제안 검토'}})};}});
+ assert.equal(title,'인제니아, 상향 인수 제안 검토');
 });
 
 test('stale failures are reclaimed in bulk and recovered; fresh leases are not duplicated',async()=>{
