@@ -386,14 +386,6 @@ module.exports = async (req, res) => {
   try {
     const days = Math.min(Math.max(parseInt(req.query.days || '7', 10), 1), 14);
     const mode = String(req.query.mode || 'signals').toLowerCase();
-    if (mode === 'insight-numbers') {
-      res.setHeader('Cache-Control', 'private, no-store');
-      if (req.method !== 'POST') return res.status(405).json({ok:false,error:'method_not_allowed'});
-      let input=req.body;
-      if(typeof input==='string'){try{input=JSON.parse(input);}catch{return res.status(400).json({ok:false,error:'invalid_sources'});}}
-      if(!input||!Array.isArray(input.sources)||!input.sources.length||input.sources.length>60||JSON.stringify(input).length>50000||input.sources.some(s=>!s||typeof s.url!=='string'||s.url.length>2000||typeof s.title!=='string'||s.title.length>500))return res.status(400).json({ok:false,error:'invalid_sources'});
-      return res.status(200).json(await require('../lib/insight-numbers').cached({sources:input.sources.map(s=>({url:s.url,title:s.title,signature:String(s.signature||'').slice(0,100)}))}));
-    }
     if (mode === 'research') {
       res.setHeader('Cache-Control', 'private, no-store');
       if (req.method && req.method !== 'GET') return res.status(405).json({ok:false,error:'method_not_allowed'});

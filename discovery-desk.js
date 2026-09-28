@@ -91,53 +91,11 @@ function scoreDetails(x){
 function recommendationCard(x){
  return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card discovery-proposal"><div class="discovery-meta"><span>${esc(x.type_label||'기사 추천')}</span><span>${esc(categories[x.category]||'IB')}</span><time>${esc(C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3>${discoveryBrief(x)}<div class="pitch-basis"><b>추천 근거</b>${pitchEvidence(x,3)}</div>${x.retained_at?'<p class="discovery-note">이전 추천 · '+esc(new Date(x.retained_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' 기준</p>':''}<div class="discovery-actions"><button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button></div><details data-detail="${esc(x.clue_id)}"><summary>추천 기준 · ${esc(x.score)}점</summary><div class="discovery-detail">${scoreDetails(x)}</div></details></article>`;
 }
-const NUMBER_KEY='ib_insight_numbers_v1';
-let numberCache=stored(NUMBER_KEY,{}),numberPending=new Set(),numberErrors=new Map(),numberSaveFailed=false;
-if(!numberCache||typeof numberCache!=='object'||Array.isArray(numberCache))numberCache={};
-function numberInput(x){
- const seen=new Set();return [...(x.sources||[]),...(x.previous_sources||[])].filter(s=>{const u=C.safeUrl(s.url);if(!u||seen.has(u))return false;seen.add(u);return true;}).slice(0,60).map(s=>({url:s.url,title:String(s.title||s.label||'자료').slice(0,500),signature:s.signature||''}));
-}
-function numberSignature(x){return JSON.stringify(numberInput(x));}
-function numberValue(v,unit){return Number(v).toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit;}
-function numericalPanel(x){
- const pending=numberPending.has(x.clue_id),saved=numberCache[x.clue_id],value=saved?.value,stale=saved&&saved.signature!==numberSignature(x);
- const error=numberErrors.get(x.clue_id),label=pending?'원문에서 수치 추출 중…':stale?'새 자료로 수치 분석':value?'수치 다시 분석':'수치 추출·비교';
- const button=`<button data-insight-numbers="${esc(x.clue_id)}" ${pending?'disabled':''}>${label}</button>`;
- let body='';
- if(value){
-  const coverage=value.coverage||{};
-  body+=`<p class="discovery-note">분석 ${esc(formatTime(value.as_of))} · 연결 자료 ${coverage.total||0}건 중 ${coverage.selected||0}건 검토 · 본문 확보 ${coverage.read||0}건${coverage.total>coverage.selected?' · 최근 자료부터 최대 12건 분석':''}${stale?' · 새 자료가 추가돼 재분석 필요':''}</p>`;
-  if(value.rows?.length){
-   body+='<p class="discovery-note">원문 자동 추출 · 검수 전. 중복 보도는 한 항목으로 묶으며, 전체 시장의 통계가 아닙니다.</p>';
-   if(value.comparisons?.length){body+='<h4>수치로 확인한 변화</h4><ul>'+value.comparisons.map(c=>'<li>'+esc(c.subject+' · '+c.scope+' · '+c.metric+' ('+c.state+')')+'<br>'+esc(c.before_period+'년 '+numberValue(c.before,c.unit)+' → '+c.after_period+'년 '+numberValue(c.after,c.unit))+'<br><strong>'+esc((c.delta>0?'+':'')+numberValue(c.delta,c.unit==='%'?'%p':c.unit)+(c.percent!==null?' / '+(c.percent>0?'+':'')+c.percent+'%':''))+'</strong></li>').join('')+'</ul>';}
-   else body+='<p>추출한 수치는 아래에 정리했습니다. 같은 사업·기준의 전년도 수치가 없어 증감률은 계산하지 않았습니다.</p>';
-   body+='<div class="insight-number-table"><table><caption>원문에서 추출한 수치</caption><thead><tr><th>기관·대상</th><th>항목·기준</th><th>연도·상태</th><th>수치</th><th>근거</th></tr></thead><tbody>'+value.rows.map(r=>'<tr><td>'+esc(r.subject)+'<br>'+esc(r.scope)+'</td><td>'+esc(r.metric)+'<br>'+esc(r.basis)+'</td><td>'+esc(r.period||'연도 미확인')+'<br>'+esc(r.state)+'</td><td>'+esc(r.value_text)+(r.conflict?'<br><b>수치 충돌 · 비교 제외</b>':'')+'</td><td><details><summary>원문 '+r.sources.length+'건</summary>'+r.sources.map(s=>'<p>'+esc(s.quote)+'</p><small>'+esc(s.location)+'</small>'+links([{url:s.url,label:s.title||'원문'}])).join('')+'</details></td></tr>').join('')+'</tbody></table></div>';
-  }else body+='<p>'+esc(value.error==='model_key_unconfigured'?'AI 분석 연결이 설정되지 않았습니다.':value.error==='insufficient_sources'?'연결된 자료의 본문을 확보하지 못했습니다.':value.status==='unavailable'?'이번 수치 분석을 완료하지 못했습니다. 다시 시도해 주세요.':'확보한 본문에서 단위와 근거가 명확한 수치를 찾지 못했습니다.')+'</p>';
- }
- if(error)body+='<p role="status">'+esc(error)+'</p>';
- if(numberSaveFailed)body+='<p>저장공간이 부족해 분석 결과를 이 기기에 보관하지 못했습니다.</p>';
- return '<section class="insight-numbers" aria-label="수치 분석"><div class="discovery-actions">'+button+'</div>'+body+'</section>';
-}
-async function analyzeNumbers(x){
- if(!x||numberPending.has(x.clue_id))return;
- if(numberPending.size>=2){numberErrors.set(x.clue_id,'진행 중인 수치 분석이 끝난 뒤 다시 눌러주세요.');render({accept:true});return;}
- const signature=numberSignature(x);numberPending.add(x.clue_id);numberErrors.delete(x.clue_id);render({accept:true});
- try{
-  const response=await fetch('/api/signals?mode=insight-numbers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sources:numberInput(x)}),signal:AbortSignal.timeout(65000)});
-  if(!response.ok)throw Error('request_failed');const value=await response.json();if(!value.ok)throw Error('analysis_failed');
-  if(value.status==='unavailable')throw Error(value.error||'analysis_failed');
-  numberCache[x.clue_id]={signature,value};
-  numberCache=Object.fromEntries(Object.entries(numberCache).sort((a,b)=>String(b[1]?.value?.as_of).localeCompare(String(a[1]?.value?.as_of))).slice(0,20));
-  try{localStorage.setItem(NUMBER_KEY,JSON.stringify(numberCache));numberSaveFailed=false;}catch{numberSaveFailed=true;}
- }catch(e){numberErrors.set(x.clue_id,e.message==='model_key_unconfigured'?'AI 분석 연결이 설정되지 않았습니다.':e.message==='research_busy'?'다른 수치 분석이 진행 중입니다. 잠시 뒤 다시 눌러주세요.':'수치 분석을 완료하지 못했습니다. 다시 시도해 주세요.');}
- finally{numberPending.delete(x.clue_id);render({accept:true});}
-}
-
 function accumulatedCard(x){
  const sourceList=rows=>(rows||[]).length?'<ul class="pitch-evidence">'+rows.map(r=>'<li>'+esc(r.title||r.label||'관련 자료')+links([{url:r.url,label:[r.label,r.date?C.date(r.date):'',r.read_level==='title'?'제목 확인':r.read_level==='summary'?'제목·요약 확인':r.read_level==='body'?'본문 확인':'확인 범위 미표시'].filter(Boolean).join(' · ')}])+'</li>').join('')+'</ul>':'';
  const merged=[...(x.new_sources||[]),...(x.revised_sources||[]),...(x.sources||[]),...(x.previous_sources||[])];
  const seen=new Set(),related=merged.filter(r=>{const k=C.safeUrl(r?.url)||String(r?.title||'');if(!k||seen.has(k))return false;seen.add(k);return true;}).slice(0,12);
- return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card discovery-reference"><div class="discovery-meta"><span>${esc(x.detector_label||'누적자료 비교')}</span><time>최근 자료 ${esc(C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3>${patternSummary(x)}${numericalPanel(x)}${x.article_pitch?'<p class="pitch-now"><b>취재할 기사</b> '+esc(x.article_pitch)+'</p>':''}${x.questions?.length?'<h4>취재 질문</h4>'+list(x.questions):''}<details data-detail="${esc(x.clue_id)}"><summary>연결된 자료 ${related.length}건</summary><div class="discovery-detail">${sourceList(related)}</div></details></article>`;
+ return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card discovery-reference"><div class="discovery-meta"><span>${esc(x.detector_label||'누적자료 비교')}</span><time>최근 자료 ${esc(C.date(x.sort_date))}</time></div><h3>${esc(x.headline)}</h3>${patternSummary(x)}${x.article_pitch?'<p class="pitch-now"><b>취재할 기사</b> '+esc(x.article_pitch)+'</p>':''}${x.questions?.length?'<h4>취재 질문</h4>'+list(x.questions):''}<details data-detail="${esc(x.clue_id)}"><summary>연결된 자료 ${related.length}건</summary><div class="discovery-detail">${sourceList(related)}</div></details></article>`;
 }
 function card(x){
  if(x.detector==='recommendation')return recommendationCard(x);
@@ -311,8 +269,6 @@ $('#discoveryRetry').onclick=()=>load();$('#discoveryReadMore').onclick=()=>read
 $('#discoveryUpdates').onclick=()=>render({accept:true});
 $('#discoveryMore').onclick=()=>{expanded=true;render({accept:true});};$('#discoverySearch').oninput=e=>{query=e.target.value.trim().toLowerCase();render({accept:true});};
 root.addEventListener('click',e=>{
- const numbers=e.target.closest('[data-insight-numbers]');if(numbers){analyzeNumbers(data.find(x=>x.clue_id===numbers.dataset.insightNumbers));return;}
-
  const filter=e.target.closest('[data-pitch-category]');if(filter){category=filter.dataset.pitchCategory;expanded=false;render({accept:true});return;}
  const recommendation=e.target.closest('[data-recommendation-open]');if(recommendation){openRecommendation(data.find(x=>x.clue_id===recommendation.dataset.recommendationOpen),recommendation);return;}
  const jump=e.target.closest('[data-discovery-jump]');if(jump){
