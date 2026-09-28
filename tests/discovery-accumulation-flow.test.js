@@ -35,7 +35,7 @@ function harness({archived=[archiveArticle],news=[freshArticle],canonical=[basel
   const value=JSON.parse(storage.get('ib_accumulated_patterns_v1')||'null');
   return value?.snapshot?{key:'ib_accumulated_patterns_v1',value:value.snapshot,items:value.items,stats:value.stats}:null;
  };
- return {node,storage,accumulationCalls,context,settle,background,cardHtml,patternSnapshot,setNews:value=>currentNews=value,setCanonical:value=>currentCanonical=value,setNow:value=>now=value,refresh:async()=>{await node('#refresh').onclick();await settle();}};
+ return {node,storage,accumulationCalls,context,settle,background,save,saved,patternSnapshot,setNews:value=>currentNews=value,setCanonical:value=>currentCanonical=value,setNow:value=>now=value,refresh:async()=>{await node('#refresh').onclick();await settle();}};
 }
 
 test('background accumulation combines locally archived and newly collected news, retaining exact source URLs',async()=>{
@@ -57,17 +57,25 @@ test('background accumulation combines locally archived and newly collected news
 test('recalculating accumulated news leaves the supplied canonical analysis and baseline date intact',async()=>{
  const original=JSON.parse(JSON.stringify(baseline));
  const h=harness();await h.settle();h.background();
- assert.ok(h.cardHtml().includes(baseline.one_line_signal));
- assert.ok(h.cardHtml().includes('2026-07-29'));
+ const before=h.save(baseline.clue_id);
+ assert.ok(before,'canonical background card remains selectable');
+ assert.equal(before.sort_date,baseline.sort_date);
+ assert.equal(before.one_line_signal,baseline.one_line_signal);
+ assert.deepEqual(before.sources,baseline.sources);
  h.setNow(START+5*60000);h.setNews([freshArticle,addedArticle]);await h.refresh();
- assert.ok(h.cardHtml().includes(baseline.one_line_signal));
- assert.ok(h.cardHtml().includes('2026-07-29'));
+ const after=h.save(baseline.clue_id);
+ assert.equal(after.sort_date,baseline.sort_date);
+ assert.equal(after.one_line_signal,baseline.one_line_signal);
+ assert.deepEqual(after.sources,baseline.sources);
  assert.deepEqual(baseline,original,'original API analysis must not be mutated');
+ assert.ok(h.node('#discoveryCards').innerHTML.includes('2026-07-29'));
  const archive=JSON.parse(h.storage.get('ib_pitch_sources_v1'));
  assert.deepEqual(archive.canonical.find(item=>item.clue_id===baseline.clue_id).sources,baseline.sources);
  const reopened=harness({storage:h.storage,archived:[],news:[],canonical:[]});await reopened.settle();reopened.background();
- assert.ok(reopened.cardHtml().includes(baseline.one_line_signal),'saved canonical analysis remains available when absent from the next server response');
- assert.ok(reopened.cardHtml().includes('2026-07-29'));
+ const retained=reopened.save(baseline.clue_id);
+ assert.ok(retained,'saved canonical analysis remains available when absent from the next server response');
+ assert.equal(retained.sort_date,baseline.sort_date);
+ assert.deepEqual(retained.sources,baseline.sources);
 });
 
 test('a newly collected case updates the existing accumulated feature, and identical later polls preserve changed_at',async()=>{
