@@ -127,3 +127,5 @@
 #discoveryDesk .pitch-score-grid{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 #discoveryDesk .pitch-score-grid span{border:1px solid #e3e5e7;border-radius:6px;padding:5px 8px;font-size:12px}
 #discoveryDesk .pitch-score-grid b{margin-left:5px;color:#96315d}
+
+.insight-numbers{border-top:1px solid #dce2eb;margin-top:16px;padding-top:12px}.insight-numbers h4{margin:14px 0 8px}.insight-number-table{overflow-x:auto;margin:12px 0}.insight-number-table table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;text-align:left}.insight-number-table caption{text-align:left;font-weight:700;padding:8px 0}.insight-number-table th,.insight-number-table td{padding:10px;border-bottom:1px solid #dce2eb;vertical-align:top;min-width:100px}.insight-number-table th{background:#f3f6fa;color:#243753}.insight-number-table td:last-child{min-width:180px;max-width:320px}.insight-number-table a{display:block;overflow-wrap:anywhere}.insight-number-table summary{cursor:pointer}.insight-number-table p{margin:8px 0}.insight-number-table small{display:block;color:#58677c}
