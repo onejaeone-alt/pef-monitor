@@ -175,7 +175,8 @@ function init(){
   document.addEventListener('click',event=>{const a=event.target.closest('a[href^="#dd-e-"]');if(!a)return;const target=document.getElementById(a.hash.slice(1));if(!target)return;event.preventDefault();for(let p=target.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;target.scrollIntoView({block:'center'});});
   if(!$('#dartDesk')){let pending=false;const observer=new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;attachProjects();});});observer.observe(document.body,{childList:true,subtree:true});attachProjects();return;}
 
-  let items=[],reviews=readReviews(),days=3,query='',group='ALL',feed=DEFAULT_FEED,shown=60,sequence=0,controller,autoSequence=0;
+  let items=[],reviews=readReviews(),days=3,query='',group='ALL',feed=DEFAULT_FEED,shown=60,sequence=0,controller,autoSequence=0,activeLoad=null,renderTimer=null,searchTimer;
+  const publicFeeds=globalThis.IBPublicFeedCache?.create();
   const open=new Set(),loading=new Set(),failed=new Map(),message=t=>{$('#deskMessage').textContent=t;};
   const validReview=n=>reviews[n]?.rcept_no===n&&isCurrentReview(reviews[n]);
   const getItem=n=>items.find(x=>x.rcept_no===n);
@@ -226,8 +227,9 @@ function init(){
     $('#more').hidden=all.length<=shown;
     document.querySelectorAll('[data-feed]').forEach(b=>{const on=b.dataset.feed===feed;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
   }
+  function scheduleRender(){if(!renderTimer)renderTimer=setTimeout(()=>{renderTimer=null;render();},80);}
   async function readReceipt(n){
-    if(!receipt(n)||loading.has(n))return;loading.add(n);failed.delete(n);render();
+    if(!receipt(n)||loading.has(n))return;const period=sequence;loading.add(n);failed.delete(n);scheduleRender();
     try{
       const response=await fetch('/api/dart-feed?action=review&rcept_no='+n,{cache:'no-store',signal:AbortSignal.timeout(25000)}),data=await response.json();
       if(!response.ok||!data.ok)throw Error(data.error||'원문을 읽지 못했습니다.');
@@ -235,13 +237,14 @@ function init(){
       const saved=readReviews();reviews={...reviews,...saved,[n]:data};
       try{localStorage.setItem(STORE,JSON.stringify({...saved,[n]:data}));}catch(_){message('저장공간이 부족합니다. 공시 근거 복사로 보관해주세요. 기존 기록은 지우지 않았습니다.');}
     }catch(e){failed.set(n,e.name==='TimeoutError'?'원문 응답이 늦습니다. DART 원문을 열거나 다시 읽어주세요.':String(e.message||e));}
-    finally{loading.delete(n);render();}
+    finally{loading.delete(n);if(period===sequence)scheduleRender();}
   }
-  async function readVisibleSources(){
+  async function readVisibleSources({limit=20,visibleOnly=false}={}){
     const token=++autoSequence,period=sequence;
-    const candidates=items.filter(x=>!validReview(x.rcept_no)&&!failed.has(x.rcept_no))
+    const pool=visibleOnly?filteredItems(items,{query,group,feed,reviews}).slice(0,shown):items;
+    const candidates=pool.filter(x=>!validReview(x.rcept_no)&&!failed.has(x.rcept_no))
       .sort((a,b)=>Number(Boolean(priorityReason(b)))-Number(Boolean(priorityReason(a))));
-    const queue=candidates.slice(0,20);let cursor=0,done=0;
+    const queue=candidates.slice(0,limit);let cursor=0,done=0;
     $('#readMoreSources').disabled=true;
     async function worker(){while(cursor<queue.length&&token===autoSequence&&period===sequence){
       const item=queue[cursor++];await readReceipt(item.rcept_no);done++;
@@ -254,24 +257,38 @@ function init(){
     $('#sourceProgress').textContent=`원문 추출 ${items.filter(x=>validReview(x.rcept_no)).length}건${failedCount?' · 추출 실패 '+failedCount+'건':''}${remaining?' · 대기 '+remaining+'건':''}`;
     $('#readMoreSources').hidden=!remaining;$('#readMoreSources').disabled=false;
   }
-  async function load(fresh=false){
+  function acceptList(data,requestedDays){
+    const seen=new Set();items=(Array.isArray(data.items)?data.items:[]).filter(x=>receipt(x?.rcept_no)&&!seen.has(x.rcept_no)&&seen.add(x.rcept_no));shown=60;const c=data.coverage||{};
+    $('#coverage').textContent=`${data.range?.bgn||''}~${data.range?.end||''} · 관련 공시 ${data.matched??items.length}건${c.complete===false?' · 일부 페이지 미수집':''}${c.display_limited?' · 표시 한도 적용':''}`;
+    $('#coverage').classList.toggle('dd-warning',c.complete===false);$('#status').textContent=`${requestedDays}일 · ${items.length}건`;message(c.complete===false?'일부 DART 목록을 가져오지 못했습니다. 현재 표시된 범위만 확인하세요.':'');render();
+  }
+  function load(fresh=false){
+    const requestedDays=days,key='dart:'+requestedDays;
+    if(activeLoad?.key===key&&(!fresh||activeLoad.fresh))return activeLoad.promise;
+    const job={key,fresh};activeLoad=job;
+    job.promise=performLoad({fresh,requestedDays,key}).finally(()=>{if(activeLoad===job)activeLoad=null;});return job.promise;
+  }
+  async function performLoad({fresh,requestedDays,key}){
     if(fresh)failed.clear();
-    autoSequence++;controller?.abort();controller=new AbortController();const token=++sequence;$('#refresh').disabled=true;$('#status').textContent='DART 조회 중';$('#rawRows').setAttribute('aria-busy','true');
+    autoSequence++;controller?.abort();controller=new AbortController();const active=controller,token=++sequence;
+    const cached=!fresh&&publicFeeds?.get(key);if(cached)acceptList(cached,requestedDays);
+    $('#refresh').disabled=true;$('#status').textContent=cached?'이전 조회 표시 · 새 공시 확인 중':'DART 조회 중';$('#rawRows').setAttribute('aria-busy','true');
+    const timeout=setTimeout(()=>active.abort(),60000);
     try{
-      const response=await fetch(`/api/dart-feed?days=${days}&limit=700${fresh?'&fresh=1':''}&_=${Date.now()}`,{signal:controller.signal,cache:'no-store'}),data=await response.json();
-      if(!response.ok||!data.ok)throw Error(data.error||'조회 실패');if(token!==sequence)return;
-      const seen=new Set();items=(Array.isArray(data.items)?data.items:[]).filter(x=>receipt(x?.rcept_no)&&!seen.has(x.rcept_no)&&seen.add(x.rcept_no));shown=60;const c=data.coverage||{};
-      $('#coverage').textContent=`${data.range?.bgn||''}~${data.range?.end||''} · 관련 공시 ${data.matched??items.length}건${c.complete===false?' · 일부 페이지 미수집':''}${c.display_limited?' · 표시 한도 적용':''}`;
-      $('#coverage').classList.toggle('dd-warning',c.complete===false);$('#status').textContent=`${days}일 · ${items.length}건`;message(c.complete===false?'일부 DART 목록을 가져오지 못했습니다. 현재 표시된 범위만 확인하세요.':'');render();readVisibleSources();
-    }catch(e){if(token!==sequence)return;message(e.name==='AbortError'?'조회가 중단됐습니다. 다시 새로고침해주세요.':String(e.message||e));if(!items.length)$('#rawRows').innerHTML='<tr><td colspan="4" class="dd-no-rows">DART 공시를 불러오지 못했습니다.</td></tr>';}
-    finally{if(token===sequence){$('#refresh').disabled=false;$('#rawRows').setAttribute('aria-busy','false');}}
+      const url=`/api/dart-feed?days=${requestedDays}&limit=700${fresh?'&fresh=1&_='+Date.now():''}`;
+      const retrieve=async signal=>{const response=await fetch(url,{signal,cache:fresh?'no-store':'default'}),data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'조회 실패');return data;};
+      const data=await (publicFeeds?publicFeeds.request(key,retrieve,{fresh,signal:active.signal}):retrieve(active.signal));if(token!==sequence)return;
+      acceptList(data,requestedDays);readVisibleSources({limit:6,visibleOnly:true});
+    }catch(e){if(token!==sequence)return;message(e.name==='AbortError'?'공시 응답이 늦습니다. 이전 목록을 유지합니다. 잠시 뒤 다시 확인해주세요.':String(e.message||e));if(!items.length)$('#rawRows').innerHTML='<tr><td colspan="4" class="dd-no-rows">DART 공시를 불러오지 못했습니다.</td></tr>';}
+    finally{clearTimeout(timeout);if(token===sequence){$('#refresh').disabled=false;$('#rawRows').setAttribute('aria-busy','false');}}
   }
 
   $('#readMoreSources').addEventListener('click',readVisibleSources);
   $('#refresh').addEventListener('click',()=>load(true));
-  $('#search').addEventListener('input',e=>{query=e.target.value;shown=60;render();});
+  function scheduleSearch(e){query=e.target.value;shown=60;clearTimeout(searchTimer);if(!e.isComposing)searchTimer=setTimeout(render,150);}
+  $('#search').addEventListener('input',scheduleSearch);$('#search').addEventListener('compositionend',scheduleSearch);
   document.querySelectorAll('[data-category]').forEach(b=>b.addEventListener('click',()=>{group=b.dataset.category;shown=60;render();}));
-  document.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{days=Number(b.dataset.days)||3;document.querySelectorAll('[data-days]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',String(on));});load(true);}));
+  document.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{days=Number(b.dataset.days)||3;document.querySelectorAll('[data-days]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',String(on));});load();}));
   document.querySelectorAll('[data-feed]').forEach(b=>b.addEventListener('click',()=>{feed=b.dataset.feed;shown=60;render();}));
   $('#more').addEventListener('click',()=>{shown+=60;render();});
   $('#rawRows').addEventListener('click',async e=>{

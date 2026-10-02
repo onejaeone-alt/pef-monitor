@@ -13,7 +13,30 @@ if(!archive||typeof archive!=='object'||Array.isArray(archive))archive={};
 let patternSaved=stored(PATTERN_KEY,null),patternSnapshot=patternSaved?.snapshot||{},accumulatedResult=patternSaved&&Array.isArray(patternSaved.items)?patternSaved:null,archiveSaveFailed=false,patternSaveFailed=false;
 const categories={all:'전체',lp:'LP 출자',pef:'PEF·GP',ma:'M&A',finance:'인수금융·조달',vc:'VC',policy:'정책·일정'};
 const isPitch=x=>x.detector==='recommendation'||x.research?.status==='ready'&&x.article_brief?.angles?.length;
-function mergeMaterial(oldRows,newRows){
+// Source changes invalidate analysis; display-only controls reuse the same results.
+const DAY_MS=86400000;
+let materialRevision=0,modelRevision=0,researchRevision=0,inputCache=null,engineCache=null,connectedCache=null,modelCache=null,accumulatedInputCache=null,lastSavedInput=null;
+function invalidateModel(){modelRevision++;}
+function invalidateMaterial(){materialRevision++;invalidateModel();}
+function invalidateResearch(){researchRevision++;invalidateModel();}
+function assignMaterial(key,value){
+ if(JSON.stringify(state[key])===JSON.stringify(value))return;
+ state[key]=value;invalidateMaterial();
+}
+function replaceReviews(value){
+ if(JSON.stringify(reviews)===JSON.stringify(value))return;
+ reviews=value;invalidateMaterial();
+}
+function materialExpiry(now){
+ // Ranking uses Korean calendar days; archive/source matching also has exact timestamp limits.
+ let until=(Math.floor((now+9*3600000)/DAY_MS)+1)*DAY_MS-9*3600000;
+ for(const key of ['news','foreign','official'])for(const row of [...(Array.isArray(archive[key])?archive[key]:[]),...(Array.isArray(state[key])?state[key]:[])]){
+  const at=Date.parse(row.published_at||row.date);
+  for(const boundary of [at,at+90*DAY_MS+1])if(boundary>now)until=Math.min(until,boundary);
+ }
+ return until;
+}
+function mergeMaterial(oldRows,newRows,now=Date.now()){
  const merged=new Map();
  for(const row of [...(Array.isArray(oldRows)?oldRows:[]),...(Array.isArray(newRows)?newRows:[])]){
   if(!row||!C.safeUrl(row.source_url||row.url))continue;
@@ -21,19 +44,29 @@ function mergeMaterial(oldRows,newRows){
   for(const field of ['summary','snippet','description','body_text','content_text'])if(!next[field]&&old[field])next[field]=old[field];
   merged.set(key,next);
  }
- return [...merged.values()].filter(x=>Date.parse(x.published_at||x.date)>=Date.now()-90*86400000).sort((a,b)=>String(b.published_at||b.date).localeCompare(String(a.published_at||a.date))).slice(0,1200);
+ return [...merged.values()].filter(x=>Date.parse(x.published_at||x.date)>=now-90*86400000).sort((a,b)=>String(b.published_at||b.date).localeCompare(String(a.published_at||a.date))).slice(0,1200);
 }
 function rememberSources(key,rows){
- if(key==='canonical')archive.canonical=[...new Map([...(Array.isArray(archive.canonical)?archive.canonical:[]),...(Array.isArray(rows)?rows:[])].filter(x=>x?.clue_id&&x.sources?.some(s=>C.safeUrl(s.url))).map(x=>[x.clue_id,x])).values()].sort((a,b)=>String(b.sort_date).localeCompare(String(a.sort_date))).slice(0,200);
- else if(['news','foreign','official'].includes(key))archive[key]=mergeMaterial(archive[key],rows);
+ let next;
+ if(key==='canonical')next=[...new Map([...(Array.isArray(archive.canonical)?archive.canonical:[]),...(Array.isArray(rows)?rows:[])].filter(x=>x?.clue_id&&x.sources?.some(s=>C.safeUrl(s.url))).map(x=>[x.clue_id,x])).values()].sort((a,b)=>String(b.sort_date).localeCompare(String(a.sort_date))).slice(0,200);
+ else if(['news','foreign','official'].includes(key))next=mergeMaterial(archive[key],rows);
  else return;
+ if(JSON.stringify(archive[key])===JSON.stringify(next)&&!archiveSaveFailed)return;
+ archive[key]=next;invalidateMaterial();
  try{localStorage.setItem(ARCHIVE_KEY,JSON.stringify(archive));archiveSaveFailed=false;}catch{archiveSaveFailed=true;}
 }
-function recommendationInput(){return {...state,reviews,canonical:[...new Map([...(Array.isArray(archive.canonical)?archive.canonical:[]),...(state.canonical||[])].map(x=>[x.clue_id,x])).values()],...Object.fromEntries(['news','foreign','official'].map(k=>[k,mergeMaterial(archive[k],state[k])]))};}
+function recommendationInput(now=Date.now()){
+ if(inputCache&&inputCache.revision===materialRevision&&now>=inputCache.at&&now<inputCache.until)return inputCache.value;
+ const value={...state,reviews,canonical:[...new Map([...(Array.isArray(archive.canonical)?archive.canonical:[]),...(state.canonical||[])].map(x=>[x.clue_id,x])).values()],...Object.fromEntries(['news','foreign','official'].map(k=>[k,mergeMaterial(archive[k],state[k],now)]))};
+ inputCache={revision:materialRevision,at:now,until:materialExpiry(now),value};
+ return value;
+}
 function refreshAccumulated(){
  if(!P?.accumulate||!R)return;
- accumulatedResult=P.accumulate(recommendationInput(),{engine:R,previous:patternSnapshot,now:Date.now()});
- patternSnapshot=accumulatedResult.snapshot;
+ const input=recommendationInput();
+ if(accumulatedInputCache===input)return;
+ accumulatedResult=P.accumulate(input,{engine:R,previous:patternSnapshot,now:Date.now()});
+ accumulatedInputCache=input;patternSnapshot=accumulatedResult.snapshot;invalidateModel();
  try{localStorage.setItem(PATTERN_KEY,JSON.stringify(accumulatedResult));patternSaveFailed=false;}catch{patternSaveFailed=true;}
 }
 const formatTime=v=>Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
@@ -106,22 +139,44 @@ function card(x){
  const evidence=(x.evidence||[]).map(f=>`${f.label}: ${f.before!==undefined?f.before+' → '+f.after:f.value+(f.unit?' '+f.unit:'')} · ${f.source?.location||'원문 위치 확인'}`);
  return `<article data-discovery-card="${esc(x.clue_id)}" tabindex="-1" class="discovery-card ${pitch?'discovery-proposal':'discovery-reference'}"><div class="discovery-meta"><span>${pitch?'추천 기사':'참고자료'}</span><span>${esc(pitch?x.headline:x.detector_label)}</span><time>${esc(x.event_date?'예정 '+x.event_date:'자료 '+C.date(x.sort_date))}</time></div><h3>${esc(heading)}</h3>${pitch?'<p class="discovery-fact">'+esc(x.one_line_signal||x.changed_fact)+'</p>':''}${research}${pitch?'':patternSummary(x)}<div class="discovery-actions">${pitch?`<button class="recommendation-open" data-recommendation-open="${esc(x.clue_id)}">추천기사 열기</button>`:''}${!pitch&&B?.requestFor(x)?`<button class="discovery-research-button" data-discovery-research="${esc(x.clue_id)}" ${researchPending.has(B.requestFor(x).key)?'disabled':''}>${researchPending.has(B.requestFor(x).key)?'원문 비교 중…':x.research?'원문 다시 비교':'원문 비교'}</button>`:''}${links((x.sources||[]).slice(0,2))}</div><details data-detail="${esc(x.clue_id)}"><summary>근거 보기</summary><div class="discovery-detail">${researchDetails}${x.pattern_ref?'<h4>기존 분석의 비교 자료</h4>'+links(x.pattern_ref.sources):''}${x.extracted_facts?.length?'<h4>원문 자동 추출 · 검수 전</h4>'+list(x.extracted_facts):''}${x.confirmed_facts?.length?'<h4>기존 분석의 확인 내용 · 자료 기준일 확인</h4>'+list(x.confirmed_facts):''}${x.reported?.length?'<h4>보도된 내용</h4>'+list(x.reported):''}${x.original_title?'<p>'+esc(x.original_title)+'</p>':''}${evidence.length?'<h4>원문 위치</h4>'+list(evidence):''}${x.previous_state?'<h4>비교 기준</h4><p>'+esc(x.previous_state)+'</p>':''}${x.background_relationships?.length?'<h4>기존 투자·사업 관계 · 이번 거래 참여 여부 미확인</h4>'+list(x.background_relationships.map(r=>r.investor+' · '+r.as_of))+links(x.background_relationships.map(r=>({label:r.investor+' 관계 출처',url:r.url}))):''}${x.related_sources?.length?'<h4>같은 기업·기관의 다른 보도 · 동일 사건 여부 미확인</h4>'+links(x.related_sources.map(s=>({...s,label:s.title}))):''}<h4>모든 출처</h4>${links(x.sources)}</div></details></article>`;
 }
-function render({accept=false}={}){
- const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
- const accumulatedInput=recommendationInput();
- let next=C.build({...state,reviews,canonical:accumulatedInput.canonical}).map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>Date.now()?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
- if(P)next=P.connect(next,accumulatedInput);
+function engineData(input,now){
+ if(engineCache?.input===input)return engineCache;
+ engineCache={input,clues:C.build({...state,reviews,canonical:input.canonical},now),pitches:R?R.build(input,{limit:12,now}):[]};
+ return engineCache;
+}
+function connectedData(input,now,until){
+ if(connectedCache?.input===input&&connectedCache.revision===researchRevision&&now>=connectedCache.at&&now<connectedCache.until)return connectedCache.rows;
+ let rows=engineData(input,now).clues.map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&r?B.attach(x,cached?.until>now?cached.value:researchPending.has(r.key)?{version:B.VERSION,status:'loading'}:null):x;}).filter(Boolean);
+ if(P)rows=P.connect(rows,input,now);
+ connectedCache={input,revision:researchRevision,at:now,until,rows};
+ return rows;
+}
+function recommendationData(){
+ const now=Date.now(),accumulatedInput=recommendationInput(now);
+ if(modelCache&&modelCache.revision===modelRevision&&modelCache.input===accumulatedInput&&now>=modelCache.at&&now<modelCache.until)return modelCache.rows;
+ // Re-check expired accumulated material even if no new network response has arrived.
+ if(!loading&&accumulatedInputCache!==accumulatedInput)refreshAccumulated();
+ let until=inputCache.until;
+ for(const cached of Object.values(researchCache))if(cached?.until>now)until=Math.min(until,cached.until);
+ if(lastPitches?.at+7*DAY_MS>now)until=Math.min(until,lastPitches.at+7*DAY_MS);
+ let next=connectedData(accumulatedInput,now,until);
  if(accumulatedResult?.items)next=[...accumulatedResult.items,...next];
  if(R){
-  let pitches=R.build(accumulatedInput,{limit:12});
+  let pitches=engineData(accumulatedInput,now).pitches;
   const failed=Object.values(status).some(s=>s.state==='failed');
   if(!pitches.length&&failed&&Array.isArray(lastPitches?.items)&&Date.now()-lastPitches.at<7*86400000)pitches=lastPitches.items.map(x=>({...x,retained_at:lastPitches.at}));
   else if(failed&&lastPitches){pitches=pitches.map(x=>lastPitches.items?.some(old=>old.clue_id===x.clue_id&&JSON.stringify(old.sources)===JSON.stringify(x.sources))?{...x,retained_at:lastPitches.at}:x);}
-  else if(pitches.length&&!Object.values(status).some(s=>s.state==='loading')){lastPitches={at:Date.now(),items:pitches};try{localStorage.setItem(LAST_KEY,JSON.stringify(lastPitches));}catch{}}
+  else if(pitches.length&&lastSavedInput!==accumulatedInput&&!Object.values(status).some(s=>s.state==='loading')){lastPitches={at:now,items:pitches};lastSavedInput=accumulatedInput;try{localStorage.setItem(LAST_KEY,JSON.stringify(lastPitches));}catch{}}
   const covered=new Set(pitches.flatMap(x=>x.sources.map(s=>s.url)));
   next=[...pitches.map(x=>{const r=B?.requestFor(x),cached=r&&researchCache[r.key];return B&&cached?.until>Date.now()?B.attach(x,cached.value):x;}),...next.filter(x=>!isPitch(x)||!x.sources?.some(s=>covered.has(s.url)))];
  }
- if(!accept&&!findingToday&&data.length&&readingCard()&&JSON.stringify(next)!==JSON.stringify(data))pendingData=next;
+ modelCache={revision:modelRevision,input:accumulatedInput,at:now,until,rows:next};
+ return next;
+}
+function render({accept=false}={}){
+ const open=new Set([...document.querySelectorAll('[data-detail][open]')].map(e=>e.dataset.detail));
+ const next=recommendationData();
+ if(!accept&&!findingToday&&data.length&&readingCard()&&next!==data&&JSON.stringify(next)!==JSON.stringify(data))pendingData=next;
  else {data=next;pendingData=null;}
  $('#discoveryUpdates').hidden=!pendingData;
  const counts={current:data.filter(x=>x.lane==='current').length,background:data.filter(x=>x.lane==='background').length};
@@ -155,7 +210,7 @@ async function json(url,signal){
  try{const r=await fetch(url,{signal:request.signal}),d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'조회 실패');return d;}
  finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
 }
-function saveReview(n,r){reviews[n]=r;try{const saved=stored(REVIEW_KEY,{});localStorage.setItem(REVIEW_KEY,JSON.stringify({...saved,[n]:r}));}catch(_){$('#discoveryMessage').textContent='원문 결과를 이 기기에 저장하지 못했습니다. 현재 화면에서는 확인할 수 있습니다.';}}
+function saveReview(n,r){if(JSON.stringify(reviews[n])===JSON.stringify(r))return;reviews[n]=r;invalidateMaterial();try{const saved=stored(REVIEW_KEY,{});localStorage.setItem(REVIEW_KEY,JSON.stringify({...saved,[n]:r}));}catch(_){$('#discoveryMessage').textContent='원문 결과를 이 기기에 저장하지 못했습니다. 현재 화면에서는 확인할 수 있습니다.';}}
 function readBatch(token){
  if(reading)return reviewJob;
  reviewJob=performReadBatch(token);return reviewJob;
@@ -169,7 +224,7 @@ async function performReadBatch(token){
  if(token===run){render();if(!loading)scheduleUpdate();}else if(!away())readBatch(run);
 }
 function load(options={}){
- if(loading)return;
+ if(loading)return loadJob;
  if(findingToday&&!options.today)return;
  loadJob=performLoad(options);return loadJob;
 }
@@ -177,29 +232,29 @@ async function performLoad({automatic=false,today=false}={}){
  if(loading){scheduleUpdate();return;}
  if(automatic&&away()){scheduleUpdate();return;}
  loading=true;lastStarted=Date.now();clearTimeout(updateTimer);
- const token=++run;controller?.abort();controller=new AbortController();status=Object.fromEntries(Object.keys(endpoints).map(k=>[k,{state:'loading'}]));failures=new Set();reviews={...stored(REVIEW_KEY,{}),...reviews};$('#discoveryMessage').textContent='';render();
+ const token=++run;controller?.abort();controller=new AbortController();status=Object.fromEntries(Object.keys(endpoints).map(k=>[k,{state:'loading'}]));failures=new Set();replaceReviews({...stored(REVIEW_KEY,{}),...reviews});invalidateModel();$('#discoveryMessage').textContent='';render();
  await Promise.allSettled(Object.entries(endpoints).map(async([key,[,url]])=>{
   try{const d=await json(url+(today&&key==='news'?'&refresh=1':''),controller.signal);if(token!==run)return;
-   if(key==='canonical'){state.canonical=d.items||[];state.official=d.source_signals||[];rememberSources('official',state.official);}
-   else state[key]=key==='calendar'?d.events||[]:d.items||[];
+   if(key==='canonical'){assignMaterial('canonical',d.items||[]);assignMaterial('official',d.source_signals||[]);rememberSources('official',state.official);}
+   else assignMaterial(key,key==='calendar'?d.events||[]:d.items||[]);
    rememberSources(key,state[key]||[]);
-   if(key==='news')state.newsIssues=d.issues||[];
+   if(key==='news')assignMaterial('newsIssues',d.issues||[]);
    const count=(state[key]||[]).length;const partial=d.coverage?.complete===false||d.collection_status?.partial||d.sources?.some(s=>!s.ok)||key==='canonical'&&Object.values(d.diagnostics?.providers?.official||{}).some(v=>!v);
    const capped=d.coverage?.display_limited||d.collection_status?.truncated,translationFailed=Number(d.translation?.failed)||0;
-   status[key]={state:partial||translationFailed?'partial':'ready',detail:count+'건 확인'+(partial?' · 일부 수집 실패':'')+(capped?' · 조회 상한 적용':'')+(translationFailed?' · 번역 미확보 '+translationFailed+'건':'')};render();
+   status[key]={state:partial||translationFailed?'partial':'ready',detail:count+'건 확인'+(partial?' · 일부 수집 실패':'')+(capped?' · 조회 상한 적용':'')+(translationFailed?' · 번역 미확보 '+translationFailed+'건':'')};invalidateModel();render();
    if(key==='dart')readBatch(token);
-  }catch(e){if(token!==run)return;status[key]={state:'failed'};if(state[key]?.length)$('#discoveryMessage').textContent='일부 수집원에 연결하지 못해 해당 항목은 이전 자료를 유지했습니다. 다음 자동 갱신 때 다시 확인합니다.';render();}
+  }catch(e){if(token!==run)return;status[key]={state:'failed'};invalidateModel();if(state[key]?.length)$('#discoveryMessage').textContent='일부 수집원에 연결하지 못해 해당 항목은 이전 자료를 유지했습니다. 다음 자동 갱신 때 다시 확인합니다.';render();}
  }));
  if(token===run&&!away())readBatch(token);
- if(token===run){loading=false;lastChecked=Date.now();refreshAccumulated();render({accept:!automatic});if(today&&!R){await readBatch(token);render({accept:true});await readResearch(token,null,6);}else{if(today)render({accept:true});scheduleUpdate();readResearch(token,null,today?5:3);}}
+ if(token===run){loading=false;lastChecked=Date.now();invalidateModel();refreshAccumulated();render({accept:!automatic});if(today&&!R){await readBatch(token);render({accept:true});await readResearch(token,null,6);}else{if(today)render({accept:true});scheduleUpdate();readResearch(token,null,today?5:3);}}
 }
 function readResearch(token,requested,limit=3){
- if(researching){if(requested){const r=B?.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);render();}}return researchJob;}
+ if(researching){if(requested){const r=B?.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);invalidateResearch();render();}}return researchJob;}
  researchJob=performReadResearch(token,requested,limit);return researchJob;
 }
 async function performReadResearch(token,requested,limit=3){
  if(!B||away())return;
- if(requested){const r=B.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);render();}}
+ if(requested){const r=B.requestFor(requested);if(r){researchRequests.set(r.key,r);researchPending.add(r.key);invalidateResearch();render();}}
  if(researching)return;
  researching=true;
  const queue=B.shortlist(data.filter(x=>x.lane==='current'),data.length).map(x=>B.requestFor(x)).filter(r=>r&&!(researchCache[r.key]?.until>Date.now())).filter((r,i,all)=>all.findIndex(t=>t.key===r.key)===i).slice(0,limit);
@@ -207,15 +262,15 @@ async function performReadResearch(token,requested,limit=3){
  try{while(queue.length||researchRequests.size){
   const request=researchRequests.size?researchRequests.values().next().value:queue.shift();researchRequests.delete(request.key);if(completed.has(request.key))continue;completed.add(request.key);
   if(token!==run||away())break;
-  researchPending.add(request.key);render();
+  researchPending.add(request.key);invalidateResearch();render();
   let value;
   try{value=await json(request.url,controller.signal);}catch{value={version:B.VERSION,status:'sources_only',error:'research_unavailable',sources:[]};}
-  researchPending.delete(request.key);if(token!==run)break;
+  researchPending.delete(request.key);invalidateResearch();if(token!==run)break;
   researchCache[request.key]={until:Date.now()+30*60000,value};
   const keep=Object.entries(researchCache).filter(([,v])=>v.until>Date.now()).sort((a,b)=>b[1].until-a[1].until).slice(0,15);researchCache=Object.fromEntries(keep);
   try{localStorage.setItem(RESEARCH_KEY,JSON.stringify(researchCache));}catch{}
   render();
- }}finally{researching=false;researchPending.clear();if(token===run){render();if(!findingToday)scheduleUpdate();}}
+ }}finally{researching=false;researchPending.clear();invalidateResearch();if(token===run){render();if(!findingToday)scheduleUpdate();}}
 }
 function syncTodayStatus(){
  const button=$('#findToday'),label=$('#todayPitchStatus');if(!button||!label)return;

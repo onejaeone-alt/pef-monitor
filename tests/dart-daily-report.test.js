@@ -42,6 +42,6 @@ test('화면은 회사·공시·달라진 것·이어볼 것 네 칸과 세 모�
  assert.match(h,/원문을 자동으로/);
  assert.equal((h.match(/data-feed=/g)||[]).length,3);assert.doesNotMatch(h,/기사감|기사점수|article score|가설|반증 조건/);
 });
-test('원문 자동 읽기는 한 번에 20건, 동시 두 건으로 제한한다',()=>{
- const s=fs.readFileSync('dart-desk.js','utf8');assert.equal((s.match(/action=review/g)||[]).length,1);assert.match(s,/data-toggle/);assert.match(s,/await readReceipt\(n\)/);assert.match(s,/candidates\.slice\(0,20\)/);assert.match(s,/Promise\.all\(\[worker\(\),worker\(\)\]\)/);
+test('원문 읽기는 공통 조회 경로를 사용하고 동시 두 건으로 제한한다',()=>{
+ const s=fs.readFileSync('dart-desk.js','utf8');assert.equal((s.match(/action=review/g)||[]).length,1);assert.match(s,/data-toggle/);assert.match(s,/await readReceipt\(n\)/);assert.match(s,/Promise\.all\(\[worker\(\),worker\(\)\]\)/);
 });

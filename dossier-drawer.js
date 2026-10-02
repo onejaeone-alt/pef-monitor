@@ -1,6 +1,10 @@
 (function () {
   const ENTITY = "/api/entity";
   const CACHE = new Map();
+  const PENDING = new Map();
+  const BASE_TTL_MS = 60 * 1000;
+  const ENRICHMENT_TTL_MS = 10 * 60 * 1000;
+  let drawerRequest = 0;
   const esc = (value) => String(value ?? "").replace(/[&<>"]/g, (character) => ({
     "&": "&amp;",
     "<": "&lt;",
@@ -91,6 +95,7 @@
   }
 
   function close() {
+    drawerRequest += 1;
     const backdrop = document.getElementById("newsDossierBackdrop");
     if (backdrop) backdrop.hidden = true;
     document.body.style.overflow = "";
@@ -98,27 +103,105 @@
 
   async function load(entityKey) {
     if (!entityKey) throw new Error("취재파일 대상이 없습니다.");
-    let data = CACHE.get(entityKey);
-    if (data) return data;
-    const response = await fetch(`${ENTITY}?entity_key=${encodeURIComponent(entityKey)}`);
-    data = await response.json();
+    const cached = CACHE.get(entityKey);
+    if (cached && Date.now() - cached.at < BASE_TTL_MS) return cached.data;
+    return sharedRequest(`base:${entityKey}`, async () => {
+      const data = await request(entityKey, "base");
+      const current = CACHE.get(entityKey);
+      const newsAt = current?.newsAt || 0;
+      const profileAt = current?.profileAt || 0;
+      if (newsAt && Date.now() - newsAt < ENRICHMENT_TTL_MS) {
+        data.related_news = mergeNews(data.related_news, current.data.related_news);
+        data.latest_news_ready = true;
+        data.latest_news_checked_at = current.data.latest_news_checked_at;
+        data.enrichment = { ...data.enrichment, news: "ready" };
+      }
+      if (profileAt && Date.now() - profileAt < ENRICHMENT_TTL_MS) {
+        data.nugu_money = current.data.nugu_money;
+        data.profile_ready = true;
+        data.enrichment = { ...data.enrichment, profile: "ready" };
+      }
+      remember(entityKey, { data, at: data.enrichment?.reporting_leads === "unavailable" ? 0 : Date.now(), newsAt, profileAt });
+      return data;
+    });
+  }
+
+  function remember(entityKey, entry) {
+    CACHE.delete(entityKey);
+    CACHE.set(entityKey, entry);
+    while (CACHE.size > 80) CACHE.delete(CACHE.keys().next().value);
+  }
+
+  function mergeNews(left, right) {
+    const seen = new Set();
+    return [...(left || []), ...(right || [])].filter((item) => {
+      const key = item.source_url || item.title;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => String(b.published_at || "").localeCompare(String(a.published_at || ""))).slice(0, 5);
+  }
+
+  function sharedRequest(key, work) {
+    if (PENDING.has(key)) return PENDING.get(key);
+    const task = Promise.resolve().then(work).finally(() => PENDING.delete(key));
+    PENDING.set(key, task);
+    return task;
+  }
+
+  async function request(entityKey, action) {
+    const response = await fetch(`${ENTITY}?action=${action}&entity_key=${encodeURIComponent(entityKey)}`);
+    const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "조회 실패");
-    CACHE.set(entityKey, data);
     return data;
   }
+
+  async function loadPart(entityKey, part) {
+    const base = await load(entityKey);
+    const field = part === "news" ? "newsAt" : "profileAt";
+    const cached = CACHE.get(entityKey);
+    if (cached?.[field] && Date.now() - cached[field] < ENRICHMENT_TTL_MS) return cached.data;
+    if (part === "profile" && base.enrichment?.profile === "not_applicable") return base;
+    return sharedRequest(`${part}:${entityKey}`, async () => {
+      const extra = await request(entityKey, part);
+      const current = CACHE.get(entityKey) || { data: base, at: 0 };
+      const ready = part === "news" ? extra.latest_news_ready : extra.profile_ready;
+      const data = { ...current.data, ...extra, enrichment: { ...current.data.enrichment, [part]: ready ? "ready" : "unavailable" } };
+      if (part === "news") data.related_news = mergeNews(extra.related_news, current.data.related_news);
+      remember(entityKey, { ...current, data, [field]: ready ? Date.now() : 0 });
+      return data;
+    });
+  }
+
+  const loadRelatedNews = (entityKey) => loadPart(entityKey, "news");
+  const loadProfile = (entityKey) => loadPart(entityKey, "profile");
 
   async function open(entityKey) {
     if (!entityKey) return;
     const backdrop = ensureDrawer();
     const content = document.getElementById("newsDossier");
+    const requestId = ++drawerRequest;
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
-    content.innerHTML = '<div class="empty">취재파일을 만드는 중…</div>';
+    content.innerHTML = '<div class="empty">취재파일을 불러오는 중…</div>';
     try {
       const data = await load(entityKey);
+      if (requestId !== drawerRequest) return;
       content.innerHTML = dossierHTML(data);
       backdrop.querySelector(".dossier-drawer").scrollTop = 0;
+      // Slow external sources update independently after the stored file is on
+      // screen. A late response cannot replace a subsequently selected file.
+      for (const loader of [loadRelatedNews, loadProfile]) {
+        loader(entityKey).then(() => {
+          if (requestId !== drawerRequest || backdrop.hidden) return;
+          const drawer = backdrop.querySelector(".dossier-drawer");
+          const scrollTop = drawer.scrollTop;
+          content.innerHTML = dossierHTML(CACHE.get(entityKey)?.data || data);
+          drawer.scrollTop = scrollTop;
+        }).catch(() => {});
+      }
     } catch (error) {
+      if (requestId !== drawerRequest) return;
       content.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     }
   }
@@ -141,5 +224,5 @@
     if (event.key === "Escape") close();
   });
 
-  window.DossierDrawer = { chips, close, load, open };
+  window.DossierDrawer = { chips, close, load, loadRelatedNews, loadProfile, open };
 })();
