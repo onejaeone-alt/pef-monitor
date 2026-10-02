@@ -2,11 +2,14 @@
 const fs=require('node:fs'),path=require('node:path');
 function replaceRequired(text,from,to){if(!text.includes(from))throw Error('News reader integration anchor missing: '+from.slice(0,80));return text.replace(from,to);}
 function page(text){
- if(text.includes('/news-reader.js?v=20260908-r1'))return text;
- if(!/src="\/news-desk\.js[^\"]*"/.test(text))throw Error('Missing news desk entrypoint');
- return text.replace(/<script src="\/news-desk\.js[^\"]*"><\/script>/,'<script src="/news-reader-core.js?v=20260908-r1"></script><script src="/news-reader.js?v=20260908-r1"></script>')
- .replace('</head>','<link rel="stylesheet" href="/news-reader.css?v=20260908-r1"></head>')
- .replace(/data-news-version="[^"]*"/,'data-news-version="20260908-personal-reader"');
+ if(!text.includes('/news-reader.js?v=20260908-r1')){
+  if(!/src="\/news-desk\.js[^\"]*"/.test(text))throw Error('Missing news desk entrypoint');
+  text=text.replace(/<script src="\/news-desk\.js[^\"]*"><\/script>/,'<script src="/news-reader-core.js?v=20260908-r1"></script><script src="/news-reader.js?v=20260908-r1"></script>')
+   .replace('</head>','<link rel="stylesheet" href="/news-reader.css?v=20260908-r1"></head>')
+   .replace(/data-news-version="[^"]*"/,'data-news-version="20260908-personal-reader"');
+ }
+ if(!text.includes('/public-feed-cache.js'))text=text.replace('<script src="/news-reader-core.js','<script src="/public-feed-cache.js?v=20261002-1"></script><script src="/news-reader-core.js');
+ return text;
 }
 function api(text){
  if(text.includes('NEWS_READER_INTEGRATED'))return text;

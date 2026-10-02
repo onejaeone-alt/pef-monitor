@@ -1,4 +1,9 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "perf/loading-20261002": false
+    }
+  },
   "regions": ["icn1"],
   "functions": {
     "api/dart.js": { "maxDuration": 60 },

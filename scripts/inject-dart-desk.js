@@ -4,8 +4,9 @@ function inject(html){
   // Stop loading the retired question/lens UI without deleting its historical code or data.
   let s=html.replace(/<script\b[^>]*src=["']\/dart-reporting-topics\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/g,'');
   const js=/<script\b[^>]*src=["']\/dart-desk\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/g;
-  let found=false;s=s.replace(js,()=>{if(found)return '';found=true;return '<script src="/dart-desk.js?v=7" defer></script>';});
-  if(!found)s=s.replace('</body>','<script src="/dart-desk.js?v=7" defer></script></body>');
+  let found=false;s=s.replace(js,()=>{if(found)return '';found=true;return '<script src="/dart-desk.js?v=20261002-1" defer></script>';});
+  if(!found)s=s.replace('</body>','<script src="/dart-desk.js?v=20261002-1" defer></script></body>');
+  if(!s.includes('/public-feed-cache.js'))s=s.replace('<script src="/dart-desk.js','<script src="/public-feed-cache.js?v=20261002-1" defer></script><script src="/dart-desk.js');
   const css=/<link\b[^>]*href=["']\/dart-desk\.css(?:\?[^"']*)?["'][^>]*>/g;
   found=false;s=s.replace(css,()=>{if(found)return '';found=true;return '<link rel="stylesheet" href="/dart-desk.css?v=7">';});
   if(!found)s=s.replace('</head>','<link rel="stylesheet" href="/dart-desk.css?v=7"></head>');

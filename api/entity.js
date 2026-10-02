@@ -3,14 +3,14 @@ const { fetchLatestEntityNews } = require('../lib/entity-news');
 const { buildOntology } = require('../lib/ontology');
 const { mergeCuratedGpKnowledge } = require('../lib/curated-gp-knowledge');
 const { mergeDriveDossiers, searchDriveDossiers, matchDossiersInText } = require('../lib/drive-dossiers');
-const { collectReportingSignals } = require('../lib/reporting-signals');
 const { getInstitutionBasicInfo } = require('../lib/institution-basic-data');
 const { getInstitutionBasicOverride } = require('../lib/institution-basic-overrides');
 const { getInstitutionBasicFinalOverride } = require('../lib/institution-basic-final-overrides');
 const { getInstitutionBasicLatestOverride } = require('../lib/institution-basic-latest-overrides');
 const { getInstitutionHomepageOverride } = require('../lib/institution-homepage-overrides');
 const { getNuguMoneyProfile } = require('../lib/nugu-money');
-const { loadRecentReportingLeads, persistOntology, persistReportingLeads } = require('../lib/supabase');
+const { loadRecentReportingLeads } = require('../lib/supabase');
+const { createEntityService } = require('../lib/entity-service');
 
 function applyBasicInfo(dossier) {
   const base = getInstitutionBasicInfo(dossier?.company_id, dossier?.entity?.canonical_name) || {};
@@ -37,6 +37,12 @@ function applyBasicInfo(dossier) {
   return dossier;
 }
 
+const service = createEntityService({
+  loadRecentReportingLeads,
+  buildGraph: (items) => mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology(items))),
+  buildEntityDossier, applyBasicInfo, fetchLatestEntityNews, getNuguMoneyProfile,
+});
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1200');
@@ -57,42 +63,23 @@ module.exports = async (req, res) => {
   const entityKey = String(req.query.entity_key || '').trim();
   if (!entityKey || entityKey.length > 120) return res.status(400).json({ ok:false, error:'확인할 기업·운용사·펀드·인물을 골라주세요.' });
   try {
-    let items = await loadRecentReportingLeads(14).catch(() => []);
-    if (!items.length) {
-      const collected = await collectReportingSignals({ days: 14 });
-      items = collected.items || [];
-      await persistReportingLeads(items).catch(()=>({ready:false}));
+    const action = String(req.query.action || 'full');
+    let data;
+    if (action === 'base') {
+      data = await service.base(entityKey);
+    } else if (action === 'news' || action === 'profile') {
+      const dossier = await service.base(entityKey);
+      if (!dossier) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
+      data = { ok: true, entity_key: entityKey, ...await service[action](entityKey, dossier) };
+    } else {
+      // Existing consumers keep receiving the complete dossier. New drawers
+      // request the base and the two external providers independently.
+      data = await service.full(entityKey);
     }
-    const graph = mergeDriveDossiers(mergeCuratedGpKnowledge(buildOntology(items)));
-    const storage = await persistOntology(graph).catch(()=>({ready:false}));
-    const dossier = applyBasicInfo(buildEntityDossier(graph, entityKey));
-    if (!dossier) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
-
-    const latestNewsPromise = fetchLatestEntityNews(dossier.entity, {
-      existing: dossier.related_news,
-      limit: 5,
-    }).catch(() => (dossier.related_news || []).slice(0, 5));
-    const nuguMoneyPromise = ['pef', 'vc', 'ac'].includes(dossier.entity?.entity_type)
-      ? getNuguMoneyProfile(dossier.entity.canonical_name, { reviewLimit: 3 })
-        .catch((error) => {
-          console.error('[nugu-money] collection failed', {
-            name: error?.name || 'Error',
-            message: String(error?.message || error),
-            cause: error?.cause?.code || error?.code || null,
-          });
-          return {
-            ready: false,
-            found: false,
-            provider: '누구머니',
-            source_url: 'https://nugu.money/',
-            error: '현재 누구머니 정보를 불러오지 못했습니다.',
-          };
-        })
-      : Promise.resolve(null);
-    const [latestNews, nuguMoney] = await Promise.all([latestNewsPromise, nuguMoneyPromise]);
-    dossier.related_news = latestNews;
-
-    return res.status(200).json({ ok:true, ...dossier, nugu_money:nuguMoney, storage, range:{days:14}, fetched_at:new Date().toISOString() });
+    if (!data) return res.status(404).json({ ok:false, error:'이 대상의 취재파일을 찾지 못했습니다.' });
+    const incomplete = data.latest_news_ready === false || data.profile_ready === false || data.enrichment?.reporting_leads === 'unavailable';
+    res.setHeader('Cache-Control', incomplete ? 'no-store' : action === 'base' ? 's-maxage=60, stale-while-revalidate=120' : 's-maxage=600, stale-while-revalidate=1200');
+    return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ ok:false, error:String(error.message||error) });
   }

@@ -2,12 +2,45 @@ const { parseGoogleNewsRss } = require('../lib/context-sources');
 const { fetchPublisherFeeds } = require('../lib/domestic-publisher-feeds');
 const { findWatchTarget, WATCH_TARGETS } = require('../lib/watch-config');
 const { matchDossiersInText } = require('../lib/drive-dossiers');
-const { fetchJakMembers, isJakMemberSource } = require('../lib/jak-members'); // NEWS_READER_INTEGRATED
+const { fetchJakMembers, isJakMemberSource, FALLBACK_JAK_MEMBERS } = require('../lib/jak-members'); // NEWS_READER_INTEGRATED
 const { clusterIssues, eventLabel, queries, shouldKeep, theme } = require('../lib/news-monitor');
+const { createSourceCache } = require('../lib/news-source-cache');
+
+// Normal reads share each source for 60 seconds, with at most 30 minutes of
+// last-good data on failure. These bounded caches live only in this instance.
+const newsSourceCache = createSourceCache();
+const memberSourceCache = createSourceCache({ttlMs:6*3600000,maxStaleMs:7*86400000,maxEntries:1,maxBytes:256*1024,maxValueBytes:256*1024,maxInflight:2});
+
+async function fetchMembership(fresh) {
+  let fallback;
+  try {
+    return await memberSourceCache.get('jak-members',async()=>{
+      const members=await fetchJakMembers();
+      if(members.source!=='official') {fallback=members;throw new Error('JAK official member list unavailable');}
+      return members;
+    },{fresh});
+  } catch(error) {
+    const names=FALLBACK_JAK_MEMBERS||[];
+    return {value:fallback||{names,count:names.length,source:'fallback'},fetched_at:null,attempted_at:new Date().toISOString(),from_cache:true,stale:true,failed:true,error:String(error.message||error)};
+  }
+}
+function sourceStatus(source,provider,result) {
+  if(result.status==='rejected') return {source,provider,failed:true,stale:false,from_cache:false,fetched_at:null,attempted_at:new Date().toISOString(),error:String(result.reason?.message||result.reason).slice(0,240)};
+  const {value,...status}=result.value;
+  return {source,provider,...status};
+}
 
 const GOOGLE_NEWS_URL = 'https://news.google.com/rss/search';
 function googleNewsUrl(query) { const params = new URLSearchParams({ q: query, hl: 'ko', gl: 'KR', ceid: 'KR:ko' }); return `${GOOGLE_NEWS_URL}?${params}`; }
 async function fetchText(url, timeoutMs = 12000, fresh = false) { const ctrl = new AbortController(); const timeout = setTimeout(() => ctrl.abort(), timeoutMs); try { const headers = { 'User-Agent': 'IB-News-Monitor/5.2' }; if (fresh) headers['Cache-Control'] = 'no-cache'; const response = await fetch(url, { signal: ctrl.signal, cache: fresh ? 'no-store' : 'default', headers }); if (!response.ok) throw new Error(`News HTTP ${response.status}`); return await response.text(); } finally { clearTimeout(timeout); } }
+function parseNewsResponse(xml) {
+  // A successful HTTP response may still be a consent, bot-check or error page.
+  // Keep a valid empty RSS channel valid, but never cache HTML as an empty feed.
+  if(!/<rss\b[^>]*>[\s\S]*<channel\b[^>]*>[\s\S]*<\/channel\s*>[\s\S]*<\/rss\s*>/i.test(xml)) throw new Error('NEWS_INVALID_RSS');
+  const items=parseGoogleNewsRss(xml,'domestic','ko');
+  if(/<item\b/i.test(xml)&&!items.length) throw new Error('NEWS_UNREADABLE_RSS');
+  return items;
+}
 function normalizeTitle(value) { return String(value || '').toLowerCase().replace(/[^0-9a-z가-힣]/g,'').slice(0,160); }
 function ageHours(value) { const time = new Date(value || '').getTime(); if (!Number.isFinite(time)) return Infinity; return Math.max(0, (Date.now() - time) / 3600000); }
 function cssString(value) { return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(); }
@@ -37,11 +70,21 @@ module.exports = async (req, res) => {
   res.setHeader('X-News-Refresh', fresh ? 'live' : 'cached-allowed');
   try {
     const days = boundedInt(req.query.days, 7, 1, 14), limit = boundedInt(req.query.limit, 240, 40, 500), q = String(req.query.q || '').trim().toLowerCase().slice(0,180), queryList = queries(days);
-    const [jak, settled, publisher] = await Promise.all([fetchJakMembers(),Promise.allSettled(queryList.map(async (query) => { const xml = await fetchText(googleNewsUrl(query), 12000, fresh); return parseGoogleNewsRss(xml, 'domestic', 'ko'); })),fetchPublisherFeeds({fresh,days})]);
-    const succeeded = settled.filter(result => result.status === 'fulfilled').length;
-    if (!succeeded && !publisher.succeeded) throw new Error('뉴스 수집원에 연결하지 못했습니다.');
-    const partial = succeeded < queryList.length || publisher.failed > 0; if (partial) disableResponseCache(res);
-    const raw = [...settled.flatMap(result => result.status === 'fulfilled' ? result.value : []),...publisher.items];
+    const [membership, settled, publisher] = await Promise.all([fetchMembership(fresh),Promise.allSettled(queryList.map(query=>newsSourceCache.get(googleNewsUrl(query),async()=>{
+      const xml=await fetchText(googleNewsUrl(query),12000,fresh); return parseNewsResponse(xml);
+    },{fresh}))),fetchPublisherFeeds({fresh,days})]);
+    const jak=membership.value, succeeded=settled.filter(result=>result.status==='fulfilled'&&!result.value.failed).length;
+    const available=settled.filter(result=>result.status==='fulfilled').length+(publisher.available??publisher.succeeded);
+    if(!available) throw new Error('뉴스 수집원에 연결하지 못했습니다.');
+    const partial=succeeded<queryList.length||publisher.failed>0||membership.failed;
+    // Useful partial results retain a short public cache; explicit refresh and
+    // complete failure remain no-store. Never hide the failed/stale source state.
+    if(partial&&!fresh) res.setHeader('Cache-Control','s-maxage=15, stale-while-revalidate=30');
+    const sourceStatuses=[...settled.map((result,index)=>sourceStatus('google-news:'+index,'google_news_rss',result)),...(publisher.source_status||[])];
+    const fetchedTimes=sourceStatuses.map(source=>source.fetched_at).filter(Boolean).sort();
+    const attemptedTimes=sourceStatuses.map(source=>source.attempted_at).filter(Boolean).sort();
+    const sourceCacheStatus={cached_sources:sourceStatuses.filter(source=>source.from_cache).length,stale_sources:sourceStatuses.filter(source=>source.stale).length,oldest_source_fetched_at:fetchedTimes[0]||null,latest_source_fetched_at:fetchedTimes.at(-1)||null,attempted_at:attemptedTimes.at(-1)||null,sources:[...sourceStatuses,sourceStatus('jak-members','membership',{status:'fulfilled',value:membership})]};
+    const raw=[...settled.flatMap(result=>result.status==='fulfilled'?result.value.value:[]),...publisher.items];
     const seenUrl = new Set(), seenTitle = new Set(), items = [];
     for (const item of raw) {
       const cleanUrl = String(item.source_url || '').replace(/[?#].*$/,''), key = normalizeTitle(item.title);
@@ -62,7 +105,7 @@ module.exports = async (req, res) => {
     const limitedItems = (readerFeed ? filteredEligible : filteredRange).slice(0,limit), reviewItems = readerFeed ? filteredReview.slice(0,limit) : [];
     if (format === 'ticker-css') { res.setHeader('Content-Type', 'text/css; charset=utf-8'); return res.status(200).send(tickerCss(limitedItems)); }
     const issues = clusterIssues(limitedItems), ongoing = issues.filter(issue=>issue.ongoing).slice(0,30), newIssues = issues.filter(issue=>!issue.ongoing && ageHours(issue.latest_seen) <= 30).slice(0,40), recentIssues = issues.filter(issue=>!ongoing.includes(issue) && !newIssues.includes(issue)).slice(0,80), latest24h = limitedItems.filter(item=>ageHours(item.published_at) <= 24).length;
-    return res.status(200).json({ok: true, items: limitedItems, review_items: reviewItems, issues,sections: { ongoing, new_issues: newIssues, recent: recentIssues },stats: { scanned: raw.length, kept: limitedItems.length, issue_count: issues.length, ongoing_count: ongoing.length, new_issue_count: newIssues.length, latest_24h: latest24h },source_policy: { name: '한국기자협회 회원사', member_count: jak.count, member_source: jak.source },queries: queryList.length,providers: { google_news_rss: succeeded > 0, publisher_rss: publisher.rss_succeeded > 0, publisher_sitemap:publisher.sitemap_succeeded > 0, publisher_feeds:publisher.succeeded, jak_members: jak.source === 'official' },collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded,publisher_succeeded:publisher.succeeded,publisher_failed:publisher.failed,publisher_sitemap_succeeded:publisher.sitemap_succeeded,publisher_sitemap_failed:publisher.sitemap_failed,truncated:eligible.length>limit || review.length>limit, relevant_count:eligible.length, review_count:review.length },range: { days }, fetched_at: new Date().toISOString()});
+    return res.status(200).json({ok: true, items: limitedItems, review_items: reviewItems, issues,sections: { ongoing, new_issues: newIssues, recent: recentIssues },stats: { scanned: raw.length, kept: limitedItems.length, issue_count: issues.length, ongoing_count: ongoing.length, new_issue_count: newIssues.length, latest_24h: latest24h },source_policy: { name: '한국기자협회 회원사', member_count: jak.count, member_source: jak.source,member_cached:membership.from_cache,member_stale:membership.stale,member_fetched_at:membership.fetched_at },queries: queryList.length,providers: { google_news_rss: succeeded > 0, publisher_rss: publisher.rss_succeeded > 0, publisher_sitemap:publisher.sitemap_succeeded > 0, publisher_feeds:publisher.succeeded, jak_members: jak.source === 'official' },collection_status: { refresh: fresh, partial, succeeded, failed: queryList.length - succeeded,publisher_succeeded:publisher.succeeded,publisher_failed:publisher.failed,publisher_sitemap_succeeded:publisher.sitemap_succeeded,publisher_sitemap_failed:publisher.sitemap_failed,...sourceCacheStatus,truncated:eligible.length>limit || review.length>limit, relevant_count:eligible.length, review_count:review.length },range: { days }, fetched_at:sourceCacheStatus.latest_source_fetched_at,responded_at:new Date().toISOString()});
   } catch (error) {
     disableResponseCache(res);
     if (format === 'ticker-css') { res.setHeader('Content-Type', 'text/css; charset=utf-8'); return res.status(200).send('.topbar{overflow-x:clip}.topbar::before{content:"[뉴스] 불러오지 못했습니다";display:flex;align-items:center;margin:-18px -26px 8px;padding:0 22px;height:24px;line-height:24px;background:#050505;color:#fff;font-size:10.5px;font-weight:760;white-space:nowrap}'); }
