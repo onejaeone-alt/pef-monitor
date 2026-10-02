@@ -34,7 +34,7 @@ function config(value) {
     {key:'Referrer-Policy',value:'no-referrer'},
     {key:'X-Content-Type-Options',value:'nosniff'},
     {key:'X-Frame-Options',value:'DENY'},
-    {key:'Content-Security-Policy',value:"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"}
+    {key:'Content-Security-Policy',value:"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"}
   ]});
   return next;
 }
