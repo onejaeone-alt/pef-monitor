@@ -20,8 +20,6 @@
   ],
   "crons": [],
   "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
+    "deploymentEnabled": false
   }
 }

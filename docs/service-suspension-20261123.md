@@ -1,9 +1,18 @@
 # Service suspension — 2026-11-23
 
-The owner requested suspension while preserving all source and data.
+The owner requested suspension while preserving source, projects, domains and data.
 
-Original HEAD: `256fa898ec5d528e5b9a7d467862024e5c5a1f39`. Restore `vercel.json` from this commit or `docs/resume-vercel-20261123.json` only when the owner requests resumption. All application files remain in this repository.
+## Restore information
 
-The suspension release uses an explicit static-only build allowlist for `maintenance/index.html`. Existing API files are not included in the deployment. All paths return HTTP 503; cron definitions are empty. After the suspension release, Git deployments will be disabled.
+Original HEAD: `256fa898ec5d528e5b9a7d467862024e5c5a1f39`.
+Original configuration is retained in `docs/resume-vercel-20261123.json`. Existing application code remains in the repository.
+Original production deployment: `dpl_J2cSKWwaxkt7pUA8UXhyNyt7CZUp`.
+Original aliases: ainobi.news, www.ainobi.news, pef-monitor.vercel.app, pef-monitor-onejess.vercel.app, pef-monitor-git-main-onejess.vercel.app.
 
-Vercel Pause returned success but the ainobi.news alias still returned the former application in a later check, so deployment and alias verification are required. Database project pef-monitor was already INACTIVE; no database or project was deleted. Historical deployments must be reviewed separately because this source change only affects the new deployment.
+## Prepared suspension release
+
+Commit `bcb133c60e7f8ea7a88fd5d07a8799837ee2241f` allows only maintenance/index.html through @vercel/static, excludes all API functions, removes cron definitions, and returns HTTP 503 for every path. Vercel reported BLOCKED for deployment dpl_47ZsHqGPTGHrFfhfJdgprP63dHob, so this release has NOT replaced the original deployment. An attempted alias assignment was rejected because the new deployment was not READY; no alias was changed by that attempt.
+
+Git-triggered deployments are now disabled for all branches. Automatic domain assignment is disabled. Pause returned success, but earlier verification still reached old content and the news API. A single unpause/pause sequence was then applied to refresh the pause state. Its live result must be verified separately. Do not claim that the static suspension build was deployed successfully.
+
+The pef-monitor Supabase project was already INACTIVE. No database, domain, project or source was deleted. To resume only on owner request: restore the original config, explicitly deploy a verified release, then resume/promote only that release and verify aliases. Retain any subsequent source changes.
